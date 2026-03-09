@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+    <script>
+      /**
+       * Fix for "Uncaught TypeError: Cannot set property fetch of #<Window> which has only a getter"
+       * This happens in some iframe environments where fetch is a read-only getter on the prototype.
+       */
+      (function() {
+        try {
+          const originalFetch = window.fetch;
+          if (typeof originalFetch !== 'function') return;
+          
+          // Try to define it on the window instance directly with a getter/setter pair
+          // This is more robust than a simple value property in some environments
+          let currentFetch = originalFetch;
+          Object.defineProperty(window, 'fetch', {
+            get: function() { return currentFetch; },
+            set: function(v) { currentFetch = v; },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e) {
+          // If shadowing on window instance fails, try to add a setter to the prototype
+          try {
+            const proto = window.Window ? window.Window.prototype : Object.getPrototypeOf(window);
+            const desc = Object.getOwnPropertyDescriptor(proto, 'fetch');
+            if (desc && desc.get && !desc.set) {
+              Object.defineProperty(proto, 'fetch', {
+                get: desc.get,
+                set: function(v) {
+                  try {
+                    Object.defineProperty(this, 'fetch', {
+                      value: v, writable: true, configurable: true, enumerable: true
+                    });
+                  } catch (e3) {
+                    // If even this fails, we might be in a very restricted environment
+                    // but at least we have a setter now to prevent the TypeError
+                  }
+                },
+                configurable: true
+              });
+            }
+          } catch (e2) {}
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

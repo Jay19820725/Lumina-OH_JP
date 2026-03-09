@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Noto+Serif+JP:wght@200;300;400;500&family=Shippori+Mincho:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Noto Serif JP", serif;
+  --font-shippori: "Shippori Mincho", serif;
+
+  --color-bg-washi: #FDFCF8;
+  --color-ink: #2E2E2E;
+  --color-ink-muted: #8E8E8E;
+
+  /* Vibrant Traditional Japanese Colors for Five Elements (Spring Palette) */
+  --color-wood: #A8C97F;  /* 萌黃色 Moegi-iro */
+  --color-fire: #E95464;  /* 躑躅色 Tsutsuji-iro */
+  --color-earth: #FFB11B; /* 山吹色 Yamabuki-iro */
+  --color-metal: #F8FBF8; /* 白磁色 Hakuji-iro */
+  --color-water: #33A6B8; /* 淺蔥色 Asagi-iro */
+
+  --animate-float: float 10s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 6s ease-in-out infinite;
+  --animate-fade-up: fade-up 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  --animate-glow: glow 8s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(0.8deg); }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 0.15; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(1.03); }
+  }
+
+  @keyframes fade-up {
+    0% { opacity: 0; transform: translateY(30px); filter: blur(12px); }
+    100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+
+  @keyframes glow {
+    0%, 100% { opacity: 0.4; filter: blur(40px); }
+    50% { opacity: 0.7; filter: blur(60px); }
+  }
+}
+
+@layer base {
+  :root {
+    --radius-card: 3rem;
+    --spacing-container: 2rem;
+    --font-size-h1: 3.5rem;
+    --font-size-h2: 1.75rem;
+    --font-size-body: 0.9375rem;
+    --letter-spacing-base: 0.04em;
+    --line-height-base: 1.7;
+  }
+
+  @media (max-width: 640px) {
+    :root {
+      --radius-card: 2rem;
+      --spacing-container: 1.5rem;
+      --font-size-h1: 2.5rem;
+      --font-size-h2: 1.35rem;
+      --font-size-body: 0.875rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    :root {
+      --font-size-h1: 4rem;
+      --font-size-h2: 2.25rem;
+      --font-size-body: 1rem;
+      --letter-spacing-base: 0.06em;
+      --line-height-base: 1.9;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      --font-size-h1: 5rem;
+    }
+  }
+
+  body {
+    @apply bg-bg-washi text-ink font-sans antialiased selection:bg-wood/20;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-base);
+    letter-spacing: var(--letter-spacing-base);
+    background-image: 
+      radial-gradient(circle at 20% 20%, rgba(139, 168, 137, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(217, 139, 115, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9) 0%, transparent 80%);
+    background-attachment: fixed;
+  }
+
+  h1 {
+    font-size: var(--font-size-h1);
+    @apply font-serif tracking-tight font-extralight leading-[1.05];
+  }
+
+  h2 {
+    font-size: var(--font-size-h2);
+    @apply font-serif tracking-[0.2em] font-light leading-snug;
+  }
+
+  h3, h4 {
+    @apply font-serif tracking-[0.12em] font-light;
+  }
+
+  p {
+    @apply font-light opacity-90;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_40px_120px_-30px_rgba(0,0,0,0.02),inset_0_1px_2px_rgba(255,255,255,0.9)];
+    border-radius: var(--radius-card);
+    transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .glass-card:hover {
+    @apply bg-white/40 border-white/60 shadow-[0_50px_140px_-20px_rgba(0,0,0,0.04)];
+  }
+
+  .btn-pill {
+    @apply px-10 md:px-14 py-3.5 md:py-5 rounded-full border border-ink/5 transition-all duration-700 hover:bg-ink hover:text-white hover:border-ink hover:shadow-[0_20px_60px_-10px_rgba(0,0,0,0.1)] active:scale-[0.98];
+    @apply tracking-[0.15em] md:tracking-[0.2em] font-light uppercase text-[10px] md:text-xs;
+  }
+
+  .ma-container {
+    @apply max-w-[1100px] mx-auto;
+    padding-left: var(--spacing-container);
+    padding-right: var(--spacing-container);
+  }
+
+  .vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
