@@ -13,7 +13,7 @@ const { Pool } = pg;
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   // Database setup with robust fallback for empty env vars
   const rawDbUrl = process.env.DATABASE_URL;
