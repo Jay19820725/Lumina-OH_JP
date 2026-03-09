@@ -5,6 +5,7 @@ import pg from "pg";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import { WORDS, IMAGES } from "./src/core/cards.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -170,6 +171,35 @@ async function startServer() {
     `);
     client.release();
     console.log("Database tables initialized");
+
+    // Auto-seed cards if empty
+    const imageCount = await pool.query("SELECT COUNT(*) FROM cards_image");
+    if (parseInt(imageCount.rows[0].count) === 0) {
+      console.log("Seeding image cards...");
+      for (const img of IMAGES) {
+        const idStr = img.id.toString().padStart(2, '0');
+        await pool.query(
+          `INSERT INTO cards_image (id, image_url, description, elements) 
+           VALUES ($1, $2, $3, $4)`,
+          [`img_${idStr}`, `https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/oh-cards%2Fimg_${idStr}.jpeg?alt=media`, img.description || '', JSON.stringify({ wood: 20, fire: 20, earth: 20, metal: 20, water: 20 })]
+        );
+      }
+      console.log("Image cards seeded");
+    }
+
+    const wordCount = await pool.query("SELECT COUNT(*) FROM cards_word");
+    if (parseInt(wordCount.rows[0].count) === 0) {
+      console.log("Seeding word cards...");
+      for (const word of WORDS) {
+        const idStr = word.id.toString().padStart(2, '0');
+        await pool.query(
+          `INSERT INTO cards_word (id, text, image_url, description, elements) 
+           VALUES ($1, $2, $3, $4, $5)`,
+          [`word_${idStr}`, word.text || '', `https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/oh-cards%2Fword_${idStr}.jpeg?alt=media`, '', JSON.stringify({ wood: word.wood || 0, fire: word.fire || 0, earth: word.earth || 0, metal: word.metal || 0, water: word.water || 0 })]
+        );
+      }
+      console.log("Word cards seeded");
+    }
   } catch (err) {
     console.error("Database initialization error:", err);
   }
@@ -717,46 +747,6 @@ async function startServer() {
       });
     } catch (err) {
       console.error("Error fetching analytics data:", err);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.post("/api/admin/seed", async (req, res) => {
-    try {
-      const { images, words } = req.body;
-      
-      // Seed Images
-      for (const img of images) {
-        const idStr = img.id.toString().padStart(2, '0');
-        await pool.query(
-          `INSERT INTO cards_image (id, image_url, description, elements) 
-           VALUES ($1, $2, $3, $4) 
-           ON CONFLICT (id) DO UPDATE SET 
-             image_url = EXCLUDED.image_url, 
-             description = EXCLUDED.description, 
-             elements = EXCLUDED.elements`,
-          [`img_${idStr}`, img.imageUrl, img.description || '', JSON.stringify({ wood: 20, fire: 20, earth: 20, metal: 20, water: 20 })]
-        );
-      }
-
-      // Seed Words
-      for (const word of words) {
-        const idStr = word.id.toString().padStart(2, '0');
-        await pool.query(
-          `INSERT INTO cards_word (id, text, image_url, description, elements) 
-           VALUES ($1, $2, $3, $4, $5) 
-           ON CONFLICT (id) DO UPDATE SET 
-             text = EXCLUDED.text, 
-             image_url = EXCLUDED.image_url, 
-             description = EXCLUDED.description, 
-             elements = EXCLUDED.elements`,
-          [`word_${idStr}`, word.text || '', word.imageUrl, word.description || '', JSON.stringify({ wood: word.wood || 0, fire: word.fire || 0, earth: word.earth || 0, metal: word.metal || 0, water: word.water || 0 })]
-        );
-      }
-
-      res.json({ success: true });
-    } catch (err) {
-      console.error("Error seeding database:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });

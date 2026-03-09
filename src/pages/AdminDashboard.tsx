@@ -69,7 +69,6 @@ import {
   Legend
 } from 'recharts';
 
-import { IMAGES, WORDS } from '../core/cards';
 
 type AdminModule = 'dashboard' | 'cards' | 'users' | 'sessions' | 'subscriptions' | 'analytics' | 'prompts' | 'settings';
 
@@ -98,40 +97,6 @@ export const AdminDashboard: React.FC = () => {
   // Card Editing State
   const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
-
-  // Seeding State
-  const [isSeeding, setIsSeeding] = useState(false);
-  const [seedStatus, setSeedStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  const seedDatabase = async () => {
-    if (!confirm('確定要將 88 枚卡片數據寫入 PostgreSQL 嗎？這將會建立或更新現有卡片。')) return;
-    
-    setIsSeeding(true);
-    setSeedStatus('idle');
-    
-    try {
-      console.log('Starting database seeding...');
-      
-      const response = await fetch('/api/admin/seed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: IMAGES, words: WORDS })
-      });
-
-      if (!response.ok) throw new Error('Seeding failed');
-      
-      console.log('Seeding successful, invalidating queries...');
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'cards'] });
-      
-      setSeedStatus('success');
-    } catch (error) {
-      console.error('Seeding failed with error:', error);
-      setSeedStatus('error');
-      alert('資料寫入失敗，請檢查網路連線或伺服器設定。');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
 
   const isLoading = 
     (activeModule === 'dashboard' && statsLoading) ||
@@ -252,47 +217,6 @@ export const AdminDashboard: React.FC = () => {
             </ReBarChart>
           </ResponsiveContainer>
         </GlassCard>
-
-        {/* System Tools Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <GlassCard className="p-8 space-y-6 border-wood/20 bg-wood/5">
-            <div className="flex items-center gap-3 text-wood">
-              <Database size={18} />
-              <h3 className="text-xs uppercase tracking-widest">系統初始化工具</h3>
-            </div>
-            <div className="space-y-4">
-              <p className="text-[10px] text-ink-muted leading-relaxed">
-                將 88 枚卡片數據寫入 Firestore。請確保 Storage 已上傳對應圖檔。
-              </p>
-              
-              <Button 
-                onClick={seedDatabase}
-                disabled={isSeeding}
-                variant="outline"
-                className={`w-full h-12 gap-3 border-wood/30 text-wood hover:bg-wood/10 ${isSeeding ? 'opacity-50' : ''}`}
-              >
-                {isSeeding ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : seedStatus === 'success' ? (
-                  <CheckCircle2 size={16} />
-                ) : seedStatus === 'error' ? (
-                  <AlertCircle size={16} />
-                ) : (
-                  <Database size={16} />
-                )}
-                <span className="text-[10px] tracking-widest">
-                  {isSeeding ? '寫入中...' : seedStatus === 'success' ? '初始化完成' : '資料庫初始化'}
-                </span>
-              </Button>
-
-              {seedStatus === 'success' && (
-                <p className="text-[8px] text-wood text-center animate-pulse tracking-widest">
-                  Firestore 已成功建立 176 筆卡片數據。
-                </p>
-              )}
-            </div>
-          </GlassCard>
-        </div>
       </div>
     );
   };
