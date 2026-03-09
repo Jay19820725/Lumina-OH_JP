@@ -23,9 +23,7 @@ async function startServer() {
 
   const pool = new Pool({
     connectionString,
-    ssl: connectionString.includes("localhost") || connectionString.includes("127.0.0.1") 
-      ? false 
-      : { rejectUnauthorized: false }
+    ssl: false  // Zeabur PostgreSQL doesn't support SSL
   });
 
   // Initialize database tables
@@ -796,7 +794,7 @@ async function startServer() {
   } else {
     // Serve static files in production
     app.use(express.static(path.join(__dirname, "dist")));
-    app.get("*", (req, res) => {
+    app.get("/*", (req, res) => {
       res.sendFile(path.join(__dirname, "dist", "index.html"));
     });
   }
