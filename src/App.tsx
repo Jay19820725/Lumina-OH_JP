@@ -1,5 +1,6 @@
 import React, { useState, Suspense, lazy, useEffect } from 'react';
 import { Navigation } from './components/layout/Navigation';
+import { SoundControl } from './components/layout/SoundControl';
 import { KomorebiBackground } from './components/layout/KomorebiBackground';
 import { ConnectionStatus } from './components/ui/ConnectionStatus';
 import { SEOManager } from './components/SEOManager';
@@ -108,6 +109,8 @@ export default function App() {
         onNavigate={(path) => navigate(path as Page)} 
         profile={profile}
       />
+      
+      <SoundControl />
       
       <ConnectionStatus />
       

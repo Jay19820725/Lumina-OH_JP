@@ -5,6 +5,7 @@ import App from './App.tsx';
 import './index.css';
 import { AuthProvider } from './store/AuthContext';
 import { TestProvider } from './store/TestContext';
+import { SoundscapeProvider } from './store/SoundscapeContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
@@ -23,7 +24,9 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TestProvider>
-          <App />
+          <SoundscapeProvider>
+            <App />
+          </SoundscapeProvider>
         </TestProvider>
       </AuthProvider>
     </QueryClientProvider>

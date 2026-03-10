@@ -126,23 +126,28 @@ export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
               />
             </Button>
 
-            <div className="flex gap-8 md:gap-16">
+            <div className="flex gap-10 md:gap-20">
               {[
-                { label: '木', color: 'bg-wood' },
-                { label: '火', color: 'bg-fire' },
-                { label: '土', color: 'bg-earth' },
-                { label: '金', color: 'bg-metal' },
-                { label: '水', color: 'bg-water' }
+                { label: '木', color: 'bg-wood', shadow: 'shadow-wood/20' },
+                { label: '火', color: 'bg-fire', shadow: 'shadow-fire/20' },
+                { label: '土', color: 'bg-earth', shadow: 'shadow-earth/20' },
+                { label: '金', color: 'bg-metal', shadow: 'shadow-metal/20' },
+                { label: '水', color: 'bg-water', shadow: 'shadow-water/20' }
               ].map((el, i) => (
                 <motion.div
                   key={el.label}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.3 }}
-                  transition={{ delay: 3 + (i * 0.2) }}
-                  className="flex flex-col items-center gap-3"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 0.4, y: 0 }}
+                  whileHover={{ opacity: 1, y: -2 }}
+                  transition={{ 
+                    opacity: { delay: 3 + (i * 0.15), duration: 2 },
+                    y: { delay: 3 + (i * 0.15), duration: 2 },
+                    default: { duration: 0.5, ease: "easeOut" }
+                  }}
+                  className="flex flex-col items-center gap-4 group cursor-default"
                 >
-                  <div className={`w-1 h-1 rounded-full ${el.color}`} />
-                  <span className="text-[9px] tracking-widest text-ink/40 font-serif">{el.label}</span>
+                  <div className={`w-1.5 h-1.5 rounded-full ${el.color} ${el.shadow} shadow-[0_0_8px_currentColor] transition-all duration-500 group-hover:scale-125`} />
+                  <span className="text-[10px] tracking-[0.4em] text-ink/40 font-serif transition-colors duration-500 group-hover:text-ink/80">{el.label}</span>
                 </motion.div>
               ))}
             </div>
