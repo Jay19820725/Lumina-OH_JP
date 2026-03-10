@@ -442,7 +442,30 @@ async function startServer() {
         "SELECT * FROM energy_reports WHERE user_id = $1 ORDER BY timestamp DESC",
         [userId]
       );
-      res.json(result.rows);
+      
+      // Map snake_case database columns to camelCase frontend properties
+      const mappedReports = result.rows.map(row => ({
+        id: row.id,
+        userId: row.user_id,
+        timestamp: new Date(row.timestamp).getTime(),
+        selectedImageIds: row.selected_image_ids,
+        selectedWordIds: row.selected_word_ids,
+        totalScores: row.total_scores,
+        dominantElement: row.dominant_element,
+        weakElement: row.weak_element,
+        balanceScore: row.balance_score,
+        interpretation: row.interpretation,
+        pairInterpretations: row.pair_interpretations,
+        pairs: row.pairs,
+        todayTheme: row.today_theme,
+        cardInterpretation: row.card_interpretation,
+        psychologicalInsight: row.psychological_insight,
+        fiveElementAnalysis: row.five_element_analysis,
+        reflection: row.reflection,
+        actionSuggestion: row.action_suggestion
+      }));
+      
+      res.json(mappedReports);
     } catch (err) {
       console.error("Error fetching energy reports:", err);
       res.status(500).json({ error: "Internal server error" });
@@ -455,9 +478,9 @@ async function startServer() {
       selectedImageIds, 
       selectedWordIds, 
       totalScores, 
-      dominant_element, 
-      weak_element, 
-      balance_score, 
+      dominantElement, 
+      weakElement, 
+      balanceScore, 
       interpretation, 
       pairInterpretations, 
       pairs,
@@ -481,9 +504,9 @@ async function startServer() {
           JSON.stringify(selectedImageIds), 
           JSON.stringify(selectedWordIds), 
           JSON.stringify(totalScores), 
-          dominant_element, 
-          weak_element, 
-          balance_score, 
+          dominantElement, 
+          weakElement, 
+          balanceScore, 
           interpretation, 
           JSON.stringify(pairInterpretations), 
           JSON.stringify(pairs),
@@ -495,7 +518,29 @@ async function startServer() {
           actionSuggestion
         ]
       );
-      res.json(result.rows[0]);
+      
+      // Map the returned row back to camelCase
+      const row = result.rows[0];
+      res.json({
+        id: row.id,
+        userId: row.user_id,
+        timestamp: new Date(row.timestamp).getTime(),
+        selectedImageIds: row.selected_image_ids,
+        selectedWordIds: row.selected_word_ids,
+        totalScores: row.total_scores,
+        dominantElement: row.dominant_element,
+        weakElement: row.weak_element,
+        balanceScore: row.balance_score,
+        interpretation: row.interpretation,
+        pairInterpretations: row.pair_interpretations,
+        pairs: row.pairs,
+        todayTheme: row.today_theme,
+        cardInterpretation: row.card_interpretation,
+        psychologicalInsight: row.psychological_insight,
+        fiveElementAnalysis: row.five_element_analysis,
+        reflection: row.reflection,
+        actionSuggestion: row.action_suggestion
+      });
     } catch (err) {
       console.error("Error creating energy report:", err);
       res.status(500).json({ error: "Internal server error" });

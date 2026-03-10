@@ -62,9 +62,9 @@ export interface AnalysisReport {
   selectedImageIds: string[];
   selectedWordIds: string[];
   totalScores: FiveElementValues; // Normalized percentages
-  dominant_element: string;
-  weak_element: string;
-  balance_score: number;
+  dominantElement: string;
+  weakElement: string;
+  balanceScore: number;
   interpretation?: string;
   pairInterpretations?: { pair_id: string; text: string }[];
   pairs?: CardPair[];

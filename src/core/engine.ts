@@ -60,9 +60,9 @@ export class EnergyEngine {
       selectedImageIds: images.map(c => c.id),
       selectedWordIds: words.map(c => c.id),
       totalScores: percentages,
-      dominant_element: dominantElement,
-      weak_element: weakElement,
-      balance_score: balanceScore,
+      dominantElement: dominantElement,
+      weakElement: weakElement,
+      balanceScore: balanceScore,
     };
   }
 
@@ -129,9 +129,9 @@ export class EnergyEngine {
         [FiveElement.METAL]: 0,
         [FiveElement.WATER]: 0,
       },
-      dominant_element: 'None',
-      weak_element: 'None',
-      balance_score: 0,
+      dominantElement: 'None',
+      weakElement: 'None',
+      balanceScore: 0,
     };
   }
 }

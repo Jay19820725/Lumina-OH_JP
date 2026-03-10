@@ -331,12 +331,12 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
                             <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">優位な要素</span>
-                            <span className="text-lg font-serif capitalize">{translateElement(item.data.dominant_element)}</span>
+                            <span className="text-lg font-serif capitalize">{translateElement(item.data.dominantElement)}</span>
                           </div>
                           <div className="h-8 w-px bg-ink/5" />
                           <div className="text-left">
                             <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">バランス</span>
-                            <span className="text-lg font-serif">{item.data.balance_score}</span>
+                            <span className="text-lg font-serif">{item.data.balanceScore}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 text-[10px] text-ink-muted group-hover:text-ink transition-colors">
