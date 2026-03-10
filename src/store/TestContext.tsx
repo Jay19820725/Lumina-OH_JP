@@ -5,6 +5,7 @@ import { auth } from '../lib/firebase';
 import { performJDearDraw } from '../services/cardEngine';
 import { generateAIAnalysis } from '../services/analysisService';
 import { drawSession, updateSession } from '../services/sessionService';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface TestContextType {
   selectedCards: SelectedCards;
@@ -28,6 +29,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isCompleted, setIsCompleted] = useState(false);
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const { language } = useLanguage();
 
   const startDraw = useCallback(async () => {
     setIsDrawing(true);
@@ -123,7 +125,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Asynchronously call AI Analysis for logged-in users
-    generateAIAnalysis(selectedCards, analysis.totalScores).then(async (aiAnalysis) => {
+    generateAIAnalysis(selectedCards, analysis.totalScores, language).then(async (aiAnalysis) => {
       const finalReport = {
         ...initialReport,
         ...aiAnalysis

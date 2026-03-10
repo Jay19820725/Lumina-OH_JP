@@ -111,9 +111,17 @@ async function startServer() {
         content TEXT NOT NULL,
         status TEXT DEFAULT 'draft',
         version TEXT DEFAULT '1.0.0',
+        category TEXT DEFAULT 'analysis',
+        lang TEXT DEFAULT 'zh-TW',
+        is_default BOOLEAN DEFAULT false,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Ensure columns exist if table was already created
+      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'analysis';
+      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'zh-TW';
+      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS is_default BOOLEAN DEFAULT false;
 
       -- Manifestations table
       CREATE TABLE IF NOT EXISTS manifestations (
@@ -662,8 +670,24 @@ async function startServer() {
   });
 
   app.get("/api/admin/prompts", async (req, res) => {
+    const { category, lang } = req.query;
     try {
-      const result = await pool.query("SELECT * FROM ai_prompts ORDER BY created_at DESC");
+      let query = "SELECT * FROM ai_prompts";
+      const params = [];
+      if (category || lang) {
+        query += " WHERE";
+        if (category) {
+          params.push(category);
+          query += ` category = $${params.length}`;
+        }
+        if (lang) {
+          if (params.length > 0) query += " AND";
+          params.push(lang);
+          query += ` lang = $${params.length}`;
+        }
+      }
+      query += " ORDER BY created_at DESC";
+      const result = await pool.query(query, params);
       res.json(result.rows);
     } catch (err) {
       console.error("Error fetching prompts:", err);
@@ -672,19 +696,28 @@ async function startServer() {
   });
 
   app.post("/api/admin/prompts", async (req, res) => {
-    const { id, name, content, status, version } = req.body;
+    const { id, name, content, status, version, category, lang, is_default } = req.body;
     try {
       if (id) {
         await pool.query(
-          "UPDATE ai_prompts SET name = $1, content = $2, status = $3, version = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5",
-          [name, content, status, version, id]
+          "UPDATE ai_prompts SET name = $1, content = $2, status = $3, version = $4, category = $5, lang = $6, is_default = $7, updated_at = CURRENT_TIMESTAMP WHERE id = $8",
+          [name, content, status, version, category, lang, is_default, id]
         );
       } else {
         await pool.query(
-          "INSERT INTO ai_prompts (name, content, status, version) VALUES ($1, $2, $3, $4)",
-          [name, content, status, version]
+          "INSERT INTO ai_prompts (name, content, status, version, category, lang, is_default) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+          [name, content, status, version, category, lang, is_default]
         );
       }
+      
+      // If set as default, unset others in same category/lang
+      if (is_default) {
+        await pool.query(
+          "UPDATE ai_prompts SET is_default = false WHERE category = $1 AND lang = $2 AND id != (SELECT id FROM ai_prompts WHERE name = $3 AND category = $1 AND lang = $2 ORDER BY updated_at DESC LIMIT 1)",
+          [category, lang, name]
+        );
+      }
+      
       res.json({ success: true });
     } catch (err) {
       console.error("Error saving prompt:", err);
@@ -706,10 +739,39 @@ async function startServer() {
   app.post("/api/admin/prompts/:id/activate", async (req, res) => {
     const { id } = req.params;
     try {
-      await pool.query("UPDATE ai_prompts SET status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = $1", [id]);
+      const promptResult = await pool.query("SELECT category, lang FROM ai_prompts WHERE id = $1", [id]);
+      if (promptResult.rows.length > 0) {
+        const { category, lang } = promptResult.rows[0];
+        // Set this one as active and default, unset others in same category/lang
+        await pool.query("UPDATE ai_prompts SET status = 'active', is_default = true, updated_at = CURRENT_TIMESTAMP WHERE id = $1", [id]);
+        await pool.query("UPDATE ai_prompts SET is_default = false WHERE category = $1 AND lang = $2 AND id != $3", [category, lang, id]);
+      }
       res.json({ success: true });
     } catch (err) {
       console.error("Error activating prompt:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/prompts/active", async (req, res) => {
+    const { category, lang } = req.query;
+    try {
+      const result = await pool.query(
+        "SELECT * FROM ai_prompts WHERE category = $1 AND lang = $2 AND status = 'active' AND is_default = true LIMIT 1",
+        [category || 'analysis', lang || 'zh-TW']
+      );
+      if (result.rows.length > 0) {
+        res.json(result.rows[0]);
+      } else {
+        // Fallback to latest active if no default set
+        const fallback = await pool.query(
+          "SELECT * FROM ai_prompts WHERE category = $1 AND lang = $2 AND status = 'active' ORDER BY updated_at DESC LIMIT 1",
+          [category || 'analysis', lang || 'zh-TW']
+        );
+        res.json(fallback.rows[0] || null);
+      }
+    } catch (err) {
+      console.error("Error fetching active prompt:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });

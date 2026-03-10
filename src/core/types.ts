@@ -144,6 +144,9 @@ export interface AIPrompt {
   prompt_content: string;
   version: string;
   status: 'active' | 'draft' | 'archived';
+  category: 'analysis' | 'daily' | 'manifestation' | 'persona';
+  lang: 'zh-TW' | 'ja-JP';
+  is_default: boolean;
   created_at: any;
   updated_at: any;
   ab_test_group?: 'A' | 'B' | 'control';

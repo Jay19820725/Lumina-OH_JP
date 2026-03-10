@@ -614,13 +614,38 @@ export const AdminDashboard: React.FC = () => {
 
   const renderPrompts = () => (
     <div className="space-y-8">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <div className="flex gap-4">
+          <select 
+            className="bg-white/40 border border-ink/5 rounded-xl px-4 py-2 text-xs focus:outline-none"
+            onChange={(e) => {
+              // Filter logic can be added here if we want client-side filtering
+              // or we can update the useAdminPrompts hook to accept filters
+            }}
+          >
+            <option value="">所有分類</option>
+            <option value="analysis">能量分析</option>
+            <option value="daily">每日指引</option>
+            <option value="manifestation">願望顯化</option>
+            <option value="persona">人格設定</option>
+          </select>
+          <select 
+            className="bg-white/40 border border-ink/5 rounded-xl px-4 py-2 text-xs focus:outline-none"
+          >
+            <option value="">所有語言</option>
+            <option value="zh-TW">繁體中文</option>
+            <option value="ja-JP">日文</option>
+          </select>
+        </div>
         <Button 
           onClick={() => setEditingPrompt({ 
             prompt_name: '', 
             prompt_content: '', 
             version: '1.0.0', 
             status: 'draft',
+            category: 'analysis',
+            lang: 'zh-TW',
+            is_default: false,
             ab_test_group: 'control'
           })}
           className="gap-2 h-10 px-4 text-xs"
@@ -638,9 +663,16 @@ export const AdminDashboard: React.FC = () => {
                   <Sparkles size={18} />
                 </div>
                 <div>
-                  <h4 className="text-sm font-serif">{prompt.prompt_name}</h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-serif">{prompt.prompt_name}</h4>
+                    {prompt.is_default && (
+                      <span className="text-[8px] bg-wood text-white px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Default</span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[9px] uppercase tracking-widest bg-ink/5 px-1.5 py-0.5 rounded text-ink-muted">v{prompt.version}</span>
+                    <span className="text-[9px] uppercase tracking-widest bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">{prompt.category}</span>
+                    <span className="text-[9px] uppercase tracking-widest bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded">{prompt.lang}</span>
                     <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
                       prompt.status === 'active' ? 'bg-wood/10 text-wood' : 
                       prompt.status === 'draft' ? 'bg-amber-100 text-amber-700' : 'bg-ink/5 text-ink-muted'
@@ -755,6 +787,33 @@ export const AdminDashboard: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">分類</label>
+                    <select 
+                      value={editingPrompt.category}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, category: e.target.value as any })}
+                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                    >
+                      <option value="analysis">能量分析</option>
+                      <option value="daily">每日指引</option>
+                      <option value="manifestation">願望顯化</option>
+                      <option value="persona">人格設定</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">語言</label>
+                    <select 
+                      value={editingPrompt.lang}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, lang: e.target.value as any })}
+                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                    >
+                      <option value="zh-TW">繁體中文</option>
+                      <option value="ja-JP">日文</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-ink-muted">狀態</label>
                     <select 
                       value={editingPrompt.status}
@@ -766,18 +825,29 @@ export const AdminDashboard: React.FC = () => {
                       <option value="archived">封存 (Archived)</option>
                     </select>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">A/B 測試分組</label>
-                    <select 
-                      value={editingPrompt.ab_test_group || 'control'}
-                      onChange={(e) => setEditingPrompt({ ...editingPrompt, ab_test_group: e.target.value as any })}
-                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
-                    >
-                      <option value="control">對照組 (Control)</option>
-                      <option value="A">實驗組 A</option>
-                      <option value="B">實驗組 B</option>
-                    </select>
+                  <div className="flex items-center gap-3 pt-6">
+                    <input 
+                      type="checkbox" 
+                      id="is_default"
+                      checked={editingPrompt.is_default}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, is_default: e.target.checked })}
+                      className="w-4 h-4 rounded border-ink/10 text-wood focus:ring-wood"
+                    />
+                    <label htmlFor="is_default" className="text-[10px] uppercase tracking-widest text-ink-muted cursor-pointer">設為該分類預設</label>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-ink-muted">A/B 測試分組</label>
+                  <select 
+                    value={editingPrompt.ab_test_group || 'control'}
+                    onChange={(e) => setEditingPrompt({ ...editingPrompt, ab_test_group: e.target.value as any })}
+                    className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                  >
+                    <option value="control">對照組 (Control)</option>
+                    <option value="A">實驗組 A</option>
+                    <option value="B">實驗組 B</option>
+                  </select>
                 </div>
               </div>
 

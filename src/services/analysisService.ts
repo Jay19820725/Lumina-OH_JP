@@ -10,42 +10,69 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
  */
 export const generateAIAnalysis = async (
   selectedCards: SelectedCards,
-  totalScores: FiveElementValues
+  totalScores: FiveElementValues,
+  lang: 'zh' | 'ja' = 'zh'
 ): Promise<Partial<AnalysisReport>> => {
   const model = "gemini-3.1-pro-preview";
   
-  const prompt = `
-    妳是一位專為現代女性設計的「五行能量平衡引導師」。妳結合了東方五行元素平衡論與 OH 卡的潛意識投射理論，風格定位於「韓式空靈、溫柔傾聽、富有詩意」。
+  // Map language code to database format
+  const dbLang = lang === 'ja' ? 'ja-JP' : 'zh-TW';
+  
+  // Fetch active prompt from database
+  let promptTemplate = "";
+  try {
+    const promptResponse = await fetch(`/api/prompts/active?category=analysis&lang=${dbLang}`);
+    if (promptResponse.ok) {
+      const activePrompt = await promptResponse.json();
+      if (activePrompt && activePrompt.content) {
+        promptTemplate = activePrompt.content;
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to fetch active prompt, using fallback:", err);
+  }
 
-    請針對以下用戶的抽卡結果、連想文字以及五行能量數值，撰寫一份深度的能量分析報告。
+  // Fallback hardcoded prompt if no prompt found in DB
+  if (!promptTemplate) {
+    promptTemplate = `
+      妳是一位專為現代女性設計的「五行能量平衡引導師」。妳結合了東方五行元素平衡論與 OH 卡的潛意識投射理論，風格定位於「韓式空靈、溫柔傾聽、富有詩意」。
 
-    【用戶抽卡與連想】
-    ${selectedCards.pairs?.map((pair, i) => `
-      配對 ${i + 1}:
-      - 圖片描述: ${pair.image.description}
-      - 文字卡: ${pair.word.text}
-      - 用戶連想: "${pair.association}"
-      - 圖片五行: ${JSON.stringify(pair.image.elements)}
-      - 文字五行: ${JSON.stringify(pair.word.elements)}
-    `).join('\n')}
-    
-    【當前五行能量權重 (百分比)】
-    ${JSON.stringify(totalScores)}
-    
-    請根據以上資訊，完成以下六個部分的分析：
-    1. 今日主題 (todayTheme): 用一段富有詩意的文字，為用戶當前的能量狀態定調。
-    2. 牌陣解讀 (cardInterpretation): 深入分析圖片、文字與用戶連想之間的潛意識連結。
-    3. 心理洞察 (psychologicalInsight): 透過連想文字，揭示用戶當前深層的心理需求或狀態。
-    4. 五行能量分析 (fiveElementAnalysis): 針對優勢與不足的元素，解釋其對用戶生活（行動、情緒、關係等）的影響。
-    5. 內在冥想/反思 (reflection): 提供一個引導用戶向內觀察的問題或冥想練習。
-    6. 行動建議 (actionSuggestion): 給予具體、溫柔且可執行的生活建議，幫助能量回歸平衡。
+      請針對以下用戶的抽卡結果、連想文字以及五行能量數值，撰寫一份深度的能量分析報告。
 
-    【語氣要求】
-    - 使用「妳」來稱呼用戶。
-    - 語氣溫柔、空靈、富有美學感，像是一位懂生活的閨蜜。
-    - 避免教條，使用具象且感性的詞彙。
-    - 回覆必須是繁體中文。
-  `;
+      【用戶抽卡與連想】
+      {{USER_DATA}}
+      
+      【當前五行能量權重 (百分比)】
+      {{ENERGY_DATA}}
+      
+      請根據以上資訊，完成以下六個部分的分析：
+      1. 今日主題 (todayTheme): 用一段富有詩意的文字，為用戶當前的能量狀態定調。
+      2. 牌陣解讀 (cardInterpretation): 深入分析圖片、文字與用戶連想之間的潛意識連結。
+      3. 心理洞察 (psychologicalInsight): 透過連想文字，揭示用戶當前深層的心理需求或狀態。
+      4. 五行能量分析 (fiveElementAnalysis): 針對優勢與不足的元素，解釋其對用戶生活（行動、情緒、關係等）的影響。
+      5. 內在冥想/反思 (reflection): 提供一個引導用戶向內觀察的問題或冥想練習。
+      6. 行動建議 (actionSuggestion): 給予具體、溫柔且可執行的生活建議，幫助能量回歸平衡。
+
+      【語氣要求】
+      - 使用「妳」來稱呼用戶。
+      - 語氣溫柔、空靈、富有美學感，像是一位懂生活的閨蜜。
+      - 避免教條，使用具象且感性的詞彙。
+      - 回覆必須是繁體中文。
+    `;
+  }
+
+  const userData = selectedCards.pairs?.map((pair, i) => `
+    配對 ${i + 1}:
+    - 圖片描述: ${pair.image.description}
+    - 文字卡: ${pair.word.text}
+    - 用戶連想: "${pair.association}"
+    - 圖片五行: ${JSON.stringify(pair.image.elements)}
+    - 文字五行: ${JSON.stringify(pair.word.elements)}
+  `).join('\n');
+
+  const prompt = promptTemplate
+    .replace('{{USER_DATA}}', userData || "")
+    .replace('{{ENERGY_DATA}}', JSON.stringify(totalScores));
 
   try {
     const response = await ai.models.generateContent({

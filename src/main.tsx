@@ -5,6 +5,7 @@ import App from './App.tsx';
 import './index.css';
 import { AuthProvider } from './store/AuthContext';
 import { TestProvider } from './store/TestContext';
+import { LanguageProvider } from './i18n/LanguageContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
@@ -21,11 +22,13 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TestProvider>
-          <App />
-        </TestProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <TestProvider>
+            <App />
+          </TestProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   </StrictMode>,
 );

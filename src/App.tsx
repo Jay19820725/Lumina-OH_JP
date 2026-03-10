@@ -124,10 +124,8 @@ function AppContent() {
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <SoundscapeProvider>
-        <AppContent />
-      </SoundscapeProvider>
-    </LanguageProvider>
+    <SoundscapeProvider>
+      <AppContent />
+    </SoundscapeProvider>
   );
 }
