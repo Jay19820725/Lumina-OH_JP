@@ -119,6 +119,9 @@ export const translations = {
     report_analyzing: "正在分析能量流動...",
     report_guiding: "正在引導內在對話...",
     report_balancing: "正在尋找平衡的契機...",
+    report_share_settings: "分享設定",
+    report_share_thumbnail_desc: "挑選一張最能代表妳今日能量的卡片作為分享縮圖",
+    report_share_thumbnail_success: "縮圖已更新",
   },
   ja: {
     // General
@@ -233,13 +236,16 @@ export const translations = {
     report_five_element: "五行エネルギー分析",
     report_reflection: "内なるリフレクション",
     report_action: "行動提案",
-    report_new_test: "新しい診断を始める",
+    report_new_test: "新的診斷を始める",
     report_weaving: "メッセージを紡いでいます...",
     report_interpreting: "カードの共鳴を読み解いています...",
     report_listening: "潜在意識の声に耳を傾けています...",
     report_analyzing: "エネルギーの流動を分析しています...",
     report_guiding: "内なる対話をガイドしています...",
     report_balancing: "バランスを整えるきっかけを探しています...",
+    report_share_settings: "共有設定",
+    report_share_thumbnail_desc: "今日のエネルギーを最も象徴するカードを共有サムネイルとして選んでください",
+    report_share_thumbnail_success: "サムネイルが更新されました",
   }
 };
 

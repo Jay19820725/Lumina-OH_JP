@@ -39,19 +39,36 @@ const WeavingLoader: React.FC<{ label?: string }> = ({ label }) => {
 };
 
 export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => {
-  const { report, selectedCards, resetTest } = useTest();
+  const { report, selectedCards, resetTest, setReport } = useTest();
   const { t } = useLanguage();
   const reportRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedShareThumbnail, setSelectedShareThumbnail] = useState<string | null>(report?.shareThumbnail || null);
 
   if (!report) return null;
+
+  const handleSelectThumbnail = async (url: string) => {
+    setSelectedShareThumbnail(url);
+    if (report.id) {
+      try {
+        const response = await fetch(`/api/reports/${report.id}/share`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shareThumbnail: url })
+        });
+        if (response.ok) {
+          setReport({ ...report, shareThumbnail: url });
+        }
+      } catch (error) {
+        console.error('Failed to update share thumbnail:', error);
+      }
+    }
+  };
 
   const handleSave = async () => {
     if (!reportRef.current) return;
     setIsSaving(true);
     try {
-      // Create a temporary container to style for capture if needed, 
-      // but here we'll just capture the ref.
       const canvas = await html2canvas(reportRef.current, {
         backgroundColor: '#F5F5F0',
         scale: 2,
@@ -74,10 +91,11 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   };
 
   const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/report/${report.id}`;
     const shareData = {
-      title: `${t('report_title')} | JDear`,
+      title: report.todayTheme || `${t('report_title')} | JDear`,
       text: t('report_share_text'),
-      url: window.location.href,
+      url: shareUrl,
     };
 
     if (navigator.share && navigator.canShare(shareData)) {
@@ -90,7 +108,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
       }
     } else {
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(shareUrl);
         alert(t('report_share_success'));
       } catch (error) {
         console.error('Failed to copy:', error);
@@ -239,6 +257,38 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
               {t('report_weak_desc').replace('{element}', translateElement(report.weak_element))}
             </p>
           </GlassCard>
+
+          {/* Share Settings - Thumbnail Selection */}
+          {!isGuest && (
+            <GlassCard delay={0.7} className="p-8 md:p-10 border-wood/20 bg-wood/5">
+              <h3 className="text-[10px] uppercase tracking-[0.4em] text-wood mb-6">{t('report_share_settings')}</h3>
+              <p className="text-xs text-ink-muted mb-8 leading-relaxed">
+                {t('report_share_thumbnail_desc')}
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {[...selectedCards.images, ...selectedCards.words].map((card, i) => (
+                  <button
+                    key={card.id}
+                    onClick={() => handleSelectThumbnail(card.imageUrl)}
+                    className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedShareThumbnail === card.imageUrl 
+                        ? 'border-wood shadow-lg scale-105 z-10' 
+                        : 'border-transparent opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={card.imageUrl} alt="" className="w-full h-full object-cover" />
+                    {selectedShareThumbnail === card.imageUrl && (
+                      <div className="absolute inset-0 bg-wood/10 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-wood text-white flex items-center justify-center">
+                          <svg size={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </GlassCard>
+          )}
 
           <div className="flex gap-6">
             <Button 

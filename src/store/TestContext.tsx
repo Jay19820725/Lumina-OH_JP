@@ -134,7 +134,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Save to API
       try {
-        await fetch('/api/reports', {
+        const response = await fetch('/api/reports', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -157,6 +157,11 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
             actionSuggestion: finalReport.actionSuggestion
           })
         });
+        
+        if (response.ok) {
+          const savedReport = await response.json();
+          setReport(prev => prev ? { ...prev, id: savedReport.id } : null);
+        }
       } catch (error) {
         console.error("Error saving report to API:", error);
       }

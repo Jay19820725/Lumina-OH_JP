@@ -76,6 +76,7 @@ export interface AnalysisReport {
   fiveElementAnalysis?: string;
   reflection?: string;
   actionSuggestion?: string;
+  shareThumbnail?: string;
   
   // Legacy fields (keep for backward compatibility if needed, but we'll use new ones)
   psychologicalReflection?: string;

@@ -154,8 +154,12 @@ async function startServer() {
         psychological_insight TEXT,
         five_element_analysis TEXT,
         reflection TEXT,
-        action_suggestion TEXT
+        action_suggestion TEXT,
+        share_thumbnail TEXT
       );
+
+      -- Ensure share_thumbnail exists
+      ALTER TABLE energy_reports ADD COLUMN IF NOT EXISTS share_thumbnail TEXT;
 
       -- Site Settings table
       CREATE TABLE IF NOT EXISTS site_settings (
@@ -244,6 +248,87 @@ async function startServer() {
 
   app.use(cors());
   app.use(express.json());
+
+  // Dynamic Meta Injection Middleware for SEO
+  app.get(["/", "/report/:id"], async (req, res, next) => {
+    const userAgent = req.headers["user-agent"] || "";
+    const isCrawler = /facebookexternalhit|line-poker|Twitterbot|googlebot|bingbot|linkedinbot/i.test(userAgent);
+
+    if (!isCrawler) {
+      return next();
+    }
+
+    try {
+      let title = "JDear | 能量卡片與心靈導引";
+      let description = "透過五行能量卡片，探索內在自我，獲得每日心靈指引與能量平衡。";
+      let ogImage = "https://picsum.photos/seed/lumina-og/1200/630";
+      const url = `${process.env.APP_URL || 'https://' + req.get('host')}${req.originalUrl}`;
+
+      // Fetch global SEO settings
+      const seoResult = await pool.query("SELECT value FROM site_settings WHERE key = 'seo'");
+      if (seoResult.rows.length > 0) {
+        const seo = seoResult.rows[0].value;
+        title = seo.title || title;
+        description = seo.description || description;
+        ogImage = seo.og_image || ogImage;
+      }
+
+      // If it's a report page, fetch report-specific data
+      if (req.params.id) {
+        const reportResult = await pool.query("SELECT * FROM energy_reports WHERE id = $1", [req.params.id]);
+        if (reportResult.rows.length > 0) {
+          const report = reportResult.rows[0];
+          title = report.today_theme || title;
+          // Use selected thumbnail if available, otherwise use dominant element image or default
+          ogImage = report.share_thumbnail || ogImage;
+          
+          // Optional: Add more descriptive text for reports
+          description = `這是我在 JDear 的能量剖析結果。主導元素：${report.dominant_element}。`;
+        }
+      }
+
+      const html = `
+        <!DOCTYPE html>
+        <html lang="zh-TW">
+        <head>
+          <meta charset="UTF-8">
+          <title>${title}</title>
+          <meta name="description" content="${description}">
+          
+          <!-- Open Graph / Facebook / LINE -->
+          <meta property="og:type" content="website">
+          <meta property="og:url" content="${url}">
+          <meta property="og:title" content="${title}">
+          <meta property="og:description" content="${description}">
+          <meta property="og:image" content="${ogImage}">
+          <meta property="og:image:width" content="1200">
+          <meta property="og:image:height" content="630">
+
+          <!-- Twitter -->
+          <meta property="twitter:card" content="summary_large_image">
+          <meta property="twitter:url" content="${url}">
+          <meta property="twitter:title" content="${title}">
+          <meta property="twitter:description" content="${description}">
+          <meta property="twitter:image" content="${ogImage}">
+
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <script type="text/javascript">
+            window.location.href = "${req.originalUrl}";
+          </script>
+        </head>
+        <body>
+          <h1>${title}</h1>
+          <p>${description}</p>
+          <img src="${ogImage}" alt="Preview Image">
+        </body>
+        </html>
+      `;
+      res.send(html);
+    } catch (err) {
+      console.error("SEO Injection Error:", err);
+      next();
+    }
+  });
 
   // API Routes
   app.get("/api/health", (req, res) => {
@@ -493,7 +578,8 @@ async function startServer() {
         psychologicalInsight: row.psychological_insight,
         fiveElementAnalysis: row.five_element_analysis,
         reflection: row.reflection,
-        actionSuggestion: row.action_suggestion
+        actionSuggestion: row.action_suggestion,
+        shareThumbnail: row.share_thumbnail
       }));
       
       res.json(mappedReports);
@@ -520,7 +606,8 @@ async function startServer() {
       psychologicalInsight,
       fiveElementAnalysis,
       reflection,
-      actionSuggestion
+      actionSuggestion,
+      shareThumbnail
     } = req.body;
     try {
       const result = await pool.query(
@@ -528,8 +615,9 @@ async function startServer() {
           user_id, selected_image_ids, selected_word_ids, total_scores, 
           dominant_element, weak_element, balance_score, interpretation, 
           pair_interpretations, pairs, today_theme, card_interpretation, 
-          psychological_insight, five_element_analysis, reflection, action_suggestion
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
+          psychological_insight, five_element_analysis, reflection, action_suggestion,
+          share_thumbnail
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
         [
           userId, 
           JSON.stringify(selectedImageIds), 
@@ -546,7 +634,8 @@ async function startServer() {
           psychologicalInsight,
           fiveElementAnalysis,
           reflection,
-          actionSuggestion
+          actionSuggestion,
+          shareThumbnail
         ]
       );
       
@@ -570,10 +659,26 @@ async function startServer() {
         psychologicalInsight: row.psychological_insight,
         fiveElementAnalysis: row.five_element_analysis,
         reflection: row.reflection,
-        actionSuggestion: row.action_suggestion
+        actionSuggestion: row.action_suggestion,
+        shareThumbnail: row.share_thumbnail
       });
     } catch (err) {
       console.error("Error creating energy report:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/reports/:id/share", async (req, res) => {
+    const { id } = req.params;
+    const { shareThumbnail } = req.body;
+    try {
+      await pool.query(
+        "UPDATE energy_reports SET share_thumbnail = $1 WHERE id = $2",
+        [shareThumbnail, id]
+      );
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error updating share thumbnail:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });
