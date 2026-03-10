@@ -5,6 +5,7 @@ import { ConnectionStatus } from './components/ui/ConnectionStatus';
 import { SEOManager } from './components/SEOManager';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAuth } from './hooks/useAuth';
+import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
@@ -30,10 +31,11 @@ const SanctuaryLoader = () => (
   </div>
 );
 
-export default function App() {
+function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
 
   const { profile } = useAuth();
+  const { t } = useLanguage();
 
   // Simple URL-based routing
   useEffect(() => {
@@ -114,5 +116,13 @@ export default function App() {
       {/* Subtle noise texture for high-end feel */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.015] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] -z-20" />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }

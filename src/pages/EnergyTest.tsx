@@ -7,6 +7,7 @@ import { ShuffleAnimation } from '../components/ShuffleAnimation';
 import { JDearCard } from '../components/JDearCard';
 import { CardZoomModal } from '../components/CardZoomModal';
 import { ImageCard, WordCard, CardPair } from '../core/types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 import { preloadDecks } from '../services/cardEngine';
  
@@ -44,6 +45,7 @@ interface PairingStageProps {
 }
 
 const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, onZoom }) => {
+  const { t } = useLanguage();
   const [pairs, setPairs] = useState<{ imageId: string; wordId: string }[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
@@ -93,7 +95,7 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
           <motion.div variants={itemVariants} className="space-y-8">
             <div className="flex items-center justify-center gap-4">
               <div className="h-px w-8 bg-ink/5" />
-              <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">Images</h3>
+              <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('test_pairing_images')}</h3>
               <div className="h-px w-8 bg-ink/5" />
             </div>
             <div className="grid grid-cols-3 gap-4 md:gap-6">
@@ -146,7 +148,7 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
           <motion.div variants={itemVariants} className="space-y-8">
             <div className="flex items-center justify-center gap-4">
               <div className="h-px w-8 bg-ink/5" />
-              <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">Words</h3>
+              <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('test_pairing_words')}</h3>
               <div className="h-px w-8 bg-ink/5" />
             </div>
             <div className="grid grid-cols-3 gap-4 md:gap-6">
@@ -200,7 +202,7 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
         <motion.div variants={itemVariants} className="w-full space-y-12">
           <div className="flex items-center justify-center gap-6">
             <div className="h-px flex-1 bg-ink/5" />
-            <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">結ばれた共鳴</span>
+            <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('test_pairing_connected')}</span>
             <div className="h-px flex-1 bg-ink/5" />
           </div>
 
@@ -235,7 +237,7 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
               {pairs.length === 0 && (
                 <div className="w-full flex items-center justify-center py-12">
                   <span className="text-xs tracking-[0.4em] text-ink-muted opacity-30 italic">
-                    まだ結びつきはありません
+                    {t('searching_resonance')}
                   </span>
                 </div>
               )}
@@ -253,7 +255,7 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
             className="fixed bottom-12 z-50"
           >
             <Button onClick={handleFinish} className="h-20 px-16 gap-4 text-lg shadow-2xl shadow-emerald-900/20 bg-emerald-500 hover:bg-emerald-600">
-              結びつきを確定する <ArrowRight size={20} />
+              {t('test_pairing_confirm')} <ArrowRight size={20} />
             </Button>
           </motion.div>
         )}
@@ -267,6 +269,7 @@ const AssociationStage: React.FC<{
   onComplete: (associations: { pair_id: string; text: string }[]) => void;
   onZoom: (card: ImageCard | WordCard) => void;
 }> = ({ pairs, onComplete, onZoom }) => {
+  const { t } = useLanguage();
   const [associations, setAssociations] = useState<{ [key: string]: string }>(
     pairs.reduce((acc, _, i) => ({ ...acc, [i]: '' }), {})
   );
@@ -332,7 +335,7 @@ const AssociationStage: React.FC<{
               <textarea
                 value={associations[i]}
                 onChange={(e) => handleTextChange(i, e.target.value)}
-                placeholder="このペアから何を感じますか？"
+                placeholder={t('test_associating_placeholder')}
                 className="w-full h-32 md:h-40 bg-white/50 border border-white/30 rounded-2xl p-4 text-base focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all resize-none"
               />
             </div>
@@ -349,7 +352,7 @@ const AssociationStage: React.FC<{
           disabled={!isComplete}
           className="h-16 px-12 gap-3"
         >
-          診斷結果を見る <ArrowRight size={18} />
+          {t('test_associating_view_result')} <ArrowRight size={18} />
         </Button>
       </motion.div>
     </motion.div>
@@ -358,6 +361,7 @@ const AssociationStage: React.FC<{
 
 export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const { selectedCards, startDraw, setPairs, setAssociations, generateReport, isDrawing } = useTest();
+  const { t } = useLanguage();
   const [drawStage, setDrawStage] = useState<DrawStage>('idle');
   const [flippedImages, setFlippedImages] = useState<number[]>([]);
   const [flippedWords, setFlippedWords] = useState<number[]>([]);
@@ -431,27 +435,27 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
         >
           <motion.div variants={itemVariants} className="flex items-center gap-4">
             <span className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">
-              {drawStage === 'revealed' ? 'Step 完' : 
-               drawStage === 'associating' ? 'Step 四' :
-               drawStage === 'pairing' ? 'Step 三' :
-               drawStage === 'drawing_words' ? 'Step 二' : 'Step 一'}
+              {drawStage === 'revealed' ? t('test_step_final') : 
+               drawStage === 'associating' ? t('test_step_4') :
+               drawStage === 'pairing' ? t('test_step_3') :
+               drawStage === 'drawing_words' ? t('test_step_2') : t('test_step_1')}
             </span>
             <div className="h-px w-8 bg-ink/10" />
           </motion.div>
           <motion.h1 variants={itemVariants} className="text-4xl md:text-6xl lg:text-7xl font-serif tracking-[0.05em] leading-[1.1] max-w-2xl">
-            {drawStage === 'drawing_images' ? '視覚の共鳴' : 
-             drawStage === 'drawing_words' ? '言葉の共鳴' : 
-             drawStage === 'pairing' ? '共鳴の結びつき' :
-             drawStage === 'associating' ? '連想の言葉' :
-             drawStage === 'revealed' ? '啓示' : '聖なるドロー'}
+            {drawStage === 'drawing_images' ? t('test_title_images') : 
+             drawStage === 'drawing_words' ? t('test_title_words') : 
+             drawStage === 'pairing' ? t('test_title_pairing') :
+             drawStage === 'associating' ? t('test_title_associating') :
+             drawStage === 'revealed' ? t('test_title_revealed') : t('test_title_ritual')}
           </motion.h1>
           <motion.p variants={itemVariants} className="text-sm md:text-base text-ink-muted max-w-lg font-light leading-[1.8] tracking-wide opacity-80">
-            {drawStage === 'drawing_images' ? '直感に従って、心に響くカードを選んでください。' : 
-             drawStage === 'drawing_words' ? '次に、今のあなたの状態と響き合う言葉を見つけてください。' : 
-             drawStage === 'pairing' ? '画像と言葉を一つずつ選んで、それらの間に流れる能量を繋いでください。' :
-             drawStage === 'associating' ? 'それぞれのペアから感じるメッセージを言葉にしてください。' :
-             drawStage === 'revealed' ? 'あなたのエネルギーの軌跡が記録されました。' : 
-             '呼吸に意識を向け、共鳴を感じたら儀式を始めてください。'}
+            {drawStage === 'drawing_images' ? t('test_desc_images') : 
+             drawStage === 'drawing_words' ? t('test_desc_words') : 
+             drawStage === 'pairing' ? t('test_desc_pairing') :
+             drawStage === 'associating' ? t('test_desc_associating') :
+             drawStage === 'revealed' ? t('test_desc_revealed') : 
+             t('test_desc_ritual')}
           </motion.p>
         </motion.div>
         
@@ -462,7 +466,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
           className="flex items-center gap-10 md:gap-16"
         >
           <div className="text-center md:text-right">
-            <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block mb-2 md:mb-4">選択済み</span>
+            <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block mb-2 md:mb-4">{t('test_selected')}</span>
             <span className="text-3xl md:text-4xl font-serif font-extralight tracking-tighter">
               {flippedImages.length + flippedWords.length} / 6
             </span>
@@ -472,7 +476,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
             disabled={drawStage !== 'revealed'}
             className="h-16 md:h-20 px-12 md:px-16 text-base md:text-lg shadow-2xl shadow-ink/5 active:scale-95 transition-transform"
           >
-            レポートを作成
+            {t('test_create_report')}
           </Button>
         </motion.div>
       </div>
@@ -497,7 +501,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                 >
                   <div className="flex flex-col items-center gap-6">
                     <div className="w-16 h-16 border-2 border-ink/5 border-t-ink/40 rounded-full animate-spin" />
-                    <span className="text-[11px] uppercase tracking-[0.6em] text-ink/40 font-light">エネルギーを同調中...</span>
+                    <span className="text-[11px] uppercase tracking-[0.6em] text-ink/40 font-light">{t('report_weaving')}</span>
                   </div>
                 </motion.div>
               )}
@@ -531,7 +535,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
               {/* Interaction Layer */}
               <div className="absolute inset-0 z-10 flex items-center justify-center">
                 <span className="text-[11px] uppercase tracking-[0.8em] opacity-40 group-hover:opacity-100 transition-opacity duration-1000 font-light">
-                  儀式を始める
+                  {t('test_start_ritual')}
                 </span>
               </div>
             </motion.div>
@@ -567,7 +571,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                       onClick={handleContinueToWords} 
                       className="group bg-white/20 backdrop-blur-3xl border-white/30 text-ink hover:bg-white/40 h-16 md:h-24 px-8 md:px-16 text-lg md:text-xl rounded-2xl md:rounded-3xl shadow-2xl w-full md:w-auto"
                     >
-                      言葉の選択へ
+                      {t('test_continue_words')}
                       <ArrowRight className="ml-2 md:ml-4 group-hover:translate-x-1 transition-transform" size={20} md:size={24} />
                     </Button>
                   </motion.div>
@@ -606,7 +610,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                       onClick={handleContinueToPairing} 
                       className="group bg-white/20 backdrop-blur-3xl border-white/30 text-ink hover:bg-white/40 h-16 md:h-24 px-8 md:px-16 text-lg md:text-xl rounded-2xl md:rounded-3xl shadow-2xl w-full md:w-auto"
                     >
-                      ペアリングへ
+                      {t('test_continue_pairing')}
                       <ArrowRight className="ml-2 md:ml-4 group-hover:translate-x-1 transition-transform" size={20} md:size={24} />
                     </Button>
                   </motion.div>
@@ -651,8 +655,8 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
               className="w-full max-w-5xl space-y-8 md:space-y-12 px-4"
             >
               <motion.div variants={itemVariants} className="text-center space-y-2 mb-8 md:mb-12">
-                <h2 className="text-xl md:text-2xl font-serif">診断の準備が整いました</h2>
-                <p className="text-xs md:text-sm text-ink-muted">あなたが紡いだ物語が、エネルギーの地図となります。</p>
+                <h2 className="text-xl md:text-2xl font-serif">{t('test_revealed_ready')}</h2>
+                <p className="text-xs md:text-sm text-ink-muted">{t('test_revealed_desc')}</p>
               </motion.div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -701,7 +705,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                   }}
                   className="text-[10px] uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity"
                 >
-                  もう一度引く
+                  {t('test_draw_again')}
                 </button>
               </div>
             </motion.div>
