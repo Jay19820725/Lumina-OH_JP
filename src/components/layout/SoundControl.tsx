@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Volume2, VolumeX, Music, Leaf, Mountain, ChevronUp } from 'lucide-react';
+import { Volume2, VolumeX, Music, Leaf, Mountain, Flame, Sparkles, Waves } from 'lucide-react';
 import { useSoundscape, SOUNDSCAPES } from '../../store/SoundscapeContext';
+
+const ElementIcon = ({ element, size = 14 }: { element: string, size?: number }) => {
+  switch (element) {
+    case 'wood': return <Leaf size={size} />;
+    case 'fire': return <Flame size={size} />;
+    case 'earth': return <Mountain size={size} />;
+    case 'metal': return <Sparkles size={size} />;
+    case 'water': return <Waves size={size} />;
+    default: return <Music size={size} />;
+  }
+};
 
 export const SoundControl: React.FC = () => {
   const { isPlaying, currentSound, togglePlay, setSound } = useSoundscape();
@@ -42,7 +53,7 @@ export const SoundControl: React.FC = () => {
                       : 'hover:bg-ink/5 text-ink/60 hover:text-ink'
                   }`}
                 >
-                  {sound.element === 'wood' ? <Leaf size={14} /> : <Mountain size={14} />}
+                  <ElementIcon element={sound.element} />
                   <span className="text-xs tracking-wider font-light">{sound.name}</span>
                   {currentSound?.id === sound.id && isPlaying && (
                     <motion.div 

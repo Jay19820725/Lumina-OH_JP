@@ -15,10 +15,28 @@ export const SOUNDSCAPES: Soundscape[] = [
     url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20Forest%20Spirit%20Tea%20Time%EF%BC%88%E6%9C%A8%EF%BC%89%20(1).mp3?alt=media&token=2fa73b22-abdb-481b-b9ac-82f7b075fce1'
   },
   {
+    id: 'fire-tea',
+    name: 'Little Ember',
+    element: 'fire',
+    url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20Ember%20Tea%20Time%EF%BC%88%E7%81%AB%EF%BC%89%20(1).mp3?alt=media&token=6512316f-3129-4d8a-bde0-53014d00d950'
+  },
+  {
     id: 'earth-tea',
     name: 'Little Mountain Garden',
     element: 'earth',
     url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20Mountain%20Garden%20Tea%20Time%EF%BC%88%E5%9C%9F%EF%BC%89%20(1).mp3?alt=media&token=dc38d876-3867-4694-87b3-a499c62bc97f'
+  },
+  {
+    id: 'metal-tea',
+    name: 'Little Silver Bell',
+    element: 'metal',
+    url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20Silver%20Bell%20Tea%20Time%EF%BC%88%E9%87%91%EF%BC%89%20(1).mp3?alt=media&token=4666bbd6-021b-46c5-a8a9-7d0f3077e756'
+  },
+  {
+    id: 'water-tea',
+    name: 'Little River Breeze',
+    element: 'water',
+    url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20River%20Breeze%20Tea%20Time%EF%BC%88%E6%B0%B4%EF%BC%89%20(1).mp3?alt=media&token=928fe51c-0b8d-4c91-ad9b-be5b46767f05'
   }
 ];
 
