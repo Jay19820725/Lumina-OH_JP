@@ -176,6 +176,31 @@ async function startServer() {
         "index_enabled": true
       }')
       ON CONFLICT (key) DO NOTHING;
+
+      INSERT INTO site_settings (key, value)
+      VALUES ('fonts', '{
+        "zh": {
+          "display": {
+            "url": "https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&display=swap",
+            "family": "\"Noto Serif TC\", serif"
+          },
+          "body": {
+            "url": "https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&display=swap",
+            "family": "\"Noto Sans TC\", sans-serif"
+          }
+        },
+        "ja": {
+          "display": {
+            "url": "https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&display=swap",
+            "family": "\"Shippori Mincho\", serif"
+          },
+          "body": {
+            "url": "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap",
+            "family": "\"Noto Sans JP\", sans-serif"
+          }
+        }
+      }')
+      ON CONFLICT (key) DO NOTHING;
     `);
     client.release();
     console.log("Database tables initialized");

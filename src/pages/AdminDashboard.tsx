@@ -86,6 +86,7 @@ export const AdminDashboard: React.FC = () => {
   const { data: prompts, isLoading: promptsLoading } = useAdminPrompts();
   const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics();
   const { data: seoSettings, isLoading: seoLoading } = useAdminSettings('seo');
+  const { data: fontSettings, isLoading: fontsLoading } = useAdminSettings('fonts');
 
   // Mutations
   const saveCardMutation = useSaveCardMutation();
@@ -120,7 +121,7 @@ export const AdminDashboard: React.FC = () => {
     (activeModule === 'subscriptions' && subscriptionsLoading) ||
     (activeModule === 'prompts' && promptsLoading) ||
     (activeModule === 'analytics' && analyticsLoading) ||
-    (activeModule === 'settings' && seoLoading);
+    (activeModule === 'settings' && (seoLoading || fontsLoading));
 
   const handleSaveCard = async () => {
     if (!editingCard) return;
@@ -961,20 +962,26 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const renderSettings = () => {
-    if (!seoSettings) return null;
+    if (!seoSettings || !fontSettings) return null;
 
     return (
       <div className="space-y-8">
         <div className="flex justify-between items-center">
-          <h3 className="text-xs uppercase tracking-[0.3em] font-medium">SEO 與全站設定</h3>
-          <Button 
-            onClick={() => handleSaveSettings('seo', seoSettings)}
-            disabled={saveSettingsMutation.isPending}
-            className="gap-2 h-10 px-6"
-          >
-            {saveSettingsMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            儲存所有設定
-          </Button>
+          <h3 className="text-xs uppercase tracking-[0.3em] font-medium">系統全站設定</h3>
+          <div className="flex gap-4">
+            <Button 
+              variant="outline"
+              onClick={() => {
+                handleSaveSettings('seo', seoSettings);
+                handleSaveSettings('fonts', fontSettings);
+              }}
+              disabled={saveSettingsMutation.isPending}
+              className="gap-2 h-10 px-6"
+            >
+              {saveSettingsMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              儲存所有設定
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1027,6 +1034,84 @@ export const AdminDashboard: React.FC = () => {
                   <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${seoSettings.index_enabled ? 'left-6' : 'left-1'}`} />
                 </button>
               </div>
+            </div>
+          </GlassCard>
+
+          {/* Font Settings */}
+          <GlassCard className="p-8 space-y-6">
+            <div className="flex items-center gap-3 text-indigo-500">
+              <TypeIcon size={18} />
+              <h3 className="text-xs uppercase tracking-widest">多語系字型管理</h3>
+            </div>
+            
+            <div className="space-y-8">
+              {['zh', 'ja'].map((lang) => (
+                <div key={lang} className="space-y-4 p-4 bg-ink/[0.02] rounded-2xl border border-ink/5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest bg-ink/5 px-2 py-1 rounded">
+                      {lang === 'zh' ? '繁體中文 (zh)' : '日本語 (ja)'}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[9px] uppercase tracking-widest text-ink-muted">標題字型 (Display Font)</label>
+                      <div className="grid grid-cols-1 gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="字型網址 (Google Fonts URL)"
+                          value={fontSettings[lang].display.url}
+                          onChange={(e) => {
+                            const newFonts = { ...fontSettings };
+                            newFonts[lang].display.url = e.target.value;
+                            queryClient.setQueryData(['admin', 'settings', 'fonts'], newFonts);
+                          }}
+                          className="w-full px-3 py-2 bg-white border border-ink/5 rounded-lg text-xs focus:outline-none focus:border-wood/30"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="CSS Family Name (e.g. 'Noto Serif TC', serif)"
+                          value={fontSettings[lang].display.family}
+                          onChange={(e) => {
+                            const newFonts = { ...fontSettings };
+                            newFonts[lang].display.family = e.target.value;
+                            queryClient.setQueryData(['admin', 'settings', 'fonts'], newFonts);
+                          }}
+                          className="w-full px-3 py-2 bg-white border border-ink/5 rounded-lg text-xs focus:outline-none focus:border-wood/30"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[9px] uppercase tracking-widest text-ink-muted">內文字型 (Body Font)</label>
+                      <div className="grid grid-cols-1 gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="字型網址 (Google Fonts URL)"
+                          value={fontSettings[lang].body.url}
+                          onChange={(e) => {
+                            const newFonts = { ...fontSettings };
+                            newFonts[lang].body.url = e.target.value;
+                            queryClient.setQueryData(['admin', 'settings', 'fonts'], newFonts);
+                          }}
+                          className="w-full px-3 py-2 bg-white border border-ink/5 rounded-lg text-xs focus:outline-none focus:border-wood/30"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="CSS Family Name (e.g. 'Noto Sans TC', sans-serif)"
+                          value={fontSettings[lang].body.family}
+                          onChange={(e) => {
+                            const newFonts = { ...fontSettings };
+                            newFonts[lang].body.family = e.target.value;
+                            queryClient.setQueryData(['admin', 'settings', 'fonts'], newFonts);
+                          }}
+                          className="w-full px-3 py-2 bg-white border border-ink/5 rounded-lg text-xs focus:outline-none focus:border-wood/30"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </GlassCard>
 
