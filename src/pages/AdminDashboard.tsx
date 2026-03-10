@@ -448,91 +448,147 @@ export const AdminDashboard: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setEditingCard(null)}
-              className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-ink/40 backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-4xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20"
             >
-              <div className="p-6 border-b border-ink/5 flex justify-between items-center bg-ink/[0.02]">
-                <h3 className="text-xs uppercase tracking-[0.3em] font-medium">
-                  {editingCard.data.id ? '編輯' : '新增'} {editingCard.type === 'image' ? '圖像' : '文字'}卡
-                </h3>
-                <button onClick={() => setEditingCard(null)} className="p-2 hover:bg-ink/5 rounded-full transition-colors">
-                  <X size={18} />
+              <div className="p-8 border-b border-ink/5 flex justify-between items-center bg-ink/[0.02]">
+                <div className="flex items-center gap-4">
+                  <div className={`p-2.5 rounded-2xl ${editingCard.type === 'image' ? 'bg-wood/10 text-wood' : 'bg-fire/10 text-fire'}`}>
+                    {editingCard.type === 'image' ? <ImageIcon size={20} /> : <TypeIcon size={20} />}
+                  </div>
+                  <div>
+                    <h3 className="text-xs uppercase tracking-[0.3em] font-semibold text-ink">
+                      {editingCard.data.id ? '編輯' : '新增'} {editingCard.type === 'image' ? '圖像' : '文字'}卡
+                    </h3>
+                    <p className="text-[9px] text-ink-muted uppercase tracking-widest mt-1">
+                      {editingCard.data.id || 'New Card'}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setEditingCard(null)} 
+                  className="p-3 hover:bg-ink/5 rounded-full transition-all hover:rotate-90 duration-300"
+                >
+                  <X size={20} />
                 </button>
               </div>
 
-              <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    {editingCard.type === 'word' && (
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-ink-muted">關鍵字文本</label>
-                        <input 
-                          type="text" 
-                          value={editingCard.data.text}
-                          onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, text: e.target.value } })}
-                          className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
-                          placeholder="輸入關鍵字..."
-                        />
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <label className="text-[10px] uppercase tracking-widest text-ink-muted">圖片 URL</label>
-                      <input 
-                        type="text" 
-                        value={editingCard.data.imageUrl}
-                        onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, imageUrl: e.target.value } })}
-                        className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
-                        placeholder="https://..."
-                      />
-                    </div>
-                    <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-ink/5 border border-ink/5">
+              <div className="p-10 max-h-[75vh] overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+                  {/* Left Column: Visual Preview */}
+                  <div className="md:col-span-5 space-y-4">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">卡片預覽</label>
+                    <div className="aspect-[3/4] rounded-[2rem] overflow-hidden bg-ink/5 border border-ink/5 shadow-inner relative group">
                       {editingCard.data.imageUrl ? (
-                        <img src={editingCard.data.imageUrl} className="w-full h-full object-cover" />
+                        <>
+                          <img src={editingCard.data.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </>
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-ink/10">
-                          <ImageIcon size={48} />
+                        <div className="w-full h-full flex flex-col items-center justify-center text-ink/10 gap-4">
+                          <ImageIcon size={64} strokeWidth={1} />
+                          <span className="text-[10px] uppercase tracking-widest">等待輸入網址...</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block mb-4">五行數值 (%)</label>
-                    {Object.values(FiveElement).map((element) => (
-                      <div key={element} className="space-y-2">
-                        <div className="flex justify-between text-[10px] uppercase tracking-widest">
-                          <span className="text-ink-muted">{element}</span>
-                          <span className="font-mono">{editingCard.data.elements[element]}%</span>
+                  {/* Right Column: Data Entry */}
+                  <div className="md:col-span-7 space-y-8">
+                    <div className="space-y-6">
+                      {editingCard.type === 'word' && (
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字文本</label>
+                          <input 
+                            type="text" 
+                            value={editingCard.data.text}
+                            onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, text: e.target.value } })}
+                            className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                            placeholder="輸入關鍵字..."
+                          />
                         </div>
+                      )}
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">圖片 URL</label>
                         <input 
-                          type="range" 
-                          min="0" 
-                          max="100" 
-                          value={editingCard.data.elements[element]}
-                          onChange={(e) => setEditingCard({ 
-                            ...editingCard, 
-                            data: { 
-                              ...editingCard.data, 
-                              elements: { ...editingCard.data.elements, [element]: parseInt(e.target.value) } 
-                            } 
-                          })}
-                          className="w-full h-1.5 bg-ink/5 rounded-full appearance-none cursor-pointer accent-ink"
+                          type="text" 
+                          value={editingCard.data.imageUrl}
+                          onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, imageUrl: e.target.value } })}
+                          className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                          placeholder="https://..."
                         />
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="space-y-6 pt-4 border-t border-ink/5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">五行能量數值 (%)</label>
+                        <div className="flex gap-2">
+                          {Object.values(FiveElement).map(el => (
+                            <div key={el} className={`w-2 h-2 rounded-full ${
+                              el === 'wood' ? 'bg-wood' : 
+                              el === 'fire' ? 'bg-fire' : 
+                              el === 'earth' ? 'bg-earth' : 
+                              el === 'metal' ? 'bg-metal' : 'bg-water'
+                            }`} />
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-5">
+                        {Object.values(FiveElement).map((element) => (
+                          <div key={element} className="space-y-3">
+                            <div className="flex justify-between text-[10px] uppercase tracking-widest">
+                              <span className="text-ink font-medium">{element}</span>
+                              <span className="font-mono text-ink-muted">{editingCard.data.elements[element]}%</span>
+                            </div>
+                            <div className="relative flex items-center">
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="100" 
+                                value={editingCard.data.elements[element]}
+                                onChange={(e) => setEditingCard({ 
+                                  ...editingCard, 
+                                  data: { 
+                                    ...editingCard.data, 
+                                    elements: { ...editingCard.data.elements, [element]: parseInt(e.target.value) } 
+                                  } 
+                                })}
+                                className="w-full h-1.5 bg-ink/5 rounded-full appearance-none cursor-pointer accent-ink"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 bg-ink/[0.02] border-t border-ink/5 flex justify-end gap-4">
-                <Button variant="outline" onClick={() => setEditingCard(null)}>取消</Button>
-                <Button onClick={handleSaveCard} disabled={saveCardMutation.isPending} className="gap-2 px-8">
-                  {saveCardMutation.isPending ? '儲存中...' : <><Save size={16} /> 儲存卡片</>}
+              <div className="p-8 bg-ink/[0.02] border-t border-ink/5 flex justify-end gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setEditingCard(null)}
+                  className="px-8 h-12 rounded-2xl text-[10px] uppercase tracking-widest"
+                >
+                  取消
+                </Button>
+                <Button 
+                  onClick={handleSaveCard} 
+                  disabled={saveCardMutation.isPending} 
+                  className="gap-3 px-10 h-12 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-wood/10"
+                >
+                  {saveCardMutation.isPending ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <><Save size={16} /> 儲存卡片變更</>
+                  )}
                 </Button>
               </div>
             </motion.div>
