@@ -1,5 +1,5 @@
 /**
- * Core type definitions for Lumina OH
+ * Core type definitions for JDear
  */
 
 export enum FiveElement {

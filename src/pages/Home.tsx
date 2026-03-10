@@ -83,7 +83,7 @@ export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
               transition={{ delay: 0.5, duration: 2 }}
               className="text-[10px] md:text-xs tracking-[0.6em] uppercase text-ink-muted block"
             >
-              Lumina OH Digital Sanctuary
+              JDear — Dear Your True Self
             </motion.span>
             
             <InkBleedText className="text-4xl md:text-7xl font-serif font-extralight text-ink leading-tight">

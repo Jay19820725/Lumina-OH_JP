@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { ImageCard, WordCard, SelectedCards, AnalysisReport, CardPair } from '../core/types';
 import { EnergyEngine } from '../core/engine';
 import { auth } from '../lib/firebase';
-import { performLuminaDraw } from '../services/cardEngine';
+import { performJDearDraw } from '../services/cardEngine';
 import { generateAIAnalysis } from '../services/analysisService';
 import { drawSession, updateSession } from '../services/sessionService';
 
@@ -50,12 +50,12 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         } catch (err) {
           console.warn("API draw session failed or timed out, falling back to local draw:", err);
-          const draw = await performLuminaDraw();
+          const draw = await performJDearDraw();
           setSelectedCards(draw);
         }
       } else {
         // Fallback for guest users
-        const draw = await performLuminaDraw();
+        const draw = await performJDearDraw();
         setSelectedCards(draw);
       }
       setCurrentStep(1);

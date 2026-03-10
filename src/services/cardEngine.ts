@@ -2,7 +2,7 @@ import { ImageCard, WordCard, SelectedCards } from '../core/types';
 import { WORDS, IMAGES } from '../core/cards';
 
 /**
- * Lumina OH Card Draw Engine
+ * JDear Card Draw Engine
  * Role: Senior Frontend Engineer
  * 
  * Implements secure random selection from PostgreSQL collections.
@@ -157,7 +157,7 @@ function preloadImages(urls: string[]): Promise<void[]> {
 /**
  * 3. Random Selection Logic (Main Entry Point)
  */
-export async function performLuminaDraw(): Promise<SelectedCards> {
+export async function performJDearDraw(): Promise<SelectedCards> {
   const [images, words] = await Promise.all([
     drawCardImage(3),
     drawCardWord(3)

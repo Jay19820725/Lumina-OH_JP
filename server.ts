@@ -159,10 +159,10 @@ async function startServer() {
       -- Initialize default SEO settings if not exists
       INSERT INTO site_settings (key, value)
       VALUES ('seo', '{
-        "title": "Lumina | 能量卡片與心靈導引",
+        "title": "JDear | 能量卡片與心靈導引",
         "description": "透過五行能量卡片，探索內在自我，獲得每日心靈指引與能量平衡。",
         "keywords": "能量卡片, 五行, 心靈導引, 冥想, 自我探索",
-        "og_image": "https://picsum.photos/seed/lumina-og/1200/630",
+        "og_image": "https://picsum.photos/seed/jdear-og/1200/630",
         "google_analytics_id": "",
         "search_console_id": "",
         "index_enabled": true
