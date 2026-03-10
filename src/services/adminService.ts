@@ -1,4 +1,4 @@
-import { UserProfile, Session, ImageCard, WordCard, AIPrompt } from '../core/types';
+import { UserProfile, Session, ImageCard, WordCard, AIPrompt, Translation } from '../core/types';
 
 export const adminService = {
   /**
@@ -175,5 +175,26 @@ export const adminService = {
       throw new Error(`Failed to save settings for ${key}`);
     }
     return await response.json();
+  },
+
+  /**
+   * Translation Management
+   */
+  async getAllTranslations(): Promise<Translation[]> {
+    const response = await fetch('/api/admin/translations');
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
+  async saveTranslation(translation: Partial<Translation>): Promise<void> {
+    await fetch('/api/admin/translations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(translation)
+    });
+  },
+
+  async deleteTranslation(key: string): Promise<void> {
+    await fetch(`/api/admin/translations/${key}`, { method: 'DELETE' });
   }
 };

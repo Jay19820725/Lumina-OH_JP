@@ -34,6 +34,7 @@ export const userService = {
         ...profile,
         displayName: profile.display_name,
         photoURL: profile.photo_url,
+        language: profile.language || 'auto',
         settings: profile.settings || { daily_reminder: false, dark_mode: false, newsletter: false }
       } as UserProfile;
     } catch (error: any) {
@@ -67,6 +68,7 @@ export const userService = {
       ...profile,
       displayName: profile.display_name,
       photoURL: profile.photo_url,
+      language: profile.language || 'auto',
       settings: profile.settings || { daily_reminder: false, dark_mode: false, newsletter: false }
     } as UserProfile;
   },
@@ -102,6 +104,7 @@ export const userService = {
       ...data,
       displayName: data.display_name,
       photoURL: data.photo_url,
+      language: data.language || 'auto',
       settings: data.settings || { daily_reminder: false, dark_mode: false, newsletter: false }
     } as UserProfile;
   },
@@ -128,6 +131,7 @@ export const userService = {
       ...data,
       displayName: data.display_name,
       photoURL: data.photo_url,
+      language: data.language || 'auto',
       settings: data.settings
     } as UserProfile;
   },
@@ -154,6 +158,7 @@ export const userService = {
       ...data,
       displayName: data.display_name,
       photoURL: data.photo_url,
+      language: data.language || 'auto',
       settings: data.settings
     } as UserProfile;
   },

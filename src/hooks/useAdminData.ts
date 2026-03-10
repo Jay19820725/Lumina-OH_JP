@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService } from '../services/adminService';
-import { AIPrompt, ImageCard, WordCard } from '../core/types';
+import { AIPrompt, ImageCard, WordCard, Translation } from '../core/types';
 
 export const useAdminStats = () => {
   return useQuery({
@@ -127,6 +127,33 @@ export const useSaveSettingsMutation = () => {
     mutationFn: ({ key, value }: { key: string; value: any }) => adminService.saveSettings(key, value),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'settings', variables.key] });
+    },
+  });
+};
+
+export const useAdminTranslations = () => {
+  return useQuery({
+    queryKey: ['admin', 'translations'],
+    queryFn: () => adminService.getAllTranslations(),
+  });
+};
+
+export const useSaveTranslationMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (translation: Partial<Translation>) => adminService.saveTranslation(translation),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'translations'] });
+    },
+  });
+};
+
+export const useDeleteTranslationMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (key: string) => adminService.deleteTranslation(key),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'translations'] });
     },
   });
 };

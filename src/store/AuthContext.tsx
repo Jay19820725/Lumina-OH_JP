@@ -3,6 +3,7 @@ import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut 
 import { auth } from '../lib/firebase';
 import { userService } from '../services/userService';
 import { UserProfile } from '../core/types';
+import i18n from '../lib/i18n';
 
 interface AuthContextType {
   user: User | null;
@@ -53,6 +54,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (profile?.language) {
+      if (profile.language === 'auto') {
+        i18n.changeLanguage(navigator.language);
+      } else {
+        i18n.changeLanguage(profile.language);
+      }
+    }
+  }, [profile?.language]);
 
   const login = async () => {
     const provider = new GoogleAuthProvider();

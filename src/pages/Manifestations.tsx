@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { Star, Plus, X, Calendar, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 import { manifestationService } from '../services/manifestationService';
 import { useAuth } from '../hooks/useAuth';
@@ -8,6 +9,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 
 export const Manifestations: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [manifestations, setManifestations] = useState<Manifestation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ export const Manifestations: React.FC = () => {
       setShowAddModal(false);
       fetchManifestations();
     } catch (err: any) {
-      setError(err.message || '願望の作成に失敗しました。');
+      setError(err.message || t('manifestation.create_failed'));
     }
   };
 
@@ -94,7 +96,7 @@ export const Manifestations: React.FC = () => {
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+    return date.toLocaleDateString(t('common.locale'), { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   const getDaysRemaining = (timestamp: any) => {
@@ -111,8 +113,8 @@ export const Manifestations: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-16"
       >
-        <h1 className="mb-4">Manifestation</h1>
-        <p className="text-ink/60 font-serif italic">願望の現実化に向けたエネルギーの集中</p>
+        <h1 className="mb-4">{t('manifestation.title')}</h1>
+        <p className="text-ink/60 font-serif italic">{t('manifestation.subtitle')}</p>
       </motion.div>
 
       {/* Reminders Section */}
@@ -132,8 +134,8 @@ export const Manifestations: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <AlertCircle className="text-fire" size={20} />
                   <div>
-                    <p className="text-sm font-medium text-fire">期限が近づいています</p>
-                    <p className="text-xs text-ink/70">「{reminder.wish_title}」の期限まであと3日です。</p>
+                    <p className="text-sm font-medium text-fire">{t('manifestation.deadline_approaching')}</p>
+                    <p className="text-xs text-ink/70">{t('manifestation.deadline_reminder', { title: reminder.wish_title, days: 3 })}</p>
                   </div>
                 </div>
                 <button 
@@ -168,14 +170,14 @@ export const Manifestations: React.FC = () => {
                     <div className="flex justify-between items-start mb-6">
                       <Star className="text-wood" size={24} />
                       <div className="text-right">
-                        <p className="text-[10px] uppercase tracking-widest text-ink/40 mb-1">期限</p>
+                        <p className="text-[10px] uppercase tracking-widest text-ink/40 mb-1">{t('manifestation.deadline_label')}</p>
                         <p className="text-xs font-serif">{formatDate(m.deadline)}</p>
                       </div>
                     </div>
                     <h3 className="text-xl mb-4 leading-relaxed">{m.wish_title}</h3>
                     <div className="flex items-center gap-2 text-ink/50">
                       <Calendar size={14} />
-                      <span className="text-xs">残り {getDaysRemaining(m.deadline)} 日</span>
+                      <span className="text-xs">{t('manifestation.days_remaining', { days: getDaysRemaining(m.deadline) })}</span>
                     </div>
                   </div>
 
@@ -185,7 +187,7 @@ export const Manifestations: React.FC = () => {
                       className="flex-1 py-2 rounded-full border border-wood/30 text-wood text-xs hover:bg-wood hover:text-white transition-colors flex items-center justify-center gap-2"
                     >
                       <CheckCircle2 size={14} />
-                      達成
+                      {t('manifestation.complete')}
                     </button>
                     <button 
                       onClick={() => handleCancel(m.id!)}
@@ -209,7 +211,7 @@ export const Manifestations: React.FC = () => {
                 <div className="w-12 h-12 rounded-full bg-ink/5 flex items-center justify-center group-hover:bg-ink/10 transition-colors">
                   <Plus size={24} />
                 </div>
-                <span className="text-xs uppercase tracking-[0.2em]">新しい願望を刻む</span>
+                <span className="text-xs uppercase tracking-[0.2em]">{t('manifestation.add_wish')}</span>
               </motion.button>
             )}
           </>
@@ -219,7 +221,7 @@ export const Manifestations: React.FC = () => {
       {/* History Section */}
       {manifestations.some(m => m.status !== 'active') && (
         <div className="mt-24">
-          <h2 className="text-center mb-12 text-ink/40">過去の軌跡</h2>
+          <h2 className="text-center mb-12 text-ink/40">{t('manifestation.history_title')}</h2>
           <div className="max-w-2xl mx-auto space-y-4">
             {manifestations.filter(m => m.status !== 'active').map(m => (
               <div key={m.id} className="flex items-center justify-between p-6 bg-white/20 rounded-2xl border border-white/10">
@@ -234,7 +236,7 @@ export const Manifestations: React.FC = () => {
                       {m.wish_title}
                     </p>
                     <p className="text-[10px] text-ink/30 uppercase tracking-widest mt-1">
-                      {m.status === 'completed' ? '達成済み' : 'キャンセル'} • {formatDate(m.created_at)}
+                      {m.status === 'completed' ? t('manifestation.completed') : t('manifestation.cancelled')} • {formatDate(m.created_at)}
                     </p>
                   </div>
                 </div>
@@ -268,17 +270,17 @@ export const Manifestations: React.FC = () => {
                 <X size={24} />
               </button>
 
-              <h2 className="mb-8">願望の宣言</h2>
+              <h2 className="mb-8">{t('manifestation.declaration_title')}</h2>
               
               <form onSubmit={handleAddWish} className="space-y-8">
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-ink/40 mb-3">願望の内容</label>
+                  <label className="block text-[10px] uppercase tracking-widest text-ink/40 mb-3">{t('manifestation.wish_content_label')}</label>
                   <input 
                     autoFocus
                     type="text"
                     value={newWish}
                     onChange={(e) => setNewWish(e.target.value)}
-                    placeholder="例：新しい創造的なプロジェクトを成功させる"
+                    placeholder={t('manifestation.wish_placeholder')}
                     className="w-full bg-transparent border-b border-ink/10 py-4 text-lg focus:outline-none focus:border-wood transition-colors"
                     maxLength={50}
                     required
@@ -286,7 +288,7 @@ export const Manifestations: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-ink/40 mb-4">期限の選択</label>
+                  <label className="block text-[10px] uppercase tracking-widest text-ink/40 mb-4">{t('manifestation.deadline_selection_label')}</label>
                   <div className="grid grid-cols-3 gap-4">
                     {(['1_month', '6_months', '12_months'] as ManifestationDeadlineOption[]).map((opt) => (
                       <button
@@ -299,7 +301,7 @@ export const Manifestations: React.FC = () => {
                             : 'border-ink/10 text-ink/40 hover:border-ink/30'
                         }`}
                       >
-                        {opt === '1_month' ? '1ヶ月' : opt === '6_months' ? '6ヶ月' : '1年'}
+                        {opt === '1_month' ? t('manifestation.1_month') : opt === '6_months' ? t('manifestation.6_months') : t('manifestation.12_months')}
                       </button>
                     ))}
                   </div>
@@ -314,7 +316,7 @@ export const Manifestations: React.FC = () => {
 
                 <div className="pt-4">
                   <Button type="submit" className="w-full py-4">
-                    宇宙へ宣言する
+                    {t('manifestation.declare_button')}
                   </Button>
                 </div>
               </form>

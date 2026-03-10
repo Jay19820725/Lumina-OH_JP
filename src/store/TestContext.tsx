@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { ImageCard, WordCard, SelectedCards, AnalysisReport, CardPair } from '../core/types';
 import { EnergyEngine } from '../core/engine';
 import { auth } from '../lib/firebase';
+import { useAuth } from '../hooks/useAuth';
 import { performJDearDraw } from '../services/cardEngine';
 import { generateAIAnalysis } from '../services/analysisService';
 import { drawSession, updateSession } from '../services/sessionService';
@@ -23,6 +24,7 @@ interface TestContextType {
 const TestContext = createContext<TestContextType | undefined>(undefined);
 
 export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { profile } = useAuth();
   const [selectedCards, setSelectedCards] = useState<SelectedCards>({ images: [], words: [], drawnAt: 0 });
   const [currentStep, setCurrentStep] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -123,7 +125,9 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Asynchronously call AI Analysis for logged-in users
-    generateAIAnalysis(selectedCards, analysis.totalScores).then(async (aiAnalysis) => {
+    const userLang = profile?.language === 'auto' ? (navigator.language.startsWith('ja') ? 'ja' : 'zh-TW') : (profile?.language || 'zh-TW');
+    
+    generateAIAnalysis(selectedCards, analysis.totalScores, userLang as any).then(async (aiAnalysis) => {
       const finalReport = {
         ...initialReport,
         ...aiAnalysis

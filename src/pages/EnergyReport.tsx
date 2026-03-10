@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import html2canvas from 'html2canvas';
 import { useTest } from '../store/TestContext';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -34,6 +35,7 @@ const WeavingLoader: React.FC<{ label?: string }> = ({ label = "メッセージ�
 );
 
 export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => {
+  const { t } = useTranslation();
   const { report, selectedCards, resetTest } = useTest();
   const reportRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -61,7 +63,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
       link.click();
     } catch (error) {
       console.error('Failed to save report:', error);
-      alert('保存に失敗しました。もう一度お試しください。');
+      alert(t('report.save_failed'));
     } finally {
       setIsSaving(false);
     }
@@ -69,8 +71,8 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
 
   const handleShare = async () => {
     const shareData = {
-      title: 'エネルギー・プロファイル | MA',
-      text: '私のエネルギー診断結果をチェックして！ #MA #エネルギー診断',
+      title: t('report.share_title'),
+      text: t('report.share_text'),
       url: window.location.href,
     };
 
@@ -85,7 +87,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
     } else {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        alert('リンクをクリップボードにコピーしました');
+        alert(t('report.link_copied'));
       } catch (error) {
         console.error('Failed to copy:', error);
       }
@@ -96,11 +98,11 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   const isGuest = report.isGuest;
 
   const elements = [
-    { key: FiveElement.WOOD, label: '木', color: 'bg-wood', hex: '#8BA889' },
-    { key: FiveElement.FIRE, label: '火', color: 'bg-fire', hex: '#D98B73' },
-    { key: FiveElement.EARTH, label: '土', color: 'bg-earth', hex: '#C4B08B' },
-    { key: FiveElement.METAL, label: '金', color: 'bg-metal', hex: '#B8BFC6' },
-    { key: FiveElement.WATER, label: '水', color: 'bg-water', hex: '#6B7B8C' },
+    { key: FiveElement.WOOD, label: t('element.wood'), color: 'bg-wood', hex: '#8BA889' },
+    { key: FiveElement.FIRE, label: t('element.fire'), color: 'bg-fire', hex: '#D98B73' },
+    { key: FiveElement.EARTH, label: t('element.earth'), color: 'bg-earth', hex: '#C4B08B' },
+    { key: FiveElement.METAL, label: t('element.metal'), color: 'bg-metal', hex: '#B8BFC6' },
+    { key: FiveElement.WATER, label: t('element.water'), color: 'bg-water', hex: '#6B7B8C' },
   ];
 
   const chartData = elements.map(el => ({
@@ -111,12 +113,12 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
 
   const translateElement = (el: string) => {
     const map: Record<string, string> = {
-      wood: '木',
-      fire: '火',
-      earth: '土',
-      metal: '金',
-      water: '水',
-      None: 'なし'
+      wood: t('element.wood'),
+      fire: t('element.fire'),
+      earth: t('element.earth'),
+      metal: t('element.metal'),
+      water: t('element.water'),
+      None: t('element.none')
     };
     return map[el] || el;
   };
@@ -132,7 +134,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
           onClick={onReset}
           className="flex items-center gap-2 text-[10px] uppercase tracking-[0.4em] text-ink-muted hover:text-ink transition-colors"
         >
-          <ArrowLeft size={14} /> 戻る
+          <ArrowLeft size={14} /> {t('common.back')}
         </button>
       </motion.div>
 
@@ -142,10 +144,10 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         transition={{ duration: 2.5, ease: [0.23, 1, 0.32, 1] }}
         className="text-center mb-24 md:mb-48"
       >
-        <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted mb-6 md:mb-8 block">診断結果</span>
-        <h1 className="font-serif mb-8 md:mb-12 tracking-[0.25em]">エネルギー・プロファイル</h1>
+        <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted mb-6 md:mb-8 block">{t('report.result_label')}</span>
+        <h1 className="font-serif mb-8 md:mb-12 tracking-[0.25em]">{t('report.title')}</h1>
         <div className="w-px h-12 bg-ink/10 mx-auto mb-8 md:mb-12" />
-        <p className="text-[10px] tracking-[0.4em] text-ink-muted uppercase font-light">作成日: {new Date(report.timestamp).toLocaleDateString()}</p>
+        <p className="text-[10px] tracking-[0.4em] text-ink-muted uppercase font-light">{t('report.created_at')}: {new Date(report.timestamp).toLocaleDateString()}</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 md:gap-20 mb-20 md:mb-32">
@@ -191,7 +193,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
             </div>
 
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 text-center pointer-events-none">
-              <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted block mb-1">バランス</span>
+              <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted block mb-1">{t('report.balance')}</span>
               <span className="text-5xl md:text-7xl font-serif font-extralight tracking-tighter">{report.balance_score}</span>
             </div>
           </div>
@@ -219,18 +221,18 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         {/* Insights */}
         <div className="space-y-10 md:space-y-16">
           <GlassCard delay={0.4} className="p-10 md:p-14">
-            <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted mb-6 md:mb-10">優位なエネルギー</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted mb-6 md:mb-10">{t('report.dominant_energy')}</h3>
             <p className="text-3xl md:text-4xl font-serif capitalize mb-4 md:mb-6 font-extralight tracking-widest">{translateElement(report.dominant_element)}</p>
             <p className="text-sm md:text-base text-ink-muted leading-[2] font-light">
-              あなたのプロファイルは{translateElement(report.dominant_element)}のエネルギーが強く、この領域での活動や集中が高まっていることを示しています。
+              {t('report.dominant_desc', { element: translateElement(report.dominant_element) })}
             </p>
           </GlassCard>
  
           <GlassCard delay={0.6} className="p-10 md:p-14">
-            <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted mb-6 md:mb-10">不足しているエネルギー</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted mb-6 md:mb-10">{t('report.weak_energy')}</h3>
             <p className="text-3xl md:text-4xl font-serif capitalize mb-4 md:mb-6 font-extralight tracking-widest">{translateElement(report.weak_element)}</p>
             <p className="text-sm md:text-base text-ink-muted leading-[2] font-light">
-              現在、{translateElement(report.weak_element)}のエネルギーが控えめです。このエネルギーを養う習慣を取り入れることで、より良いバランスが得られるでしょう。
+              {t('report.weak_desc', { element: translateElement(report.weak_element) })}
             </p>
           </GlassCard>
  
@@ -242,14 +244,14 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
               disabled={isSaving}
             >
               <Download size={16} className={isSaving ? 'animate-pulse' : ''} /> 
-              {isSaving ? '保存中...' : '保存'}
+              {isSaving ? t('common.saving') : t('common.save')}
             </Button>
             <Button 
               variant="outline" 
               className="flex-1 gap-3 h-14 text-xs tracking-[0.2em]"
               onClick={handleShare}
             >
-              <Share2 size={16} /> 共有
+              <Share2 size={16} /> {t('common.share')}
             </Button>
           </div>
         </div>
@@ -260,25 +262,25 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         {isGuest ? (
           <GlassCard className="p-12 md:p-20 text-center space-y-8 bg-wood/5 border-wood/20">
             <div className="space-y-4">
-              <h2 className="font-serif text-2xl md:text-3xl tracking-widest text-wood">詳細なエネルギーレポートを解放</h2>
+              <h2 className="font-serif text-2xl md:text-3xl tracking-widest text-wood">{t('report.guest_title')}</h2>
               <p className="text-sm md:text-base text-ink-muted leading-relaxed max-w-lg mx-auto">
-                サインインすると、AIガイドがあなた専用の分析レポートを作成します。今日のテーマ、心理的洞察、具体的なアドバイスを受け取ることができます。
+                {t('report.guest_desc')}
               </p>
             </div>
             <Button 
               onClick={() => window.location.href = '/profile'} 
               className="h-14 px-12 bg-wood hover:bg-wood/90 text-white tracking-widest"
             >
-              サインイン / 登録
+              {t('common.signin_register')}
             </Button>
           </GlassCard>
         ) : (
           <>
             {/* Today's Theme */}
             <div className="text-center space-y-8">
-              <span className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">Today's Theme</span>
+              <span className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report.today_theme_label')}</span>
               {isAiLoading ? (
-                <WeavingLoader label="今日のテーマを紡いでいます..." />
+                <WeavingLoader label={t('report.loading_theme')} />
               ) : (
                 <motion.h2 
                   initial={{ opacity: 0 }}
@@ -293,12 +295,12 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
             {/* Pair Interpretations */}
             <div className="space-y-16 md:space-y-24">
               <div className="text-center space-y-6">
-                <h2 className="font-serif font-extralight tracking-widest">カードが紡ぐメッセージ</h2>
+                <h2 className="font-serif font-extralight tracking-widest">{t('report.card_messages_title')}</h2>
                 <div className="w-12 h-px bg-ink/10 mx-auto" />
               </div>
               
               {isAiLoading ? (
-                <WeavingLoader label="カードの共鳴を読み解いています..." />
+                <WeavingLoader label={t('report.loading_cards')} />
               ) : (
                 <div className="space-y-12">
                   <p className="text-base md:text-lg text-ink-muted leading-[2.2] font-light text-center max-w-3xl mx-auto px-6">
@@ -343,9 +345,9 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
             {/* Psychological Insight & Five Element Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32">
               <div className="space-y-12">
-                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">心理的洞察</h3>
+                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report.psychological_insight_label')}</h3>
                 {isAiLoading ? (
-                  <WeavingLoader label="潜在意識の声に耳を傾けています..." />
+                  <WeavingLoader label={t('report.loading_psychology')} />
                 ) : (
                   <motion.div 
                     initial={{ opacity: 0, x: -20 }}
@@ -359,9 +361,9 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                 )}
               </div>
               <div className="space-y-12">
-                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">五行エネルギー分析</h3>
+                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report.five_element_analysis_label')}</h3>
                 {isAiLoading ? (
-                  <WeavingLoader label="エネルギーの流動を分析しています..." />
+                  <WeavingLoader label={t('report.loading_elements')} />
                 ) : (
                   <motion.div 
                     initial={{ opacity: 0, x: 20 }}
@@ -379,9 +381,9 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
             {/* Reflection & Action Suggestion */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32 border-t border-ink/5 pt-24">
               <div className="space-y-12">
-                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">内なるリフレクション</h3>
+                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report.reflection_label')}</h3>
                 {isAiLoading ? (
-                  <WeavingLoader label="内なる対話をガイドしています..." />
+                  <WeavingLoader label={t('report.loading_reflection')} />
                 ) : (
                   <p className="text-lg md:text-xl font-serif font-extralight leading-relaxed text-ink italic">
                     「{report.reflection}」
@@ -389,9 +391,9 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                 )}
               </div>
               <div className="space-y-12">
-                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">行動提案</h3>
+                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report.action_suggestion_label')}</h3>
                 {isAiLoading ? (
-                  <WeavingLoader label="バランスを整えるきっかけを探しています..." />
+                  <WeavingLoader label={t('report.loading_action')} />
                 ) : (
                   <div className="flex items-start gap-6">
                     <div className="w-12 h-12 rounded-full bg-wood/10 flex items-center justify-center flex-shrink-0">
@@ -410,7 +412,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
 
       <div className="mt-24 text-center">
         <Button onClick={onReset} variant="outline" className="gap-2 h-14 px-10">
-          <RefreshCw size={16} /> 新しい診断を始める
+          <RefreshCw size={16} /> {t('report.new_test')}
         </Button>
       </div>
     </div>

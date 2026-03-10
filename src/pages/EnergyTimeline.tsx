@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 import { 
@@ -31,14 +32,16 @@ type TimelineItem =
   | { type: 'report'; data: AnalysisReport; timestamp: number }
   | { type: 'journal'; data: EnergyJournalEntry; timestamp: number };
 
-const EMOTIONS: { tag: EmotionTag; label: string; icon: React.ReactNode; color: string }[] = [
-  { tag: 'calm', label: '穏やか', icon: <Smile size={18} />, color: 'bg-emerald-100 text-emerald-600' },
-  { tag: 'anxious', label: '不安', icon: <AlertCircle size={18} />, color: 'bg-rose-100 text-rose-600' },
-  { tag: 'inspired', label: 'インスピレーション', icon: <Sparkles size={18} />, color: 'bg-indigo-100 text-indigo-600' },
-  { tag: 'tired', label: 'お疲れ', icon: <Coffee size={18} />, color: 'bg-amber-100 text-amber-600' },
-];
-
 export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) => {
+  const { t } = useTranslation();
+
+  const EMOTIONS: { tag: EmotionTag; label: string; icon: React.ReactNode; color: string }[] = [
+    { tag: 'calm', label: t('emotion.calm'), icon: <Smile size={18} />, color: 'bg-emerald-100 text-emerald-600' },
+    { tag: 'anxious', label: t('emotion.anxious'), icon: <AlertCircle size={18} />, color: 'bg-rose-100 text-rose-600' },
+    { tag: 'inspired', label: t('emotion.inspired'), icon: <Sparkles size={18} />, color: 'bg-indigo-100 text-indigo-600' },
+    { tag: 'tired', label: t('emotion.tired'), icon: <Coffee size={18} />, color: 'bg-amber-100 text-amber-600' },
+  ];
+
   const { user, profile } = useAuth();
   const { setReport } = useTest();
   const [reports, setReports] = useState<AnalysisReport[]>([]);
@@ -123,7 +126,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
   };
 
   const handleDeleteJournal = async (id: string) => {
-    if (!window.confirm('この日誌を削除してもよろしいですか？')) return;
+    if (!window.confirm(t('timeline.confirm_delete'))) return;
     try {
       await journalService.deleteEntry(id);
       setJournals(prev => prev.filter(j => j.id !== id));
@@ -134,18 +137,18 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
 
   const translateElement = (el: string) => {
     const map: Record<string, string> = {
-      wood: '木',
-      fire: '火',
-      earth: '土',
-      metal: '金',
-      water: '水',
-      None: 'なし'
+      wood: t('element.wood'),
+      fire: t('element.fire'),
+      earth: t('element.earth'),
+      metal: t('element.metal'),
+      water: t('element.water'),
+      None: t('element.none')
     };
     return map[el] || el;
   };
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('ja-JP', {
+    return new Date(timestamp).toLocaleDateString(t('common.locale'), {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -155,7 +158,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
   if (loading) {
     return (
       <div className="ma-container py-32 flex items-center justify-center">
-        <div className="animate-pulse-soft text-ink-muted uppercase tracking-widest text-xs">エネルギーの軌跡を辿っています...</div>
+        <div className="animate-pulse-soft text-ink-muted uppercase tracking-widest text-xs">{t('timeline.loading')}</div>
       </div>
     );
   }
@@ -164,11 +167,11 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
     <div className="ma-container py-12 md:py-20 min-h-screen px-4">
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-16 md:mb-24 space-y-6">
-          <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted block">Energy Timeline</span>
-          <h1 className="font-serif tracking-widest text-3xl md:text-4xl">エネルギー・タイムライン</h1>
+          <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted block">{t('timeline.label')}</span>
+          <h1 className="font-serif tracking-widest text-3xl md:text-4xl">{t('timeline.title')}</h1>
           <div className="w-12 h-px bg-ink/10 mx-auto" />
           <p className="text-sm md:text-lg text-ink-muted font-light tracking-widest leading-relaxed">
-            診断の記録と日々の洞察が交差する、あなたの成長の物語。
+            {t('timeline.subtitle')}
           </p>
         </header>
 
@@ -179,25 +182,25 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
               <div className="w-10 h-10 rounded-full bg-wood/10 flex items-center justify-center text-wood">
                 <BarChart3 size={20} />
               </div>
-              <h2 className="text-lg font-serif tracking-widest">今週のエネルギー概況</h2>
+              <h2 className="text-lg font-serif tracking-widest">{t('timeline.weekly_insight_title')}</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-ink-muted">
                   <TrendingUp size={14} className="text-emerald-500" />
-                  <span>上昇傾向のエネルギー</span>
+                  <span>{t('timeline.rising_energy')}</span>
                 </div>
                 <p className="text-sm leading-relaxed text-ink-muted">
-                  最近の診断では「木」のエネルギーが活発です。新しいアイデアやプロジェクトを始めるのに最適な時期かもしれません。
+                  {t('timeline.rising_energy_desc')}
                 </p>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-ink-muted">
                   <Activity size={14} className="text-indigo-500" />
-                  <span>情緒とエネルギーの相関</span>
+                  <span>{t('timeline.emotion_correlation')}</span>
                 </div>
                 <p className="text-sm leading-relaxed text-ink-muted">
-                  「穏やか」な気分の日は、エネルギーバランスが平均して 85% 以上と非常に安定しています。
+                  {t('timeline.emotion_correlation_desc')}
                 </p>
               </div>
             </div>
@@ -205,14 +208,14 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
         )}
 
         <div className="flex justify-between items-center mb-12">
-          <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted">Timeline</h3>
+          <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted">{t('timeline.timeline_label')}</h3>
           {profile?.role === 'premium_member' && (
             <Button 
               onClick={() => setIsAddingJournal(!isAddingJournal)}
               variant={isAddingJournal ? 'outline' : 'primary'}
               className="h-10 px-4 gap-2 text-[10px] tracking-widest"
             >
-              {isAddingJournal ? 'キャンセル' : <><Plus size={14} /> 日誌を記す</>}
+              {isAddingJournal ? t('common.cancel') : <><Plus size={14} /> {t('timeline.write_journal')}</>}
             </Button>
           )}
         </div>
@@ -228,7 +231,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
               <GlassCard className="p-8 md:p-12">
                 <form onSubmit={handleAddJournal} className="space-y-8">
                   <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">今の気分</label>
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">{t('timeline.current_mood')}</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {EMOTIONS.map((em) => (
                         <button
@@ -249,30 +252,30 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">今日の洞察</label>
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">{t('timeline.insight_label')}</label>
                     <textarea
                       value={insight}
                       onChange={(e) => setInsight(e.target.value)}
-                      placeholder="今日、あなたの心に浮かんだ気づきは何ですか？"
+                      placeholder={t('timeline.insight_placeholder')}
                       className="w-full h-32 bg-white/50 border border-ink/5 rounded-2xl p-6 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-all resize-none"
                       required
                     />
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">明日の意圖</label>
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">{t('timeline.intention_label')}</label>
                     <input
                       type="text"
                       value={intention}
                       onChange={(e) => setIntention(e.target.value)}
-                      placeholder="明日、どのようなエネルギーで過ごしたいですか？"
+                      placeholder={t('timeline.intention_placeholder')}
                       className="w-full bg-white/50 border border-ink/5 rounded-2xl p-6 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-all"
                       required
                     />
                   </div>
 
                   <Button type="submit" disabled={submitting} className="w-full h-14">
-                    {submitting ? '保存中...' : '日誌を保存する'}
+                    {submitting ? t('common.saving') : t('timeline.save_journal')}
                   </Button>
                 </form>
               </GlassCard>
@@ -286,7 +289,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
 
           {timelineItems.length === 0 ? (
             <div className="text-center py-20 opacity-40">
-              <p className="font-serif italic text-sm md:text-base">まだ記録がありません。診断を受けるか、日誌を記してみましょう。</p>
+              <p className="font-serif italic text-sm md:text-base">{t('timeline.empty_state')}</p>
             </div>
           ) : (
             timelineItems.map((item, i) => (
@@ -318,7 +321,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                     <span className={`text-[8px] uppercase tracking-[0.4em] font-medium mt-1 ${
                       item.type === 'report' ? 'text-emerald-500' : 'text-indigo-500'
                     }`}>
-                      {item.type === 'report' ? 'Energy Report' : 'Energy Journal'}
+                      {item.type === 'report' ? t('timeline.type_report') : t('timeline.type_journal')}
                     </span>
                   </div>
 
@@ -330,17 +333,17 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                       <div className={`flex flex-col ${i % 2 === 0 ? 'md:items-end' : 'md:items-start'} gap-4`}>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">優位な要素</span>
+                            <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">{t('report.dominant_energy')}</span>
                             <span className="text-lg font-serif capitalize">{translateElement(item.data.dominantElement)}</span>
                           </div>
                           <div className="h-8 w-px bg-ink/5" />
                           <div className="text-left">
-                            <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">バランス</span>
+                            <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">{t('report.balance')}</span>
                             <span className="text-lg font-serif">{item.data.balanceScore}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 text-[10px] text-ink-muted group-hover:text-ink transition-colors">
-                          詳細を見る <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                          {t('common.view_details')} <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     </GlassCard>
@@ -355,11 +358,11 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                         </div>
                         <div className="space-y-4 w-full">
                           <div className="space-y-1">
-                            <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted">洞察</span>
+                            <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted">{t('timeline.insight_label')}</span>
                             <p className="text-sm leading-relaxed text-ink font-light line-clamp-3">{item.data.insight}</p>
                           </div>
                           <div className="space-y-1">
-                            <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted">意圖</span>
+                            <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted">{t('timeline.intention_label')}</span>
                             <p className="text-sm leading-relaxed text-ink-muted italic">「{item.data.intention}」</p>
                           </div>
                         </div>

@@ -40,15 +40,18 @@ import {
   useAdminPrompts,
   useAdminAnalytics,
   useAdminSettings,
+  useAdminTranslations,
   useSaveSettingsMutation,
   useSaveCardMutation,
   useDeleteCardMutation,
   useSavePromptMutation,
   useDeletePromptMutation,
-  useActivatePromptMutation
+  useActivatePromptMutation,
+  useSaveTranslationMutation,
+  useDeleteTranslationMutation
 } from '../hooks/useAdminData';
 import { useQueryClient } from '@tanstack/react-query';
-import { UserProfile, Session, ImageCard, WordCard, FiveElement, AIPrompt, SEOSettings } from '../core/types';
+import { UserProfile, Session, ImageCard, WordCard, FiveElement, AIPrompt, SEOSettings, Translation } from '../core/types';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 import { 
@@ -71,7 +74,7 @@ import {
 } from 'recharts';
 
 
-type AdminModule = 'dashboard' | 'cards' | 'users' | 'sessions' | 'subscriptions' | 'analytics' | 'prompts' | 'settings';
+type AdminModule = 'dashboard' | 'cards' | 'users' | 'sessions' | 'subscriptions' | 'analytics' | 'prompts' | 'settings' | 'language';
 
 export const AdminDashboard: React.FC = () => {
   const [activeModule, setActiveModule] = useState<AdminModule>('dashboard');
@@ -86,6 +89,7 @@ export const AdminDashboard: React.FC = () => {
   const { data: prompts, isLoading: promptsLoading } = useAdminPrompts();
   const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics();
   const { data: seoSettings, isLoading: seoLoading } = useAdminSettings('seo');
+  const { data: translations, isLoading: translationsLoading } = useAdminTranslations();
 
   // Mutations
   const saveCardMutation = useSaveCardMutation();
@@ -94,10 +98,13 @@ export const AdminDashboard: React.FC = () => {
   const deletePromptMutation = useDeletePromptMutation();
   const activatePromptMutation = useActivatePromptMutation();
   const saveSettingsMutation = useSaveSettingsMutation();
+  const saveTranslationMutation = useSaveTranslationMutation();
+  const deleteTranslationMutation = useDeleteTranslationMutation();
 
   // Card Editing State
   const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
+  const [editingTranslation, setEditingTranslation] = useState<Partial<Translation> | null>(null);
   const [cardTab, setCardTab] = useState<'image' | 'word'>('image');
 
   // Lock body scroll when modal is open
@@ -120,7 +127,8 @@ export const AdminDashboard: React.FC = () => {
     (activeModule === 'subscriptions' && subscriptionsLoading) ||
     (activeModule === 'prompts' && promptsLoading) ||
     (activeModule === 'analytics' && analyticsLoading) ||
-    (activeModule === 'settings' && seoLoading);
+    (activeModule === 'settings' && seoLoading) ||
+    (activeModule === 'language' && translationsLoading);
 
   const handleSaveCard = async () => {
     if (!editingCard) return;
@@ -166,6 +174,25 @@ export const AdminDashboard: React.FC = () => {
     } catch (error) {
       console.error("儲存設定失敗:", error);
       alert('儲存失敗');
+    }
+  };
+
+  const handleSaveTranslation = async () => {
+    if (!editingTranslation) return;
+    try {
+      await saveTranslationMutation.mutateAsync(editingTranslation);
+      setEditingTranslation(null);
+    } catch (error) {
+      console.error("儲存翻譯失敗:", error);
+    }
+  };
+
+  const handleDeleteTranslation = async (key: string) => {
+    if (!confirm('確定要刪除此翻譯嗎？')) return;
+    try {
+      await deleteTranslationMutation.mutateAsync(key);
+    } catch (error) {
+      console.error("刪除翻譯失敗:", error);
     }
   };
 
@@ -619,6 +646,7 @@ export const AdminDashboard: React.FC = () => {
           onClick={() => setEditingPrompt({ 
             prompt_name: '', 
             prompt_content: '', 
+            lang: 'zh-TW',
             version: '1.0.0', 
             status: 'draft',
             ab_test_group: 'control'
@@ -641,6 +669,7 @@ export const AdminDashboard: React.FC = () => {
                   <h4 className="text-sm font-serif">{prompt.prompt_name}</h4>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[9px] uppercase tracking-widest bg-ink/5 px-1.5 py-0.5 rounded text-ink-muted">v{prompt.version}</span>
+                    <span className="text-[9px] uppercase tracking-widest bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">{prompt.lang}</span>
                     <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
                       prompt.status === 'active' ? 'bg-wood/10 text-wood' : 
                       prompt.status === 'draft' ? 'bg-amber-100 text-amber-700' : 'bg-ink/5 text-ink-muted'
@@ -720,8 +749,8 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="space-y-2 col-span-2">
                     <label className="text-[10px] uppercase tracking-widest text-ink-muted">Prompt 名稱</label>
                     <input 
                       type="text" 
@@ -732,14 +761,15 @@ export const AdminDashboard: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">版本號</label>
-                    <input 
-                      type="text" 
-                      value={editingPrompt.version}
-                      onChange={(e) => setEditingPrompt({ ...editingPrompt, version: e.target.value })}
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">語系</label>
+                    <select 
+                      value={editingPrompt.lang || 'zh-TW'}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, lang: e.target.value as any })}
                       className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
-                      placeholder="v1.0.0"
-                    />
+                    >
+                      <option value="zh-TW">繁體中文</option>
+                      <option value="ja">日本語</option>
+                    </select>
                   </div>
                 </div>
 
@@ -754,6 +784,16 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">版本號</label>
+                    <input 
+                      type="text" 
+                      value={editingPrompt.version}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, version: e.target.value })}
+                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                      placeholder="v1.0.0"
+                    />
+                  </div>
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-ink-muted">狀態</label>
                     <select 
@@ -785,6 +825,130 @@ export const AdminDashboard: React.FC = () => {
                 <Button variant="outline" onClick={() => setEditingPrompt(null)}>取消</Button>
                 <Button onClick={handleSavePrompt} disabled={savePromptMutation.isPending} className="gap-2 px-8">
                   {savePromptMutation.isPending ? '儲存中...' : <><Save size={16} /> 儲存 Prompt</>}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
+  const renderTranslations = () => (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h3 className="text-xs uppercase tracking-widest">UI 語系版本管理</h3>
+        <Button 
+          onClick={() => setEditingTranslation({ key: '', zh_tw: '', ja: '' })}
+          className="gap-2 h-10 px-4 text-xs"
+        >
+          <Plus size={14} /> 新增翻譯 Key
+        </Button>
+      </div>
+
+      <GlassCard className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-ink/5 text-ink-muted uppercase tracking-widest">
+                <th className="px-6 py-4 font-medium">Key</th>
+                <th className="px-6 py-4 font-medium">繁體中文 (zh-TW)</th>
+                <th className="px-6 py-4 font-medium">日本語 (ja)</th>
+                <th className="px-6 py-4 font-medium text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink/5">
+              {translations?.map((t: any) => (
+                <tr key={t.key} className="hover:bg-ink/[0.02] transition-colors">
+                  <td className="px-6 py-4 font-mono text-[10px]">{t.key}</td>
+                  <td className="px-6 py-4">{t.zh_tw}</td>
+                  <td className="px-6 py-4">{t.ja}</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setEditingTranslation(t)}
+                        className="h-8 px-3 text-[9px]"
+                      >
+                        編輯
+                      </Button>
+                      <button 
+                        onClick={() => handleDeleteTranslation(t.key)}
+                        className="p-2 text-rose-400 hover:text-rose-500 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </GlassCard>
+
+      {/* Translation Edit Modal */}
+      <AnimatePresence>
+        {editingTranslation && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingTranslation(null)}
+              className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-ink/5 flex justify-between items-center bg-ink/[0.02]">
+                <h3 className="text-xs uppercase tracking-[0.3em] font-medium">
+                  {editingTranslation.key ? '編輯' : '新增'} 翻譯
+                </h3>
+                <button onClick={() => setEditingTranslation(null)} className="p-2 hover:bg-ink/5 rounded-full transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-ink-muted">翻譯 Key (例如: home.title)</label>
+                  <input 
+                    type="text" 
+                    value={editingTranslation.key}
+                    disabled={!!translations?.find((t: any) => t.key === editingTranslation.key && editingTranslation.key !== '')}
+                    onChange={(e) => setEditingTranslation({ ...editingTranslation, key: e.target.value })}
+                    className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                    placeholder="home.title"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-ink-muted">繁體中文 (zh-TW)</label>
+                  <textarea 
+                    value={editingTranslation.zh_tw}
+                    onChange={(e) => setEditingTranslation({ ...editingTranslation, zh_tw: e.target.value })}
+                    className="w-full h-24 px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30 resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-ink-muted">日本語 (ja)</label>
+                  <textarea 
+                    value={editingTranslation.ja}
+                    onChange={(e) => setEditingTranslation({ ...editingTranslation, ja: e.target.value })}
+                    className="w-full h-24 px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30 resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="p-6 bg-ink/[0.02] border-t border-ink/5 flex justify-end gap-4">
+                <Button variant="outline" onClick={() => setEditingTranslation(null)}>取消</Button>
+                <Button onClick={handleSaveTranslation} disabled={saveTranslationMutation.isPending} className="gap-2 px-8">
+                  {saveTranslationMutation.isPending ? '儲存中...' : <><Save size={16} /> 儲存翻譯</>}
                 </Button>
               </div>
             </motion.div>
@@ -1178,6 +1342,12 @@ export const AdminDashboard: React.FC = () => {
               icon={<SettingsIcon size={18} />} 
               label="SEO 設定" 
             />
+            <NavButton 
+              active={activeModule === 'language'} 
+              onClick={() => setActiveModule('language')} 
+              icon={<Globe size={18} />} 
+              label="語系管理" 
+            />
           </nav>
         </div>
 
@@ -1205,6 +1375,7 @@ export const AdminDashboard: React.FC = () => {
                   {activeModule === 'subscriptions' && renderSubscriptions()}
                   {activeModule === 'analytics' && renderAnalytics()}
                   {activeModule === 'settings' && renderSettings()}
+                  {activeModule === 'language' && renderTranslations()}
                 </>
               )}
             </motion.div>

@@ -109,11 +109,30 @@ async function startServer() {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name TEXT NOT NULL,
         content TEXT NOT NULL,
+        language TEXT DEFAULT 'zh-TW',
         status TEXT DEFAULT 'draft',
         version TEXT DEFAULT '1.0.0',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Translations table
+      CREATE TABLE IF NOT EXISTS translations (
+        key TEXT PRIMARY KEY,
+        zh_tw TEXT NOT NULL,
+        ja TEXT NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Ensure columns exist if table was created earlier
+      DO $$ 
+      BEGIN 
+        BEGIN
+          ALTER TABLE ai_prompts ADD COLUMN language TEXT DEFAULT 'zh-TW';
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+      END $$;
 
       -- Manifestations table
       CREATE TABLE IF NOT EXISTS manifestations (
@@ -672,17 +691,17 @@ async function startServer() {
   });
 
   app.post("/api/admin/prompts", async (req, res) => {
-    const { id, name, content, status, version } = req.body;
+    const { id, name, content, language, status, version } = req.body;
     try {
       if (id) {
         await pool.query(
-          "UPDATE ai_prompts SET name = $1, content = $2, status = $3, version = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5",
-          [name, content, status, version, id]
+          "UPDATE ai_prompts SET name = $1, content = $2, language = $3, status = $4, version = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6",
+          [name, content, language || 'zh-TW', status, version, id]
         );
       } else {
         await pool.query(
-          "INSERT INTO ai_prompts (name, content, status, version) VALUES ($1, $2, $3, $4)",
-          [name, content, status, version]
+          "INSERT INTO ai_prompts (name, content, language, status, version) VALUES ($1, $2, $3, $4, $5)",
+          [name, content, language || 'zh-TW', status, version]
         );
       }
       res.json({ success: true });
@@ -706,10 +725,58 @@ async function startServer() {
   app.post("/api/admin/prompts/:id/activate", async (req, res) => {
     const { id } = req.params;
     try {
+      // First, find the language of this prompt
+      const promptResult = await pool.query("SELECT language FROM ai_prompts WHERE id = $1", [id]);
+      if (promptResult.rows.length > 0) {
+        const lang = promptResult.rows[0].language;
+        // Deactivate other active prompts for this language
+        await pool.query("UPDATE ai_prompts SET status = 'draft' WHERE language = $1 AND status = 'active'", [lang]);
+      }
       await pool.query("UPDATE ai_prompts SET status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = $1", [id]);
       res.json({ success: true });
     } catch (err) {
       console.error("Error activating prompt:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Translation API
+  app.get("/api/admin/translations", async (req, res) => {
+    try {
+      const result = await pool.query("SELECT * FROM translations ORDER BY key ASC");
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching translations:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/translations", async (req, res) => {
+    const { key, zh_tw, ja } = req.body;
+    try {
+      await pool.query(
+        `INSERT INTO translations (key, zh_tw, ja, updated_at) 
+         VALUES ($1, $2, $3, CURRENT_TIMESTAMP) 
+         ON CONFLICT (key) DO UPDATE SET 
+           zh_tw = EXCLUDED.zh_tw, 
+           ja = EXCLUDED.ja, 
+           updated_at = CURRENT_TIMESTAMP`,
+        [key, zh_tw, ja]
+      );
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error saving translation:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/translations/:key", async (req, res) => {
+    const { key } = req.params;
+    try {
+      await pool.query("DELETE FROM translations WHERE key = $1", [key]);
+      res.status(204).send();
+    } catch (err) {
+      console.error("Error deleting translation:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });

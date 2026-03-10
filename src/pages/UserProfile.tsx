@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
-import { User, LogOut, LogIn, Shield, Settings, Crown, Sparkles, BookOpen, BarChart3, Map, Star, Activity } from 'lucide-react';
+import { User, LogOut, LogIn, Shield, Settings, Crown, Sparkles, BookOpen, BarChart3, Map, Star, Activity, Globe } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { userService } from '../services/userService';
 import { ManifestationSection } from '../components/profile/ManifestationSection';
@@ -13,6 +14,7 @@ interface UserProfileProps {
 }
 
 export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
+  const { t } = useTranslation();
   const { user, profile, login, logout, loading, refreshProfile, setProfile } = useAuth();
   const [isUpgrading, setIsUpgrading] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
@@ -219,8 +221,36 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
           <GlassCard delay={0.4} className="space-y-6">
             <div className="flex items-center gap-3 text-ink-muted">
               <Settings size={18} />
-              <h3 className="text-xs uppercase tracking-widest">設定</h3>
+              <h3 className="text-xs uppercase tracking-widest">{t('profile.settings')}</h3>
             </div>
+            
+            {/* Language Selection */}
+            <div className="space-y-4 pb-4 border-b border-ink/5">
+              <div className="flex items-center gap-2 text-ink-muted mb-2">
+                <Globe size={14} />
+                <span className="text-[10px] uppercase tracking-widest">{t('profile.language')}</span>
+              </div>
+              <select 
+                value={profile?.language || 'auto'}
+                onChange={async (e) => {
+                  if (!user || !profile) return;
+                  const newLang = e.target.value as any;
+                  setProfile({ ...profile, language: newLang });
+                  try {
+                    await userService.updateProfile(user.uid, { language: newLang });
+                  } catch (err) {
+                    console.error("Failed to update language:", err);
+                    setProfile(profile);
+                  }
+                }}
+                className="w-full px-4 py-2 bg-ink/5 border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+              >
+                <option value="auto">{t('language.auto')}</option>
+                <option value="zh-TW">繁體中文</option>
+                <option value="ja">日本語</option>
+              </select>
+            </div>
+
             <div className="space-y-4">
               {[
                 { id: 'daily_reminder', label: '毎日のリマインダー' },
