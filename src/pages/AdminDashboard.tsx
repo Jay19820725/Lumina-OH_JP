@@ -97,6 +97,7 @@ export const AdminDashboard: React.FC = () => {
   // Card Editing State
   const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
+  const [cardTab, setCardTab] = useState<'image' | 'word'>('image');
 
   const isLoading = 
     (activeModule === 'dashboard' && statsLoading) ||
@@ -284,94 +285,159 @@ export const AdminDashboard: React.FC = () => {
 
   const renderCards = () => (
     <div className="space-y-8">
-      <div className="flex justify-end gap-4">
-        <Button 
-          onClick={() => setEditingCard({ 
-            type: 'image', 
-            data: { imageUrl: '', elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
-          })}
-          className="gap-2 h-10 px-4 text-xs"
-        >
-          <Plus size={14} /> 新增圖像卡
-        </Button>
-        <Button 
-          onClick={() => setEditingCard({ 
-            type: 'word', 
-            data: { text: '', imageUrl: '', elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
-          })}
-          className="gap-2 h-10 px-4 text-xs"
-        >
-          <Plus size={14} /> 新增文字卡
-        </Button>
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="flex bg-ink/5 p-1 rounded-2xl w-full md:w-auto">
+          <button 
+            onClick={() => setCardTab('image')}
+            className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+              cardTab === 'image' ? 'bg-white text-wood shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+            }`}
+          >
+            圖像卡 ({cards?.images.length || 0})
+          </button>
+          <button 
+            onClick={() => setCardTab('word')}
+            className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+              cardTab === 'word' ? 'bg-white text-fire shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+            }`}
+          >
+            文字卡 ({cards?.words.length || 0})
+          </button>
+        </div>
+
+        <div className="flex gap-4 w-full md:w-auto">
+          <Button 
+            onClick={() => setEditingCard({ 
+              type: 'image', 
+              data: { imageUrl: '', elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
+            })}
+            className="flex-1 md:flex-none gap-2 h-11 px-6 text-[10px] uppercase tracking-widest"
+          >
+            <Plus size={14} /> 新增圖像卡
+          </Button>
+          <Button 
+            onClick={() => setEditingCard({ 
+              type: 'word', 
+              data: { text: '', imageUrl: '', elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
+            })}
+            className="flex-1 md:flex-none gap-2 h-11 px-6 text-[10px] uppercase tracking-widest"
+          >
+            <Plus size={14} /> 新增文字卡
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <GlassCard className="p-0 overflow-hidden">
-          <div className="p-6 border-b border-ink/5 bg-white/20 flex items-center gap-3">
-            <ImageIcon size={18} className="text-wood" />
-            <h3 className="text-xs uppercase tracking-widest">圖像卡 ({cards?.images.length || 0})</h3>
-          </div>
-          <div className="max-h-[600px] overflow-y-auto p-4 grid grid-cols-3 gap-4">
-            {cards?.images.map(card => (
-              <div key={card.id} className="aspect-[3/4] rounded-xl overflow-hidden bg-ink/5 border border-ink/5 group relative">
-                <img src={card.imageUrl} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setEditingCard({ type: 'image', data: card })}
-                    className="h-8 px-3 text-[9px] border-white/30 text-white hover:bg-white/10"
-                  >
-                    編輯
-                  </Button>
-                  <button 
-                    onClick={() => handleDeleteCard('image', card.id)}
-                    className="p-2 text-rose-400 hover:text-rose-500 transition-colors"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-
-        <GlassCard className="p-0 overflow-hidden">
-          <div className="p-6 border-b border-ink/5 bg-white/20 flex items-center gap-3">
-            <TypeIcon size={18} className="text-fire" />
-            <h3 className="text-xs uppercase tracking-widest">文字卡 ({cards?.words.length || 0})</h3>
-          </div>
-          <div className="max-h-[600px] overflow-y-auto p-4 space-y-2">
-            {cards?.words.map(card => (
-              <div key={card.id} className="p-3 bg-white/40 border border-ink/5 rounded-xl flex justify-between items-center group">
-                <div className="flex items-center gap-3">
-                  {card.imageUrl && (
-                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-ink/5">
-                      <img src={card.imageUrl} className="w-full h-full object-cover" />
+      <AnimatePresence mode="wait">
+        {cardTab === 'image' ? (
+          <motion.div
+            key="image-tab"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <GlassCard className="p-0 overflow-hidden">
+              <div className="p-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                {cards?.images.map(card => (
+                  <div key={card.id} className="aspect-[3/4] rounded-2xl overflow-hidden bg-ink/5 border border-ink/5 group relative shadow-sm hover:shadow-md transition-all">
+                    <img src={card.imageUrl} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-[2px]">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setEditingCard({ type: 'image', data: card })}
+                        className="h-9 px-4 text-[10px] border-white/30 text-white hover:bg-white/10 uppercase tracking-widest"
+                      >
+                        編輯
+                      </Button>
+                      <button 
+                        onClick={() => handleDeleteCard('image', card.id)}
+                        className="p-2 text-rose-400 hover:text-rose-500 transition-colors bg-white/10 rounded-full"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                  )}
-                  <span className="text-sm font-serif">{card.text}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] text-ink-muted uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">ID: {card.id}</span>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setEditingCard({ type: 'word', data: card })}
-                    className="h-8 px-3 text-[9px]"
-                  >
-                    編輯
-                  </Button>
-                  <button 
-                    onClick={() => handleDeleteCard('word', card.id)}
-                    className="p-2 text-rose-400 hover:text-rose-500 transition-colors"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </GlassCard>
-      </div>
+            </GlassCard>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="word-tab"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <GlassCard className="p-0 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-ink/[0.02] border-b border-ink/5">
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">預覽</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">五行能量</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium text-right">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-ink/5">
+                    {cards?.words.map(card => (
+                      <tr key={card.id} className="hover:bg-ink/[0.01] transition-colors group">
+                        <td className="px-8 py-4">
+                          {card.imageUrl && (
+                            <div className="w-12 h-12 rounded-xl overflow-hidden border border-ink/5 shadow-sm">
+                              <img src={card.imageUrl} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-8 py-4">
+                          <span className="text-sm font-serif text-ink">{card.text}</span>
+                          <div className="text-[9px] text-ink-muted mt-1 uppercase tracking-widest opacity-50">ID: {card.id}</div>
+                        </td>
+                        <td className="px-8 py-4">
+                          <div className="flex gap-1.5">
+                            {Object.entries(card.elements).map(([el, val]) => (
+                              <div key={el} className="flex flex-col items-center gap-1">
+                                <div className={`w-1 h-8 rounded-full bg-ink/5 relative overflow-hidden`}>
+                                  <div 
+                                    className={`absolute bottom-0 left-0 right-0 rounded-full ${
+                                      el === 'wood' ? 'bg-wood' : 
+                                      el === 'fire' ? 'bg-fire' : 
+                                      el === 'earth' ? 'bg-earth' : 
+                                      el === 'metal' ? 'bg-metal' : 'bg-water'
+                                    }`}
+                                    style={{ height: `${val}%` }}
+                                  />
+                                </div>
+                                <span className="text-[8px] text-ink-muted uppercase">{el[0]}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-8 py-4 text-right">
+                          <div className="flex justify-end items-center gap-3">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setEditingCard({ type: 'word', data: card })}
+                              className="h-8 px-4 text-[9px] uppercase tracking-widest"
+                            >
+                              編輯
+                            </Button>
+                            <button 
+                              onClick={() => handleDeleteCard('word', card.id)}
+                              className="p-2 text-rose-400 hover:text-rose-500 transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </GlassCard>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Card Edit Modal */}
       <AnimatePresence>
