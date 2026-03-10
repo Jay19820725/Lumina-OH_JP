@@ -325,7 +325,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                   {item.type === 'report' ? (
                     <GlassCard 
                       onClick={() => handleViewReport(item.data)}
-                      className="p-6 md:p-8 hover:bg-white/80 transition-all cursor-pointer group border-emerald-500/10"
+                      className="p-6 md:p-8 hover:bg-white/80 transition-all cursor-pointer group border-emerald-500/10 active:scale-[0.98]"
                     >
                       <div className={`flex flex-col ${i % 2 === 0 ? 'md:items-end' : 'md:items-start'} gap-4`}>
                         <div className="flex items-center gap-3">
@@ -345,7 +345,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                       </div>
                     </GlassCard>
                   ) : (
-                    <GlassCard className="p-6 md:p-8 border-indigo-500/10 group">
+                    <GlassCard className="p-6 md:p-8 border-indigo-500/10 group hover:bg-white/80 transition-all">
                       <div className={`flex flex-col ${i % 2 === 0 ? 'md:items-end' : 'md:items-start'} gap-4`}>
                         <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] tracking-widest ${
                           EMOTIONS.find(e => e.tag === item.data.emotion_tag)?.color
