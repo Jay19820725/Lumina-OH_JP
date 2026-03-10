@@ -886,7 +886,33 @@ async function startServer() {
     const { key } = req.params;
     try {
       const result = await pool.query("SELECT value FROM site_settings WHERE key = $1", [key]);
-      if (result.rowCount === 0) return res.status(404).json({ error: "Settings not found" });
+      if (result.rowCount === 0) {
+        // Provide defaults for known keys
+        if (key === 'seo') {
+          return res.json({
+            title: "JDear | 能量卡片與心靈導引",
+            description: "透過五行能量卡片，探索內在自我，獲得每日心靈指引與能量平衡。",
+            keywords: "能量卡片, 五行, 心靈導引, 冥想, 自我探索",
+            og_image: "https://picsum.photos/seed/lumina-og/1200/630",
+            google_analytics_id: "",
+            search_console_id: "",
+            index_enabled: true
+          });
+        }
+        if (key === 'fonts') {
+          return res.json({
+            zh: {
+              display: { url: "https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&display=swap", family: "\"Noto Serif TC\", serif" },
+              body: { url: "https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&display=swap", family: "\"Noto Sans TC\", sans-serif" }
+            },
+            ja: {
+              display: { url: "https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&display=swap", family: "\"Shippori Mincho\", serif" },
+              body: { url: "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap", family: "\"Noto Sans JP\", sans-serif" }
+            }
+          });
+        }
+        return res.status(404).json({ error: "Settings not found" });
+      }
       res.json(result.rows[0].value);
     } catch (err) {
       console.error(`Error fetching settings ${key}:`, err);

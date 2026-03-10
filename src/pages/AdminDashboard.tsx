@@ -85,8 +85,8 @@ export const AdminDashboard: React.FC = () => {
   const { data: subscriptions, isLoading: subscriptionsLoading } = useAdminSubscriptions();
   const { data: prompts, isLoading: promptsLoading } = useAdminPrompts();
   const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics();
-  const { data: seoSettings, isLoading: seoLoading } = useAdminSettings('seo');
-  const { data: fontSettings, isLoading: fontsLoading } = useAdminSettings('fonts');
+  const { data: seoSettings, isLoading: seoLoading, isError: seoError } = useAdminSettings('seo');
+  const { data: fontSettings, isLoading: fontsLoading, isError: fontsError } = useAdminSettings('fonts');
 
   // Mutations
   const saveCardMutation = useSaveCardMutation();
@@ -962,7 +962,27 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const renderSettings = () => {
-    if (!seoSettings || !fontSettings) return null;
+    // Provide defaults if data is missing but loading is finished
+    const seo = seoSettings || {
+      title: "JDear | 能量卡片與心靈導引",
+      description: "透過五行能量卡片，探索內在自我，獲得每日心靈指引與能量平衡。",
+      keywords: "能量卡片, 五行, 心靈導引, 冥想, 自我探索",
+      og_image: "https://picsum.photos/seed/lumina-og/1200/630",
+      google_analytics_id: "",
+      search_console_id: "",
+      index_enabled: true
+    };
+
+    const fonts = fontSettings || {
+      zh: {
+        display: { url: "https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&display=swap", family: "\"Noto Serif TC\", serif" },
+        body: { url: "https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&display=swap", family: "\"Noto Sans TC\", sans-serif" }
+      },
+      ja: {
+        display: { url: "https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&display=swap", family: "\"Shippori Mincho\", serif" },
+        body: { url: "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap", family: "\"Noto Sans JP\", sans-serif" }
+      }
+    };
 
     return (
       <div className="space-y-8">
@@ -972,8 +992,8 @@ export const AdminDashboard: React.FC = () => {
             <Button 
               variant="outline"
               onClick={() => {
-                handleSaveSettings('seo', seoSettings);
-                handleSaveSettings('fonts', fontSettings);
+                handleSaveSettings('seo', seo);
+                handleSaveSettings('fonts', fonts);
               }}
               disabled={saveSettingsMutation.isPending}
               className="gap-2 h-10 px-6"
@@ -997,8 +1017,8 @@ export const AdminDashboard: React.FC = () => {
                 <label className="text-[10px] uppercase tracking-widest text-ink-muted">網站標題 (Title)</label>
                 <input 
                   type="text" 
-                  value={seoSettings.title}
-                  onChange={(e) => queryClient.setQueryData(['admin', 'settings', 'seo'], { ...seoSettings, title: e.target.value })}
+                  value={seo.title}
+                  onChange={(e) => queryClient.setQueryData(['admin', 'settings', 'seo'], { ...seo, title: e.target.value })}
                   className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
                 />
               </div>
@@ -1006,8 +1026,8 @@ export const AdminDashboard: React.FC = () => {
               <div className="space-y-2">
                 <label className="text-[10px] uppercase tracking-widest text-ink-muted">網站描述 (Description)</label>
                 <textarea 
-                  value={seoSettings.description}
-                  onChange={(e) => queryClient.setQueryData(['admin', 'settings', 'seo'], { ...seoSettings, description: e.target.value })}
+                  value={seo.description}
+                  onChange={(e) => queryClient.setQueryData(['admin', 'settings', 'seo'], { ...seo, description: e.target.value })}
                   className="w-full h-32 px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30 resize-none"
                 />
               </div>
@@ -1016,8 +1036,8 @@ export const AdminDashboard: React.FC = () => {
                 <label className="text-[10px] uppercase tracking-widest text-ink-muted">關鍵字 (Keywords)</label>
                 <input 
                   type="text" 
-                  value={seoSettings.keywords}
-                  onChange={(e) => queryClient.setQueryData(['admin', 'settings', 'seo'], { ...seoSettings, keywords: e.target.value })}
+                  value={seo.keywords}
+                  onChange={(e) => queryClient.setQueryData(['admin', 'settings', 'seo'], { ...seo, keywords: e.target.value })}
                   className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
                 />
               </div>
@@ -1028,10 +1048,10 @@ export const AdminDashboard: React.FC = () => {
                   <p className="text-[8px] text-ink-muted tracking-widest mt-1">開啟後 Google 才能搜尋到網站</p>
                 </div>
                 <button 
-                  onClick={() => queryClient.setQueryData(['admin', 'settings', 'seo'], { ...seoSettings, index_enabled: !seoSettings.index_enabled })}
-                  className={`w-10 h-5 rounded-full relative transition-colors ${seoSettings.index_enabled ? 'bg-wood' : 'bg-ink/10'}`}
+                  onClick={() => queryClient.setQueryData(['admin', 'settings', 'seo'], { ...seo, index_enabled: !seo.index_enabled })}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${seo.index_enabled ? 'bg-wood' : 'bg-ink/10'}`}
                 >
-                  <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${seoSettings.index_enabled ? 'left-6' : 'left-1'}`} />
+                  <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${seo.index_enabled ? 'left-6' : 'left-1'}`} />
                 </button>
               </div>
             </div>
@@ -1060,9 +1080,9 @@ export const AdminDashboard: React.FC = () => {
                         <input 
                           type="text" 
                           placeholder="字型網址 (Google Fonts URL)"
-                          value={fontSettings[lang].display.url}
+                          value={fonts[lang].display.url}
                           onChange={(e) => {
-                            const newFonts = { ...fontSettings };
+                            const newFonts = { ...fonts };
                             newFonts[lang].display.url = e.target.value;
                             queryClient.setQueryData(['admin', 'settings', 'fonts'], newFonts);
                           }}
@@ -1071,9 +1091,9 @@ export const AdminDashboard: React.FC = () => {
                         <input 
                           type="text" 
                           placeholder="CSS Family Name (e.g. 'Noto Serif TC', serif)"
-                          value={fontSettings[lang].display.family}
+                          value={fonts[lang].display.family}
                           onChange={(e) => {
-                            const newFonts = { ...fontSettings };
+                            const newFonts = { ...fonts };
                             newFonts[lang].display.family = e.target.value;
                             queryClient.setQueryData(['admin', 'settings', 'fonts'], newFonts);
                           }}
@@ -1088,9 +1108,9 @@ export const AdminDashboard: React.FC = () => {
                         <input 
                           type="text" 
                           placeholder="字型網址 (Google Fonts URL)"
-                          value={fontSettings[lang].body.url}
+                          value={fonts[lang].body.url}
                           onChange={(e) => {
-                            const newFonts = { ...fontSettings };
+                            const newFonts = { ...fonts };
                             newFonts[lang].body.url = e.target.value;
                             queryClient.setQueryData(['admin', 'settings', 'fonts'], newFonts);
                           }}
@@ -1099,9 +1119,9 @@ export const AdminDashboard: React.FC = () => {
                         <input 
                           type="text" 
                           placeholder="CSS Family Name (e.g. 'Noto Sans TC', sans-serif)"
-                          value={fontSettings[lang].body.family}
+                          value={fonts[lang].body.family}
                           onChange={(e) => {
-                            const newFonts = { ...fontSettings };
+                            const newFonts = { ...fonts };
                             newFonts[lang].body.family = e.target.value;
                             queryClient.setQueryData(['admin', 'settings', 'fonts'], newFonts);
                           }}
