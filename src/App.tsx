@@ -6,6 +6,8 @@ import { SEOManager } from './components/SEOManager';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAuth } from './hooks/useAuth';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
+import { SoundscapeProvider } from './store/SoundscapeContext';
+import { SoundControl } from './components/layout/SoundControl';
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
@@ -111,6 +113,7 @@ function AppContent() {
         profile={profile}
       />
       
+      <SoundControl />
       <ConnectionStatus />
       
       {/* Subtle noise texture for high-end feel */}
@@ -122,7 +125,9 @@ function AppContent() {
 export default function App() {
   return (
     <LanguageProvider>
-      <AppContent />
+      <SoundscapeProvider>
+        <AppContent />
+      </SoundscapeProvider>
     </LanguageProvider>
   );
 }
