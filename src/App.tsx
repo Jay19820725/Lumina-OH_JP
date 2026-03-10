@@ -4,6 +4,7 @@ import { KomorebiBackground } from './components/layout/KomorebiBackground';
 import { ConnectionStatus } from './components/ui/ConnectionStatus';
 import { SEOManager } from './components/SEOManager';
 import { AnimatePresence, motion } from 'motion/react';
+import { Sparkles, X, ArrowRight } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import { SoundscapeProvider } from './store/SoundscapeContext';
@@ -38,6 +39,26 @@ function AppContent() {
 
   const { profile } = useAuth();
   const { t } = useLanguage();
+  const [pendingReport, setPendingReport] = useState<any>(null);
+
+  // Check for completed reports that haven't been seen
+  useEffect(() => {
+    if (profile?.uid && currentPage !== 'report') {
+      fetch(`/api/reports/${profile.uid}`)
+        .then(res => res.json())
+        .then(reports => {
+          if (reports && reports.length > 0) {
+            const latest = reports[0];
+            const lastSeenId = localStorage.getItem('lastSeenReportId');
+            // If it's a completed report (has todayTheme) and we haven't seen it
+            if (latest.id !== lastSeenId && latest.todayTheme) {
+              setPendingReport(latest);
+            }
+          }
+        })
+        .catch(err => console.error("Failed to fetch reports for return prompt:", err));
+    }
+  }, [profile?.uid, currentPage]);
 
   // Simple URL-based routing
   useEffect(() => {
@@ -67,8 +88,11 @@ function AppContent() {
     return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
-  const navigate = (page: Page) => {
-    setCurrentPage(page);
+  const navigate = (page: Page | string) => {
+    const isSubPath = page.includes('/');
+    const basePage = isSubPath ? page.split('/')[0] : page;
+    
+    setCurrentPage(basePage as Page);
     const path = page === 'home' ? '/' : `/${page}`;
     if (window.location.pathname !== path) {
       window.history.pushState(null, '', path);
@@ -123,6 +147,54 @@ function AppContent() {
       
       <SoundControl />
       <ConnectionStatus />
+
+      {/* Return Prompt for Completed AI Analysis */}
+      <AnimatePresence>
+        {pendingReport && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className="fixed bottom-28 left-6 right-6 md:left-auto md:right-12 md:w-96 z-[60]"
+          >
+            <div className="bg-white/80 backdrop-blur-2xl border border-wood/20 rounded-3xl p-6 shadow-2xl shadow-wood/10 flex flex-col gap-4">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-wood/10 flex items-center justify-center text-wood">
+                    <Sparkles size={20} />
+                  </div>
+                  <h4 className="font-serif text-lg text-ink tracking-wide">{t('report_revealed_ready')}</h4>
+                </div>
+                <button 
+                  onClick={() => {
+                    localStorage.setItem('lastSeenReportId', pendingReport.id);
+                    setPendingReport(null);
+                  }}
+                  className="p-1 hover:bg-ink/5 rounded-full transition-colors"
+                >
+                  <X size={18} className="text-ink-muted" />
+                </button>
+              </div>
+              
+              <p className="text-sm text-ink-muted leading-relaxed font-light">
+                {t('report_return_prompt')}
+              </p>
+              
+              <button
+                onClick={() => {
+                  localStorage.setItem('lastSeenReportId', pendingReport.id);
+                  setPendingReport(null);
+                  navigate(`report/${pendingReport.id}` as any);
+                }}
+                className="flex items-center justify-center gap-2 w-full h-12 bg-wood text-white rounded-2xl text-sm tracking-widest hover:bg-wood/90 transition-all active:scale-[0.98]"
+              >
+                {t('report_view_now')}
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Subtle noise texture for high-end feel */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.015] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] -z-20" />

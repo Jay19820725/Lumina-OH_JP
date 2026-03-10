@@ -1,12 +1,11 @@
-import React, { useRef, useState } from 'react';
-import { motion } from 'motion/react';
-import html2canvas from 'html2canvas';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useTest } from '../store/TestContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 import { FiveElement } from '../core/types';
 import { useLanguage } from '../i18n/LanguageContext';
-import { Share2, Download, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Share2, RefreshCw, ArrowLeft } from 'lucide-react';
 
 import { 
   Radar, 
@@ -42,12 +41,11 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   const { report, selectedCards, resetTest, setReport } = useTest();
   const { t } = useLanguage();
   const reportRef = useRef<HTMLDivElement>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [isLoadingShared, setIsLoadingShared] = useState(false);
   const [selectedShareThumbnail, setSelectedShareThumbnail] = useState<string | null>(report?.shareThumbnail || null);
 
   // Handle shared report fetching
-  React.useEffect(() => {
+  useEffect(() => {
     const path = window.location.pathname;
     if (path.startsWith('/report/')) {
       const reportId = path.split('/').pop();
@@ -99,31 +97,6 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
     }
   };
 
-  const handleSave = async () => {
-    if (!reportRef.current) return;
-    setIsSaving(true);
-    try {
-      const canvas = await html2canvas(reportRef.current, {
-        backgroundColor: '#F5F5F0',
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        windowWidth: reportRef.current.scrollWidth,
-        windowHeight: reportRef.current.scrollHeight,
-      });
-      
-      const link = document.createElement('a');
-      link.download = `energy-report-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch (error) {
-      console.error('Failed to save report:', error);
-      alert(t('save_failed'));
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/report/${report.id}`;
     const shareData = {
@@ -151,6 +124,13 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   };
 
   const isAiLoading = !report.todayTheme && !report.isGuest;
+
+  // Mark report as seen when fully loaded
+  useEffect(() => {
+    if (report?.id && !isAiLoading) {
+      localStorage.setItem('lastSeenReportId', report.id);
+    }
+  }, [report?.id, isAiLoading]);
   const isGuest = report.isGuest;
 
   const elements = [
@@ -323,55 +303,67 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
               </div>
             </GlassCard>
           )}
-
-          <div className="flex gap-6">
-            <Button 
-              variant="outline" 
-              className="flex-1 gap-3 h-14 text-xs tracking-[0.2em]"
-              onClick={handleSave}
-              disabled={isSaving}
-            >
-              <Download size={16} className={isSaving ? 'animate-pulse' : ''} /> 
-              {isSaving ? t('saving') : t('report_save')}
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex-1 gap-3 h-14 text-xs tracking-[0.2em]"
-              onClick={handleShare}
-              disabled={!report.id || (report.id.length < 15 && !report.id.includes('-'))}
-            >
-              <Share2 size={16} className={(!report.id || (report.id.length < 15 && !report.id.includes('-'))) ? 'animate-pulse' : ''} /> 
-              {(!report.id || (report.id.length < 15 && !report.id.includes('-'))) ? t('saving') : t('report_share')}
-            </Button>
-          </div>
         </div>
       </div>
 
-      {/* AI Analysis Sections */}
-      <div className="space-y-24 md:space-y-32 mb-32">
-        {isGuest ? (
-          <GlassCard className="p-12 md:p-20 text-center space-y-8 bg-wood/5 border-wood/20">
-            <div className="space-y-4">
-              <h2 className="font-serif text-2xl md:text-3xl tracking-widest text-wood">{t('report_guest_title')}</h2>
-              <p className="text-sm md:text-base text-ink-muted leading-relaxed max-w-lg mx-auto">
-                {t('report_guest_desc')}
-              </p>
-            </div>
-            <Button 
-              onClick={() => window.location.href = '/profile'} 
-              className="h-14 px-12 bg-wood hover:bg-wood/90 text-white tracking-widest"
+      {/* AI Analysis Sections with Soul Weaving Mask */}
+      <div className="relative">
+        <AnimatePresence>
+          {isAiLoading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-30 flex flex-col items-center justify-start pt-32 md:pt-48 px-8 text-center bg-[#F5F5F0]/60 backdrop-blur-md rounded-[3rem]"
             >
-              {t('report_signin_btn')}
-            </Button>
-          </GlassCard>
-        ) : (
-          <>
-            {/* Today's Theme */}
-            <div className="text-center space-y-8">
-              <span className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_today_theme')}</span>
-              {isAiLoading ? (
+              <div className="max-w-md space-y-12">
                 <WeavingLoader label={t('report_weaving')} />
-              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1, duration: 2 }}
+                  className="space-y-6"
+                >
+                  <p className="text-sm md:text-base text-ink-muted leading-relaxed font-light tracking-widest whitespace-pre-line">
+                    {t('report_weaving_coffee')}
+                  </p>
+                  <div className="flex justify-center gap-2">
+                    {[0, 1, 2].map(i => (
+                      <motion.div 
+                        key={i}
+                        animate={{ scale: [1, 1.5, 1], opacity: [0.2, 0.5, 0.2] }}
+                        transition={{ duration: 3, repeat: Infinity, delay: i * 0.5 }}
+                        className="w-1.5 h-1.5 rounded-full bg-wood"
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className={`space-y-24 md:space-y-32 mb-32 transition-all duration-1000 ${isAiLoading ? 'blur-sm opacity-30 grayscale' : 'blur-0 opacity-100 grayscale-0'}`}>
+          {isGuest ? (
+            <GlassCard className="p-12 md:p-20 text-center space-y-8 bg-wood/5 border-wood/20">
+              <div className="space-y-4">
+                <h2 className="font-serif text-2xl md:text-3xl tracking-widest text-wood">{t('report_guest_title')}</h2>
+                <p className="text-sm md:text-base text-ink-muted leading-relaxed max-w-lg mx-auto">
+                  {t('report_guest_desc')}
+                </p>
+              </div>
+              <Button 
+                onClick={() => window.location.href = '/profile'} 
+                className="h-14 px-12 bg-wood hover:bg-wood/90 text-white tracking-widest"
+              >
+                {t('report_signin_btn')}
+              </Button>
+            </GlassCard>
+          ) : (
+            <>
+              {/* Today's Theme */}
+              <div className="text-center space-y-8">
+                <span className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_today_theme')}</span>
                 <motion.h2 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -379,19 +371,15 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                 >
                   「{report.todayTheme}」
                 </motion.h2>
-              )}
-            </div>
-
-            {/* Pair Interpretations */}
-            <div className="space-y-16 md:space-y-24">
-              <div className="text-center space-y-6">
-                <h2 className="font-serif font-extralight tracking-widest">{t('report_card_msg')}</h2>
-                <div className="w-12 h-px bg-ink/10 mx-auto" />
               </div>
-              
-              {isAiLoading ? (
-                <WeavingLoader label={t('report_interpreting')} />
-              ) : (
+
+              {/* Pair Interpretations */}
+              <div className="space-y-16 md:space-y-24">
+                <div className="text-center space-y-6">
+                  <h2 className="font-serif font-extralight tracking-widest">{t('report_card_msg')}</h2>
+                  <div className="w-12 h-px bg-ink/10 mx-auto" />
+                </div>
+                
                 <div className="space-y-12">
                   <p className="text-base md:text-lg text-ink-muted leading-[2.2] font-light text-center max-w-3xl mx-auto px-6">
                     {report.cardInterpretation}
@@ -424,7 +412,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                             </p>
                             <div className="h-px bg-ink/10 w-8 mx-auto" />
                             <p className="text-sm text-ink-muted leading-[2.2] font-light">
-                              {interp?.text || t('report_interpreting')}
+                              {interp?.text}
                             </p>
                           </div>
                         </GlassCard>
@@ -432,16 +420,12 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                     })}
                   </motion.div>
                 </div>
-              )}
-            </div>
+              </div>
 
-            {/* Psychological Insight & Five Element Analysis */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32">
-              <div className="space-y-12">
-                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_psych_insight')}</h3>
-                {isAiLoading ? (
-                  <WeavingLoader label={t('report_listening')} />
-                ) : (
+              {/* Psychological Insight & Five Element Analysis */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32">
+                <div className="space-y-12">
+                  <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_psych_insight')}</h3>
                   <motion.div 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -451,13 +435,9 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                       {report.psychologicalInsight}
                     </p>
                   </motion.div>
-                )}
-              </div>
-              <div className="space-y-12">
-                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_five_element')}</h3>
-                {isAiLoading ? (
-                  <WeavingLoader label={t('report_analyzing')} />
-                ) : (
+                </div>
+                <div className="space-y-12">
+                  <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_five_element')}</h3>
                   <motion.div 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -467,27 +447,19 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                       {report.fiveElementAnalysis}
                     </p>
                   </motion.div>
-                )}
+                </div>
               </div>
-            </div>
 
-            {/* Reflection & Action Suggestion */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32 border-t border-ink/5 pt-24">
-              <div className="space-y-12">
-                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_reflection')}</h3>
-                {isAiLoading ? (
-                  <WeavingLoader label={t('report_guiding')} />
-                ) : (
+              {/* Reflection & Action Suggestion */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32 border-t border-ink/5 pt-24">
+                <div className="space-y-12">
+                  <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_reflection')}</h3>
                   <p className="text-lg md:text-xl font-serif font-extralight leading-relaxed text-ink italic">
                     「{report.reflection}」
                   </p>
-                )}
-              </div>
-              <div className="space-y-12">
-                <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_action')}</h3>
-                {isAiLoading ? (
-                  <WeavingLoader label={t('report_balancing')} />
-                ) : (
+                </div>
+                <div className="space-y-12">
+                  <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_action')}</h3>
                   <div className="flex items-start gap-6">
                     <div className="w-12 h-12 rounded-full bg-wood/10 flex items-center justify-center flex-shrink-0">
                       <RefreshCw size={20} className="text-wood" />
@@ -496,12 +468,37 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                       {report.actionSuggestion}
                     </p>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Floating Share Button */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="fixed bottom-24 right-6 md:bottom-32 md:right-12 z-50"
+      >
+        <button
+          onClick={handleShare}
+          disabled={!report.id || (report.id.length < 15 && !report.id.includes('-'))}
+          className={`group flex items-center gap-3 px-6 h-14 rounded-full backdrop-blur-xl border border-white/40 shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale ${
+            elements.find(e => e.key === report.dominantElement)?.color || 'bg-white/80'
+          } bg-opacity-20 hover:bg-opacity-40`}
+          style={{
+            boxShadow: `0 20px 40px -10px ${elements.find(e => e.key === report.dominantElement)?.hex || '#000000'}40`
+          }}
+        >
+          <div className="w-8 h-8 rounded-full bg-white/40 flex items-center justify-center text-ink">
+            <Share2 size={16} className={(!report.id || (report.id.length < 15 && !report.id.includes('-'))) ? 'animate-pulse' : ''} />
+          </div>
+          <span className="text-xs font-medium tracking-widest text-ink whitespace-nowrap overflow-hidden max-w-0 group-hover:max-w-[200px] transition-all duration-500 ease-in-out">
+            {t('report_share_energy_color')}
+          </span>
+        </button>
+      </motion.div>
 
       <div className="mt-24 text-center">
         <Button onClick={onReset} variant="outline" className="gap-2 h-14 px-10">
