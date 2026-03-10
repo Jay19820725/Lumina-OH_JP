@@ -316,7 +316,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                     <h2 className="text-xl md:text-2xl font-serif tracking-widest">Premium体験にアップグレード</h2>
                   </div>
                   <p className="text-sm text-ink-muted max-w-lg mx-auto leading-relaxed">
-                    エネルギー日誌、ビジョンボード、詳細な月間レポートを解放し、JDearをあなたの魂の成長の専属ガイドにしましょう。
+                    エネルギー日誌、ビジョンボード、詳細な月間レポートを解放し、JDearをあなたの魂の成長の専屬ガイドにしましょう。
                   </p>
                 </div>
                 <Button 
