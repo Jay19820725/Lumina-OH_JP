@@ -138,7 +138,7 @@ async function startServer() {
       -- Energy Reports table
       CREATE TABLE IF NOT EXISTS energy_reports (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+        user_id TEXT REFERENCES users(uid) ON DELETE CASCADE,
         timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         selected_image_ids JSONB DEFAULT '[]',
         selected_word_ids JSONB DEFAULT '[]',
@@ -157,6 +157,9 @@ async function startServer() {
         action_suggestion TEXT,
         share_thumbnail TEXT
       );
+
+      -- Ensure user_id is nullable if table already exists
+      ALTER TABLE energy_reports ALTER COLUMN user_id DROP NOT NULL;
 
       -- Ensure share_thumbnail exists
       ALTER TABLE energy_reports ADD COLUMN IF NOT EXISTS share_thumbnail TEXT;

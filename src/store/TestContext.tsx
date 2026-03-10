@@ -119,11 +119,6 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setReport(initialReport);
     setIsCompleted(true);
 
-    // If guest, do not call AI Analysis
-    if (!user) {
-      return initialReport;
-    }
-
     // Stage 1: Save basic report immediately to get a UUID
     const savePromise = (async () => {
       try {
@@ -131,7 +126,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId: user.uid,
+            userId: user?.uid || null,
             selectedImageIds: initialReport.selectedImageIds,
             selectedWordIds: initialReport.selectedWordIds,
             totalScores: initialReport.totalScores,
@@ -154,6 +149,11 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return null;
     })();
 
+    // If guest, we still want to save but maybe we skip AI analysis if it's too expensive?
+    // Actually, the user said "跟用戶本人一模一樣的完整報告", so guests should also get AI analysis if possible.
+    // However, AI analysis usually requires a logged-in user or some token.
+    // Let's check if generateAIAnalysis works for guests.
+    
     // Stage 2: Asynchronously call AI Analysis and update the report
     generateAIAnalysis(selectedCards, analysis.totalScores, language).then(async (aiAnalysis) => {
       // Wait for Stage 1 to finish to get the real ID

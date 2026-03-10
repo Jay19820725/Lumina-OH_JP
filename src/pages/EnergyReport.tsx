@@ -123,7 +123,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
     }
   };
 
-  const isAiLoading = !report.todayTheme && !report.isGuest;
+  const isAiLoading = !report.todayTheme;
 
   // Mark report as seen when fully loaded
   useEffect(() => {
@@ -230,7 +230,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
 
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 text-center pointer-events-none">
               <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted block mb-1">{t('report_balance')}</span>
-              <span className="text-5xl md:text-7xl font-serif font-extralight tracking-tighter">{report.balance_score}</span>
+              <span className="text-5xl md:text-7xl font-serif font-extralight tracking-tighter">{report.balanceScore}</span>
             </div>
           </div>
 
@@ -258,17 +258,17 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         <div className="space-y-10 md:space-y-16">
           <GlassCard delay={0.4} className="p-10 md:p-14">
             <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted mb-6 md:mb-10">{t('report_dominant')}</h3>
-            <p className="text-3xl md:text-4xl font-serif capitalize mb-4 md:mb-6 font-extralight tracking-widest">{translateElement(report.dominant_element)}</p>
+            <p className="text-3xl md:text-4xl font-serif capitalize mb-4 md:mb-6 font-extralight tracking-widest">{translateElement(report.dominantElement)}</p>
             <p className="text-sm md:text-base text-ink-muted leading-[2] font-light">
-              {t('report_dominant_desc').replace('{element}', translateElement(report.dominant_element))}
+              {t('report_dominant_desc').replace('{element}', translateElement(report.dominantElement))}
             </p>
           </GlassCard>
 
           <GlassCard delay={0.6} className="p-10 md:p-14">
             <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted mb-6 md:mb-10">{t('report_weak')}</h3>
-            <p className="text-3xl md:text-4xl font-serif capitalize mb-4 md:mb-6 font-extralight tracking-widest">{translateElement(report.weak_element)}</p>
+            <p className="text-3xl md:text-4xl font-serif capitalize mb-4 md:mb-6 font-extralight tracking-widest">{translateElement(report.weakElement)}</p>
             <p className="text-sm md:text-base text-ink-muted leading-[2] font-light">
-              {t('report_weak_desc').replace('{element}', translateElement(report.weak_element))}
+              {t('report_weak_desc').replace('{element}', translateElement(report.weakElement))}
             </p>
           </GlassCard>
 
@@ -280,7 +280,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                 {t('report_share_thumbnail_desc')}
               </p>
               <div className="grid grid-cols-3 gap-3">
-                {[...selectedCards.images, ...selectedCards.words].map((card, i) => (
+                {(report.pairs ? report.pairs.flatMap(p => [p.image, p.word]) : [...selectedCards.images, ...selectedCards.words]).map((card, i) => (
                   <button
                     key={card.id}
                     onClick={() => handleSelectThumbnail(card.imageUrl)}
@@ -344,7 +344,118 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         </AnimatePresence>
 
         <div className={`space-y-24 md:space-y-32 mb-32 transition-all duration-1000 ${isAiLoading ? 'blur-sm opacity-30 grayscale' : 'blur-0 opacity-100 grayscale-0'}`}>
-          {isGuest ? (
+          {/* Today's Theme */}
+          <div className="text-center space-y-8">
+            <span className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_today_theme')}</span>
+            <motion.h2 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-2xl md:text-4xl font-serif font-extralight italic tracking-widest text-ink leading-relaxed px-4"
+            >
+              「{report.todayTheme}」
+            </motion.h2>
+          </div>
+
+          {/* Pair Interpretations */}
+          <div className="space-y-16 md:space-y-24">
+            <div className="text-center space-y-6">
+              <h2 className="font-serif font-extralight tracking-widest">{t('report_card_msg')}</h2>
+              <div className="w-12 h-px bg-ink/10 mx-auto" />
+            </div>
+            
+            <div className="space-y-12">
+              <p className="text-base md:text-lg text-ink-muted leading-[2.2] font-light text-center max-w-3xl mx-auto px-6">
+                {report.cardInterpretation}
+              </p>
+              
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16"
+              >
+                {[0, 1, 2].map((i) => {
+                  const interp = report.pairInterpretations?.[i];
+                  const pair = (report.pairs && report.pairs.length > i) ? report.pairs[i] : selectedCards.pairs?.[i];
+                  
+                  if (!pair) return null;
+                  
+                  return (
+                    <GlassCard key={i} delay={0.2 * i} className="p-10 flex flex-col gap-8">
+                      <div className="flex gap-3 justify-center">
+                        <div className="w-20 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/20">
+                          <img src={pair.image.imageUrl} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="w-20 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/20">
+                          <img src={pair.word.imageUrl} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                      <div className="space-y-6">
+                        <p className="text-sm text-ink leading-[2] font-light italic text-center px-4">
+                          "{pair.association}"
+                        </p>
+                        <div className="h-px bg-ink/10 w-8 mx-auto" />
+                        <p className="text-sm text-ink-muted leading-[2.2] font-light">
+                          {interp?.text}
+                        </p>
+                      </div>
+                    </GlassCard>
+                  );
+                })}
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Psychological Insight & Five Element Analysis */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32">
+            <div className="space-y-12">
+              <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_psych_insight')}</h3>
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="prose prose-sm prose-ink max-w-none"
+              >
+                <p className="text-xl md:text-2xl font-serif leading-[2.2] font-extralight text-ink tracking-wide">
+                  {report.psychologicalInsight}
+                </p>
+              </motion.div>
+            </div>
+            <div className="space-y-12">
+              <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_five_element')}</h3>
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-white/30 backdrop-blur-3xl rounded-[3rem] p-10 md:p-16 border border-white/40 shadow-2xl shadow-ink/5"
+              >
+                <p className="text-base md:text-lg leading-[2.4] font-light text-ink-muted tracking-wider">
+                  {report.fiveElementAnalysis}
+                </p>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Reflection & Action Suggestion */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32 border-t border-ink/5 pt-24">
+            <div className="space-y-12">
+              <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_reflection')}</h3>
+              <p className="text-lg md:text-xl font-serif font-extralight leading-relaxed text-ink italic">
+                「{report.reflection}」
+              </p>
+            </div>
+            <div className="space-y-12">
+              <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_action')}</h3>
+              <div className="flex items-start gap-6">
+                <div className="w-12 h-12 rounded-full bg-wood/10 flex items-center justify-center flex-shrink-0">
+                  <RefreshCw size={20} className="text-wood" />
+                </div>
+                <p className="text-base md:text-lg leading-[2.2] font-light text-ink-muted">
+                  {report.actionSuggestion}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Guest CTA - Only show if current user is guest */}
+          {isGuest && (
             <GlassCard className="p-12 md:p-20 text-center space-y-8 bg-wood/5 border-wood/20">
               <div className="space-y-4">
                 <h2 className="font-serif text-2xl md:text-3xl tracking-widest text-wood">{t('report_guest_title')}</h2>
@@ -359,118 +470,6 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                 {t('report_signin_btn')}
               </Button>
             </GlassCard>
-          ) : (
-            <>
-              {/* Today's Theme */}
-              <div className="text-center space-y-8">
-                <span className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_today_theme')}</span>
-                <motion.h2 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-2xl md:text-4xl font-serif font-extralight italic tracking-widest text-ink leading-relaxed px-4"
-                >
-                  「{report.todayTheme}」
-                </motion.h2>
-              </div>
-
-              {/* Pair Interpretations */}
-              <div className="space-y-16 md:space-y-24">
-                <div className="text-center space-y-6">
-                  <h2 className="font-serif font-extralight tracking-widest">{t('report_card_msg')}</h2>
-                  <div className="w-12 h-px bg-ink/10 mx-auto" />
-                </div>
-                
-                <div className="space-y-12">
-                  <p className="text-base md:text-lg text-ink-muted leading-[2.2] font-light text-center max-w-3xl mx-auto px-6">
-                    {report.cardInterpretation}
-                  </p>
-                  
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16"
-                  >
-                    {[0, 1, 2].map((i) => {
-                      const interp = report.pairInterpretations?.[i];
-                      const pair = (report.pairs && report.pairs.length > i) ? report.pairs[i] : selectedCards.pairs?.[i];
-                      
-                      if (!pair) return null;
-                      
-                      return (
-                        <GlassCard key={i} delay={0.2 * i} className="p-10 flex flex-col gap-8">
-                          <div className="flex gap-3 justify-center">
-                            <div className="w-20 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/20">
-                              <img src={pair.image.imageUrl} alt="" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="w-20 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/20">
-                              <img src={pair.word.imageUrl} alt="" className="w-full h-full object-cover" />
-                            </div>
-                          </div>
-                          <div className="space-y-6">
-                            <p className="text-sm text-ink leading-[2] font-light italic text-center px-4">
-                              "{pair.association}"
-                            </p>
-                            <div className="h-px bg-ink/10 w-8 mx-auto" />
-                            <p className="text-sm text-ink-muted leading-[2.2] font-light">
-                              {interp?.text}
-                            </p>
-                          </div>
-                        </GlassCard>
-                      );
-                    })}
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* Psychological Insight & Five Element Analysis */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32">
-                <div className="space-y-12">
-                  <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_psych_insight')}</h3>
-                  <motion.div 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="prose prose-sm prose-ink max-w-none"
-                  >
-                    <p className="text-xl md:text-2xl font-serif leading-[2.2] font-extralight text-ink tracking-wide">
-                      {report.psychologicalInsight}
-                    </p>
-                  </motion.div>
-                </div>
-                <div className="space-y-12">
-                  <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_five_element')}</h3>
-                  <motion.div 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="bg-white/30 backdrop-blur-3xl rounded-[3rem] p-10 md:p-16 border border-white/40 shadow-2xl shadow-ink/5"
-                  >
-                    <p className="text-base md:text-lg leading-[2.4] font-light text-ink-muted tracking-wider">
-                      {report.fiveElementAnalysis}
-                    </p>
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* Reflection & Action Suggestion */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32 border-t border-ink/5 pt-24">
-                <div className="space-y-12">
-                  <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_reflection')}</h3>
-                  <p className="text-lg md:text-xl font-serif font-extralight leading-relaxed text-ink italic">
-                    「{report.reflection}」
-                  </p>
-                </div>
-                <div className="space-y-12">
-                  <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('report_action')}</h3>
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 rounded-full bg-wood/10 flex items-center justify-center flex-shrink-0">
-                      <RefreshCw size={20} className="text-wood" />
-                    </div>
-                    <p className="text-base md:text-lg leading-[2.2] font-light text-ink-muted">
-                      {report.actionSuggestion}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </>
           )}
         </div>
       </div>
