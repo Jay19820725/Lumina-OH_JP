@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   LayoutDashboard, 
@@ -98,6 +99,18 @@ export const AdminDashboard: React.FC = () => {
   const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
   const [cardTab, setCardTab] = useState<'image' | 'word'>('image');
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (editingCard) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [editingCard]);
 
   const isLoading = 
     (activeModule === 'dashboard' && statsLoading) ||
@@ -336,7 +349,7 @@ export const AdminDashboard: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
           >
             <GlassCard className="p-0 overflow-hidden">
-              <div className="p-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+              <div className="p-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 max-h-[calc(100vh-350px)] overflow-y-auto custom-scrollbar">
                 {cards?.images.map(card => (
                   <div key={card.id} className="aspect-[3/4] rounded-2xl overflow-hidden bg-ink/5 border border-ink/5 group relative shadow-sm hover:shadow-md transition-all">
                     <img src={card.imageUrl} className="w-full h-full object-cover" />
@@ -368,7 +381,7 @@ export const AdminDashboard: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
           >
             <GlassCard className="p-0 overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-[calc(100vh-350px)] overflow-y-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-ink/[0.02] border-b border-ink/5">
@@ -439,16 +452,16 @@ export const AdminDashboard: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Card Edit Modal */}
-      <AnimatePresence>
-        {editingCard && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Card Edit Modal via Portal */}
+      {editingCard && createPortal(
+        <AnimatePresence>
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setEditingCard(null)}
-              className="absolute inset-0 bg-ink/40 backdrop-blur-md"
+              className="absolute inset-0 bg-ink/60 backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -593,8 +606,9 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 
