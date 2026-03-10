@@ -124,46 +124,68 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return initialReport;
     }
 
-    // Asynchronously call AI Analysis for logged-in users
-    generateAIAnalysis(selectedCards, analysis.totalScores, language).then(async (aiAnalysis) => {
-      const finalReport = {
-        ...initialReport,
-        ...aiAnalysis
-      };
-      setReport(finalReport);
-
-      // Save to API
+    // Stage 1: Save basic report immediately to get a UUID
+    const savePromise = (async () => {
       try {
         const response = await fetch('/api/reports', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            ...finalReport,
             userId: user.uid,
-            selectedImageIds: finalReport.selectedImageIds,
-            selectedWordIds: finalReport.selectedWordIds,
-            totalScores: finalReport.totalScores,
-            dominantElement: finalReport.dominantElement,
-            weakElement: finalReport.weakElement,
-            balanceScore: finalReport.balanceScore,
-            interpretation: finalReport.interpretation,
-            pairInterpretations: finalReport.pairInterpretations || [],
-            pairs: finalReport.pairs,
-            todayTheme: finalReport.todayTheme,
-            cardInterpretation: finalReport.cardInterpretation,
-            psychologicalInsight: finalReport.psychologicalInsight,
-            fiveElementAnalysis: finalReport.fiveElementAnalysis,
-            reflection: finalReport.reflection,
-            actionSuggestion: finalReport.actionSuggestion
+            selectedImageIds: initialReport.selectedImageIds,
+            selectedWordIds: initialReport.selectedWordIds,
+            totalScores: initialReport.totalScores,
+            dominantElement: initialReport.dominantElement,
+            weakElement: initialReport.weakElement,
+            balanceScore: initialReport.balanceScore,
+            interpretation: initialReport.interpretation,
+            pairs: initialReport.pairs
           })
         });
         
         if (response.ok) {
           const savedReport = await response.json();
           setReport(prev => prev ? { ...prev, id: savedReport.id } : null);
+          return savedReport.id as string;
         }
       } catch (error) {
-        console.error("Error saving report to API:", error);
+        console.error("Error saving initial report to API:", error);
+      }
+      return null;
+    })();
+
+    // Stage 2: Asynchronously call AI Analysis and update the report
+    generateAIAnalysis(selectedCards, analysis.totalScores, language).then(async (aiAnalysis) => {
+      // Wait for Stage 1 to finish to get the real ID
+      const realId = await savePromise;
+      
+      const finalReport = {
+        ...initialReport,
+        ...aiAnalysis,
+        id: realId || initialReport.id
+      };
+      setReport(finalReport);
+
+      // Update the existing report in the database if we have a real ID
+      if (realId) {
+        try {
+          await fetch(`/api/reports/${realId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              interpretation: finalReport.interpretation,
+              pairInterpretations: finalReport.pairInterpretations || [],
+              todayTheme: finalReport.todayTheme,
+              cardInterpretation: finalReport.cardInterpretation,
+              psychologicalInsight: finalReport.psychologicalInsight,
+              fiveElementAnalysis: finalReport.fiveElementAnalysis,
+              reflection: finalReport.reflection,
+              actionSuggestion: finalReport.actionSuggestion
+            })
+          });
+        } catch (error) {
+          console.error("Error updating report with AI analysis:", error);
+        }
       }
     }).catch(error => {
       console.error("AI Analysis failed in background:", error);

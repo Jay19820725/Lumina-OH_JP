@@ -338,8 +338,10 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
               variant="outline" 
               className="flex-1 gap-3 h-14 text-xs tracking-[0.2em]"
               onClick={handleShare}
+              disabled={!report.id || (report.id.length < 15 && !report.id.includes('-'))}
             >
-              <Share2 size={16} /> {t('report_share')}
+              <Share2 size={16} className={(!report.id || (report.id.length < 15 && !report.id.includes('-'))) ? 'animate-pulse' : ''} /> 
+              {(!report.id || (report.id.length < 15 && !report.id.includes('-'))) ? t('saving') : t('report_share')}
             </Button>
           </div>
         </div>

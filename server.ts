@@ -706,6 +706,61 @@ async function startServer() {
     }
   });
 
+  app.post("/api/reports/:id", async (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+    const fields = Object.keys(updates);
+    
+    if (fields.length === 0) return res.status(400).json({ error: "No fields to update" });
+
+    const setClause = fields.map((f, i) => {
+      // Map camelCase to snake_case if needed
+      const colName = f.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+      return `${colName} = $${i + 2}`;
+    }).join(", ");
+    
+    const values = [id, ...Object.values(updates).map(v => 
+      (typeof v === 'object' && v !== null) ? JSON.stringify(v) : v
+    )];
+
+    try {
+      const result = await pool.query(
+        `UPDATE energy_reports SET ${setClause} WHERE id = $1 RETURNING *`, 
+        values
+      );
+      
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: "Report not found" });
+      }
+      
+      const row = result.rows[0];
+      res.json({
+        id: row.id,
+        userId: row.user_id,
+        timestamp: new Date(row.timestamp).getTime(),
+        selectedImageIds: row.selected_image_ids,
+        selectedWordIds: row.selected_word_ids,
+        totalScores: row.total_scores,
+        dominantElement: row.dominant_element,
+        weakElement: row.weak_element,
+        balanceScore: row.balance_score,
+        interpretation: row.interpretation,
+        pairInterpretations: row.pair_interpretations,
+        pairs: row.pairs,
+        todayTheme: row.today_theme,
+        cardInterpretation: row.card_interpretation,
+        psychologicalInsight: row.psychological_insight,
+        fiveElementAnalysis: row.five_element_analysis,
+        reflection: row.reflection,
+        actionSuggestion: row.action_suggestion,
+        shareThumbnail: row.share_thumbnail
+      });
+    } catch (err) {
+      console.error("Error updating energy report:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.post("/api/reports/:id/share", async (req, res) => {
     const { id } = req.params;
     const { shareThumbnail } = req.body;
