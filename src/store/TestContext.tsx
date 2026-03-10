@@ -6,6 +6,8 @@ import { performJDearDraw } from '../services/cardEngine';
 import { generateAIAnalysis } from '../services/analysisService';
 import { drawSession, updateSession } from '../services/sessionService';
 
+import { useLanguage } from '../i18n/LanguageContext';
+
 interface TestContextType {
   selectedCards: SelectedCards;
   currentStep: number;
@@ -23,6 +25,7 @@ interface TestContextType {
 const TestContext = createContext<TestContextType | undefined>(undefined);
 
 export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { language } = useLanguage();
   const [selectedCards, setSelectedCards] = useState<SelectedCards>({ images: [], words: [], drawnAt: 0 });
   const [currentStep, setCurrentStep] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -106,7 +109,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initialReport: AnalysisReport = {
       id: Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
-      interpretation: "您的能量分佈已生成。登入後即可獲得 AI 深度引導報告。",
+      interpretation: language === 'ja' ? "エネルギー分布が生成されました。ログインするとAIによる詳細なガイドレポートが受け取れます。" : "您的能量分佈已生成。登入後即可獲得 AI 深度引導報告。",
       ...analysis,
       selectedImageIds: selectedCards.images.map(img => img.id),
       selectedWordIds: selectedCards.words.map(w => w.id),
@@ -123,7 +126,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Asynchronously call AI Analysis for logged-in users
-    generateAIAnalysis(selectedCards, analysis.totalScores).then(async (aiAnalysis) => {
+    generateAIAnalysis(selectedCards, analysis.totalScores, language as 'zh' | 'ja').then(async (aiAnalysis) => {
       const finalReport = {
         ...initialReport,
         ...aiAnalysis

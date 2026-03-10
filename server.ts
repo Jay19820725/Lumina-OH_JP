@@ -156,6 +156,36 @@ async function startServer() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Add Indexes for performance
+      CREATE INDEX IF NOT EXISTS idx_energy_journal_user_id ON energy_journal(user_id);
+      CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_manifestations_user_id ON manifestations(user_id);
+      CREATE INDEX IF NOT EXISTS idx_energy_reports_user_id ON energy_reports(user_id);
+      CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login);
+      CREATE INDEX IF NOT EXISTS idx_users_register_date ON users(register_date);
+      CREATE INDEX IF NOT EXISTS idx_sessions_session_time ON sessions(session_time);
+
+      -- Trigger for updated_at
+      CREATE OR REPLACE FUNCTION update_updated_at_column()
+      RETURNS TRIGGER AS $$
+      BEGIN
+          NEW.updated_at = CURRENT_TIMESTAMP;
+          RETURN NEW;
+      END;
+      $$ language 'plpgsql';
+
+      DROP TRIGGER IF EXISTS update_ai_prompts_updated_at ON ai_prompts;
+      CREATE TRIGGER update_ai_prompts_updated_at
+      BEFORE UPDATE ON ai_prompts
+      FOR EACH ROW
+      EXECUTE FUNCTION update_updated_at_column();
+
+      DROP TRIGGER IF EXISTS update_site_settings_updated_at ON site_settings;
+      CREATE TRIGGER update_site_settings_updated_at
+      BEFORE UPDATE ON site_settings
+      FOR EACH ROW
+      EXECUTE FUNCTION update_updated_at_column();
+
       -- Initialize default SEO settings if not exists
       INSERT INTO site_settings (key, value)
       VALUES ('seo', '{
@@ -211,6 +241,20 @@ async function startServer() {
 
   app.use(cors());
   app.use(express.json());
+
+  // Simple in-memory cache
+  const cache = {
+    imageCards: null as any[] | null,
+    wordCards: null as any[] | null,
+    settings: new Map<string, any>(),
+    clearCards() {
+      this.imageCards = null;
+      this.wordCards = null;
+    },
+    clearSetting(key: string) {
+      this.settings.delete(key);
+    }
+  };
 
   // API Routes
   app.get("/api/health", (req, res) => {
@@ -361,7 +405,11 @@ async function startServer() {
   // Cards API
   app.get("/api/cards/image", async (req, res) => {
     try {
+      if (cache.imageCards) {
+        return res.json(cache.imageCards);
+      }
       const result = await pool.query("SELECT * FROM cards_image");
+      cache.imageCards = result.rows;
       res.json(result.rows);
     } catch (err) {
       console.error("Error fetching image cards:", err);
@@ -371,7 +419,11 @@ async function startServer() {
 
   app.get("/api/cards/word", async (req, res) => {
     try {
+      if (cache.wordCards) {
+        return res.json(cache.wordCards);
+      }
       const result = await pool.query("SELECT * FROM cards_word");
+      cache.wordCards = result.rows;
       res.json(result.rows);
     } catch (err) {
       console.error("Error fetching word cards:", err);
@@ -396,24 +448,34 @@ async function startServer() {
 
   app.post("/api/manifestations", async (req, res) => {
     const { user_id, wish_title, deadline, deadline_option } = req.body;
+    const client = await pool.connect();
     try {
-      // Check limit
-      const countResult = await pool.query(
-        "SELECT count(*) FROM manifestations WHERE user_id = $1 AND status = 'active'",
+      await client.query('BEGIN');
+      
+      // Lock the user's manifestations to prevent race conditions
+      const countResult = await client.query(
+        "SELECT count(*) FROM manifestations WHERE user_id = $1 AND status = 'active' FOR UPDATE",
         [user_id]
       );
+      
       if (parseInt(countResult.rows[0].count) >= 3) {
+        await client.query('ROLLBACK');
         return res.status(400).json({ error: "Maximum 3 active wishes allowed" });
       }
 
-      const result = await pool.query(
+      const result = await client.query(
         "INSERT INTO manifestations (user_id, wish_title, deadline, deadline_option) VALUES ($1, $2, $3, $4) RETURNING id",
         [user_id, wish_title, deadline, deadline_option]
       );
+      
+      await client.query('COMMIT');
       res.status(201).json({ id: result.rows[0].id });
     } catch (err) {
+      await client.query('ROLLBACK');
       console.error("Error creating manifestation:", err);
       res.status(500).json({ error: "Internal server error" });
+    } finally {
+      client.release();
     }
   });
 
@@ -549,16 +611,20 @@ async function startServer() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const dauResult = await pool.query("SELECT count(*) FROM users WHERE last_login >= $1", [today]);
-      const sessionsResult = await pool.query("SELECT count(*) FROM sessions WHERE session_time >= $1", [today]);
-      const newUsersResult = await pool.query("SELECT count(*) FROM users WHERE register_date >= $1", [today]);
-      const premiumResult = await pool.query("SELECT count(*) FROM users WHERE subscription_status = 'active'");
+      const result = await pool.query(`
+        SELECT 
+          (SELECT count(*) FROM users WHERE last_login >= $1) as dau,
+          (SELECT count(*) FROM sessions WHERE session_time >= $1) as daily_sessions,
+          (SELECT count(*) FROM users WHERE register_date >= $1) as new_users,
+          (SELECT count(*) FROM users WHERE subscription_status = 'active') as premium_subscriptions
+      `, [today]);
 
+      const stats = result.rows[0];
       res.json({
-        dau: parseInt(dauResult.rows[0].count),
-        dailySessions: parseInt(sessionsResult.rows[0].count),
-        newUsers: parseInt(newUsersResult.rows[0].count),
-        premiumSubscriptions: parseInt(premiumResult.rows[0].count)
+        dau: parseInt(stats.dau),
+        dailySessions: parseInt(stats.daily_sessions),
+        newUsers: parseInt(stats.new_users),
+        premiumSubscriptions: parseInt(stats.premium_subscriptions)
       });
     } catch (err) {
       console.error("Error fetching admin stats:", err);
@@ -600,6 +666,7 @@ async function startServer() {
            elements = EXCLUDED.elements`,
         [id, image_url, description, JSON.stringify(elements)]
       );
+      cache.clearCards();
       res.json({ success: true });
     } catch (err) {
       console.error("Error saving image card:", err);
@@ -611,6 +678,7 @@ async function startServer() {
     const { id } = req.params;
     try {
       await pool.query("DELETE FROM cards_image WHERE id = $1", [id]);
+      cache.clearCards();
       res.status(204).send();
     } catch (err) {
       console.error("Error deleting image card:", err);
@@ -631,6 +699,7 @@ async function startServer() {
            elements = EXCLUDED.elements`,
         [id, text, image_url, description, JSON.stringify(elements)]
       );
+      cache.clearCards();
       res.json({ success: true });
     } catch (err) {
       console.error("Error saving word card:", err);
@@ -642,6 +711,7 @@ async function startServer() {
     const { id } = req.params;
     try {
       await pool.query("DELETE FROM cards_word WHERE id = $1", [id]);
+      cache.clearCards();
       res.status(204).send();
     } catch (err) {
       console.error("Error deleting word card:", err);
@@ -719,73 +789,69 @@ async function startServer() {
       const now = new Date();
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-      const usersResult = await pool.query("SELECT * FROM users");
-      const sessionsResult = await pool.query("SELECT * FROM sessions WHERE session_time >= $1", [thirtyDaysAgo]);
-      const journalsResult = await pool.query("SELECT * FROM energy_journal");
+      // 1. Basic Metrics
+      const metricsResult = await pool.query(`
+        SELECT 
+          (SELECT count(*) FROM users WHERE last_login::date = CURRENT_DATE) as dau,
+          (SELECT count(*) FROM sessions WHERE session_time >= $1) as total_sessions,
+          (SELECT count(*) FROM users) as total_users,
+          (SELECT count(*) FROM users WHERE subscription_status = 'active') as premium_users
+      `, [thirtyDaysAgo]);
 
-      const allUsers = usersResult.rows;
-      const allSessions = sessionsResult.rows;
-      const allJournals = journalsResult.rows;
-
-      // Group by date helper
-      const groupByDate = (data: any[], dateField: string, days: number) => {
-        const result: Record<string, number> = {};
-        for (let i = 0; i < days; i++) {
-          const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-          const dateStr = d.toISOString().split('T')[0];
-          result[dateStr] = 0;
-        }
-        data.forEach(item => {
-          const date = new Date(item[dateField]);
-          const dateStr = date.toISOString().split('T')[0];
-          if (result[dateStr] !== undefined) result[dateStr]++;
-        });
-        return Object.entries(result)
-          .map(([date, value]) => ({ date, value }))
-          .sort((a, b) => a.date.localeCompare(b.date));
-      };
-
-      const dauTrend30 = groupByDate(allUsers.filter(u => u.last_login), 'last_login', 30);
-      const sessionsTrend30 = groupByDate(allSessions, 'session_time', 30);
-
-      const emotionCounts: Record<string, number> = {};
-      allJournals.forEach(j => {
-        const emotion = j.emotion_tag || 'unknown';
-        emotionCounts[emotion] = (emotionCounts[emotion] || 0) + 1;
-      });
-
-      const totalUsers = allUsers.length;
-      const premiumUsers = allUsers.filter(u => u.subscription_status === 'active').length;
+      const metrics = metricsResult.rows[0];
+      const totalUsers = parseInt(metrics.total_users);
+      const premiumUsers = parseInt(metrics.premium_users);
       const conversionRate = totalUsers > 0 ? (premiumUsers / totalUsers) * 100 : 0;
 
-      const sessionStarted = new Set(allSessions.map(s => s.user_id)).size;
-      const sessionCompleted = new Set(allSessions.filter(s => s.pairs && s.pairs.length > 0).map(s => s.user_id)).size;
+      // 2. Trends (DAU and Sessions)
+      const trendsResult = await pool.query(`
+        WITH date_series AS (
+          SELECT generate_series(CURRENT_DATE - INTERVAL '29 days', CURRENT_DATE, '1 day')::date as d
+        )
+        SELECT 
+          ds.d::text as date,
+          (SELECT count(*) FROM users WHERE last_login::date = ds.d) as dau,
+          (SELECT count(*) FROM sessions WHERE session_time::date = ds.d) as sessions
+        FROM date_series ds
+        ORDER BY ds.d ASC
+      `);
+
+      // 3. Emotion Distribution
+      const emotionResult = await pool.query(`
+        SELECT emotion_tag as name, count(*) as value
+        FROM energy_journal
+        GROUP BY emotion_tag
+        ORDER BY value DESC
+      `);
+
+      // 4. Funnel Data
+      const funnelResult = await pool.query(`
+        SELECT 
+          (SELECT count(*) FROM users) as registered,
+          (SELECT count(DISTINCT user_id) FROM sessions) as started,
+          (SELECT count(DISTINCT user_id) FROM sessions WHERE pairs IS NOT NULL AND jsonb_array_length(pairs) > 0) as completed,
+          (SELECT count(*) FROM users WHERE subscription_status = 'active') as premium
+      `);
+
+      const funnel = funnelResult.rows[0];
 
       res.json({
         metrics: {
-          dau: allUsers.filter(u => new Date(u.last_login).toDateString() === now.toDateString()).length,
-          totalSessions: allSessions.length,
+          dau: parseInt(metrics.dau),
+          totalSessions: parseInt(metrics.total_sessions),
           premiumConversion: conversionRate.toFixed(1) + '%',
           totalUsers
         },
         trends: {
-          sevenDays: dauTrend30.slice(-7).map((d, i) => ({
-            date: d.date,
-            dau: d.value,
-            sessions: sessionsTrend30.slice(-7)[i].value
-          })),
-          thirtyDays: dauTrend30.map((d, i) => ({
-            date: d.date,
-            dau: d.value,
-            sessions: sessionsTrend30[i].value
-          }))
+          sevenDays: trendsResult.rows.slice(-7),
+          thirtyDays: trendsResult.rows
         },
-        emotionDistribution: Object.entries(emotionCounts).map(([name, value]) => ({ name, value })),
+        emotionDistribution: emotionResult.rows.map(r => ({ name: r.name || 'unknown', value: parseInt(r.value) })),
         funnelData: [
-          { name: '註冊用戶', value: totalUsers, fill: '#8BA889' },
-          { name: '開始抽卡', value: sessionStarted, fill: '#C4B08B' },
-          { name: '完成抽卡', value: sessionCompleted, fill: '#D98B73' },
-          { name: '付費會員', value: premiumUsers, fill: '#6B7B8C' },
+          { name: '註冊用戶', value: parseInt(funnel.registered), fill: '#8BA889' },
+          { name: '開始抽卡', value: parseInt(funnel.started), fill: '#C4B08B' },
+          { name: '完成抽卡', value: parseInt(funnel.completed), fill: '#D98B73' },
+          { name: '付費會員', value: parseInt(funnel.premium), fill: '#6B7B8C' },
         ]
       });
     } catch (err) {
@@ -798,8 +864,12 @@ async function startServer() {
   app.get("/api/settings/:key", async (req, res) => {
     const { key } = req.params;
     try {
+      if (cache.settings.has(key)) {
+        return res.json(cache.settings.get(key));
+      }
       const result = await pool.query("SELECT value FROM site_settings WHERE key = $1", [key]);
       if (result.rowCount === 0) return res.status(404).json({ error: "Settings not found" });
+      cache.settings.set(key, result.rows[0].value);
       res.json(result.rows[0].value);
     } catch (err) {
       console.error(`Error fetching settings ${key}:`, err);
@@ -815,6 +885,7 @@ async function startServer() {
         "INSERT INTO site_settings (key, value, updated_at) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP",
         [key, JSON.stringify(value)]
       );
+      cache.clearSetting(key);
       res.json({ success: true });
     } catch (err) {
       console.error(`Error saving settings ${key}:`, err);
