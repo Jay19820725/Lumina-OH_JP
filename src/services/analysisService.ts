@@ -45,13 +45,14 @@ export const generateAIAnalysis = async (
       【當前五行能量權重 (百分比)】
       {{ENERGY_DATA}}
       
-      請根據以上資訊，完成以下六個部分的分析：
+      請根據以上資訊，完成以下分析：
       1. 今日主題 (todayTheme): 用一段富有詩意的文字，為用戶當前的能量狀態定調。
       2. 牌陣解讀 (cardInterpretation): 深入分析圖片、文字與用戶連想之間的潛意識連結。
       3. 心理洞察 (psychologicalInsight): 透過連想文字，揭示用戶當前深層的心理需求或狀態。
       4. 五行能量分析 (fiveElementAnalysis): 針對優勢與不足的元素，解釋其對用戶生活（行動、情緒、關係等）的影響。
       5. 內在冥想/反思 (reflection): 提供一個引導用戶向內觀察的問題或冥想練習。
       6. 行動建議 (actionSuggestion): 給予具體、溫柔且可執行的生活建議，幫助能量回歸平衡。
+      7. 針對每一組牌卡配對，提供一段簡短的深度解析 (pairInterpretations): 必須包含 3 組，每組包含 pair_id (0, 1, 2) 與對應的解析文字 text。
 
       【語氣要求】
       - 使用「妳」來稱呼用戶。

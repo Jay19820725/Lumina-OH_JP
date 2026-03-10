@@ -551,6 +551,44 @@ async function startServer() {
     }
   });
 
+  app.get("/api/report/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await pool.query("SELECT * FROM energy_reports WHERE id = $1", [id]);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Report not found" });
+      }
+      
+      const row = result.rows[0];
+      const mappedReport = {
+        id: row.id,
+        userId: row.user_id,
+        timestamp: new Date(row.timestamp).getTime(),
+        selectedImageIds: row.selected_image_ids,
+        selectedWordIds: row.selected_word_ids,
+        totalScores: row.total_scores,
+        dominantElement: row.dominant_element,
+        weakElement: row.weak_element,
+        balanceScore: row.balance_score,
+        interpretation: row.interpretation,
+        pairInterpretations: row.pair_interpretations,
+        pairs: row.pairs,
+        todayTheme: row.today_theme,
+        cardInterpretation: row.card_interpretation,
+        psychologicalInsight: row.psychological_insight,
+        fiveElementAnalysis: row.five_element_analysis,
+        reflection: row.reflection,
+        actionSuggestion: row.action_suggestion,
+        shareThumbnail: row.share_thumbnail
+      };
+      
+      res.json(mappedReport);
+    } catch (err) {
+      console.error("Error fetching single report:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/reports/:userId", async (req, res) => {
     const { userId } = req.params;
     try {

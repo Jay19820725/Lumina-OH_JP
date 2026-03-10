@@ -43,7 +43,41 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   const { t } = useLanguage();
   const reportRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingShared, setIsLoadingShared] = useState(false);
   const [selectedShareThumbnail, setSelectedShareThumbnail] = useState<string | null>(report?.shareThumbnail || null);
+
+  // Handle shared report fetching
+  React.useEffect(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/report/')) {
+      const reportId = path.split('/').pop();
+      if (reportId && (!report || report.id !== reportId)) {
+        setIsLoadingShared(true);
+        fetch(`/api/report/${reportId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && !data.error) {
+              setReport(data);
+            } else {
+              onReset();
+            }
+          })
+          .catch(err => {
+            console.error('Failed to fetch shared report:', err);
+            onReset();
+          })
+          .finally(() => setIsLoadingShared(false));
+      }
+    }
+  }, [setReport, report, onReset]);
+
+  if (isLoadingShared) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F5F0]">
+        <WeavingLoader label={t('report_weaving')} />
+      </div>
+    );
+  }
 
   if (!report) return null;
 
@@ -366,9 +400,12 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                     animate={{ opacity: 1 }}
                     className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16"
                   >
-                    {report.pairInterpretations?.map((interp, i) => {
-                      const pair = report.pairs?.[i] || selectedCards.pairs?.[i];
+                    {[0, 1, 2].map((i) => {
+                      const interp = report.pairInterpretations?.[i];
+                      const pair = (report.pairs && report.pairs.length > i) ? report.pairs[i] : selectedCards.pairs?.[i];
+                      
                       if (!pair) return null;
+                      
                       return (
                         <GlassCard key={i} delay={0.2 * i} className="p-10 flex flex-col gap-8">
                           <div className="flex gap-3 justify-center">
@@ -385,7 +422,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                             </p>
                             <div className="h-px bg-ink/10 w-8 mx-auto" />
                             <p className="text-sm text-ink-muted leading-[2.2] font-light">
-                              {interp.text}
+                              {interp?.text || t('report_interpreting')}
                             </p>
                           </div>
                         </GlassCard>

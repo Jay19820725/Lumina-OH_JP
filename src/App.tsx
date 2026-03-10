@@ -42,10 +42,18 @@ function AppContent() {
   // Simple URL-based routing
   useEffect(() => {
     const handleLocationChange = () => {
-      const path = window.location.pathname.replace('/', '') || 'home';
+      const path = window.location.pathname;
+      
+      // Handle /report/:id
+      if (path.startsWith('/report/')) {
+        setCurrentPage('report');
+        return;
+      }
+
+      const cleanPath = path.replace('/', '') || 'home';
       const validPages: Page[] = ['home', 'test', 'report', 'profile', 'history', 'admin', 'admin-login'];
-      if (validPages.includes(path as Page)) {
-        setCurrentPage(path as Page);
+      if (validPages.includes(cleanPath as Page)) {
+        setCurrentPage(cleanPath as Page);
       } else {
         setCurrentPage('home');
       }
