@@ -100,7 +100,6 @@ export interface UserProfile {
     dark_mode: boolean;
     newsletter: boolean;
   };
-  language?: 'auto' | 'zh-TW' | 'ja';
 }
 
 export interface Session {
@@ -143,7 +142,6 @@ export interface AIPrompt {
   id: string;
   prompt_name: string;
   prompt_content: string;
-  lang: 'zh-TW' | 'ja';
   version: string;
   status: 'active' | 'draft' | 'archived';
   created_at: any;
@@ -164,12 +162,5 @@ export interface SEOSettings {
 export interface SiteSettings {
   key: string;
   value: any;
-  updated_at: any;
-}
-
-export interface Translation {
-  key: string;
-  zh_tw: string;
-  ja: string;
   updated_at: any;
 }

@@ -3,8 +3,6 @@ import {createRoot} from 'react-dom/client';
 
 import App from './App.tsx';
 import './index.css';
-import './lib/i18n';
-import { loadTranslations } from './lib/i18n';
 import { AuthProvider } from './store/AuthContext';
 import { TestProvider } from './store/TestContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -19,9 +17,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-// Load translations before rendering
-loadTranslations();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

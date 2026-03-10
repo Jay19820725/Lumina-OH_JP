@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/Button';
 import { Sparkles, ArrowRight } from 'lucide-react';
 
@@ -57,7 +56,6 @@ const InkBleedText = ({ children, delay = 0, className = "" }: { children: React
 );
 
 export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
-  const { t } = useTranslation();
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <EnergyField />
@@ -71,7 +69,7 @@ export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
           className="absolute -right-4 md:-right-12 top-0 vertical-text hidden lg:flex items-center gap-6"
         >
           <span className="font-serif text-[10px] tracking-[1em] text-ink/30 uppercase">
-            {t('home.vertical_subtitle')}
+            内なる光譜の覚醒
           </span>
           <div className="w-px h-32 bg-ink/10" />
         </motion.div>
@@ -89,8 +87,8 @@ export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
             </motion.span>
             
             <InkBleedText className="text-4xl md:text-7xl font-serif font-extralight text-ink leading-tight">
-              {t('home.title_line1')}<br />
-              {t('home.title_line2')}
+              光と影が織りなす、<br />
+              あなただけの物語。
             </InkBleedText>
             
             <motion.div 
@@ -103,7 +101,7 @@ export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
 
           <InkBleedText delay={1.2} className="max-w-xl mx-auto">
             <p className="text-base md:text-xl text-ink/60 font-shippori leading-[2.2] tracking-widest">
-              {t('home.subtitle')}
+              本当の自分に、会いに行こう。
             </p>
           </InkBleedText>
 
@@ -118,7 +116,7 @@ export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
               className="group relative overflow-hidden h-16 md:h-20 px-12 md:px-20 text-sm md:text-base tracking-[0.3em]"
             >
               <span className="relative z-10 flex items-center gap-3">
-                {t('home.start_button')}
+                癒やしの旅を始める
                 <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform duration-500" />
               </span>
               <motion.div 
@@ -130,11 +128,11 @@ export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
 
             <div className="flex gap-10 md:gap-20">
               {[
-                { label: t('element.wood'), color: 'bg-wood', shadow: 'shadow-wood/20' },
-                { label: t('element.fire'), color: 'bg-fire', shadow: 'shadow-fire/20' },
-                { label: t('element.earth'), color: 'bg-earth', shadow: 'shadow-earth/20' },
-                { label: t('element.metal'), color: 'bg-metal', shadow: 'shadow-metal/20' },
-                { label: t('element.water'), color: 'bg-water', shadow: 'shadow-water/20' }
+                { label: '木', color: 'bg-wood', shadow: 'shadow-wood/20' },
+                { label: '火', color: 'bg-fire', shadow: 'shadow-fire/20' },
+                { label: '土', color: 'bg-earth', shadow: 'shadow-earth/20' },
+                { label: '金', color: 'bg-metal', shadow: 'shadow-metal/20' },
+                { label: '水', color: 'bg-water', shadow: 'shadow-water/20' }
               ].map((el, i) => (
                 <motion.div
                   key={el.label}

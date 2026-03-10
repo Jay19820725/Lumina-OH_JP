@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import { Sparkles, User, History, Home, BookOpen, Star, ShieldAlert } from 'lucide-react';
 import { UserProfile } from '../../core/types';
 
@@ -11,16 +10,15 @@ interface NavigationProps {
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ currentPath, onNavigate, profile }) => {
-  const { t } = useTranslation();
   const navItems = [
-    { path: 'home', label: t('nav.home'), icon: Home },
-    { path: 'test', label: t('nav.test'), icon: Sparkles },
-    { path: 'history', label: t('nav.history'), icon: History },
-    { path: 'profile', label: t('nav.profile'), icon: User },
+    { path: 'home', label: 'ホーム', icon: Home },
+    { path: 'test', label: '診断', icon: Sparkles },
+    { path: 'history', label: '軌跡', icon: History },
+    { path: 'profile', label: 'プロフィール', icon: User },
   ];
 
   if (profile?.role === 'admin') {
-    navItems.push({ path: 'admin', label: t('nav.admin'), icon: ShieldAlert });
+    navItems.push({ path: 'admin', label: '管理', icon: ShieldAlert });
   }
 
   return (
