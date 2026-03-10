@@ -241,8 +241,6 @@ async function startServer() {
          VALUES ($1, $2, $3, $4, $5, $6) 
          ON CONFLICT (uid) DO UPDATE SET 
            email = EXCLUDED.email, 
-           display_name = EXCLUDED.display_name, 
-           photo_url = EXCLUDED.photo_url, 
            last_login = CURRENT_TIMESTAMP 
          RETURNING *`,
         [uid, email, displayName, photoURL, role || 'free_member', subscription_status || 'none']
