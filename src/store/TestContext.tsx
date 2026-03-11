@@ -141,26 +141,39 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
           interpretation: initialReport.interpretation,
           pairs: initialReport.pairs
         };
-        console.log("TestContext: Sending report payload:", payload);
-
-        const response = await fetch('/api/reports', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
         
-        if (response.ok) {
-          const savedReport = await response.json();
-          console.log("TestContext: Initial report saved successfully with ID:", savedReport.id);
-          initialReport.id = savedReport.id;
-        } else {
-          const errData = await response.json();
-          console.error("TestContext: API returned error during initial save:", errData);
-          // Even if save fails, we continue with local ID so user isn't stuck, 
-          // but this is why history/sharing might fail.
-        }
+        const saveReportWithRetry = async (retries = 2): Promise<any> => {
+          try {
+            console.log(`TestContext: Attempting to save report. Retries left: ${retries}`);
+            const response = await fetch('/api/reports', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) return await response.json();
+            
+            if (retries > 0) {
+              await new Promise(r => setTimeout(r, 1000));
+              return await saveReportWithRetry(retries - 1);
+            }
+            
+            const errData = await response.json();
+            throw new Error(errData.error || "Failed to save report");
+          } catch (err) {
+            if (retries > 0) {
+              await new Promise(r => setTimeout(r, 1000));
+              return await saveReportWithRetry(retries - 1);
+            }
+            throw err;
+          }
+        };
+
+        const savedReport = await saveReportWithRetry();
+        console.log("TestContext: Initial report saved successfully with ID:", savedReport.id);
+        initialReport.id = savedReport.id;
       } catch (error) {
-        console.error("TestContext: Network error during initial report save:", error);
+        console.error("TestContext: All attempts to save initial report failed:", error);
       }
 
       // Set the report state with the best ID we have
@@ -182,7 +195,8 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Update the existing report in the database if we have a real ID (UUID)
         if (realId && (realId.length > 15 || realId.includes('-'))) {
           try {
-            await fetch(`/api/reports/${realId}`, {
+            console.log("TestContext: Updating report with AI analysis. ID:", realId);
+            const updateResponse = await fetch(`/api/reports/${realId}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -196,10 +210,18 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 actionSuggestion: finalReport.actionSuggestion
               })
             });
-            console.log("TestContext: Report updated with AI analysis in DB");
+            
+            if (updateResponse.ok) {
+              console.log("TestContext: Report updated successfully with AI analysis in DB");
+            } else {
+              const errData = await updateResponse.json();
+              console.error("TestContext: Failed to update report with AI analysis:", errData);
+            }
           } catch (error) {
-            console.error("Error updating report with AI analysis:", error);
+            console.error("TestContext: Network error during report update:", error);
           }
+        } else {
+          console.warn("TestContext: Skipping DB update because ID is not a valid UUID:", realId);
         }
       }).catch(error => {
         console.error("AI Analysis failed in background:", error);

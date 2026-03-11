@@ -106,14 +106,14 @@ export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
                     
                     <div className="text-right sm:text-left">
                       <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">優位な要素</span>
-                      <span className="text-lg md:text-xl font-serif capitalize">{translateElement(report.dominant_element)}</span>
+                      <span className="text-lg md:text-xl font-serif capitalize">{translateElement(report.dominantElement)}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4 md:gap-8 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-4 sm:pt-0 border-ink/5">
                     <div className="text-left sm:text-right">
                       <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">バランス</span>
-                      <span className="text-lg md:text-xl font-serif">{report.balance_score}</span>
+                      <span className="text-lg md:text-xl font-serif">{report.balanceScore}</span>
                     </div>
                     <ChevronRight size={18} md:size={20} className="text-ink-muted group-hover:translate-x-1 transition-transform" />
                   </div>

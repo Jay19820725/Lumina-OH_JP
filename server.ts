@@ -754,17 +754,19 @@ async function startServer() {
     if (fields.length === 0) return res.status(400).json({ error: "No fields to update" });
 
     const setClause = fields.map((f, i) => {
-      // Map camelCase to snake_case if needed
+      // Map camelCase to snake_case
       const colName = f.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
       return `${colName} = $${i + 2}`;
     }).join(", ");
     
-    const values = [id, ...Object.values(updates).map(v => 
-      (v !== null && typeof v === 'object') ? JSON.stringify(v) : (v === undefined ? null : v)
-    )];
+    const values = [id];
+    fields.forEach(f => {
+      const v = updates[f];
+      values.push((v !== null && typeof v === 'object') ? JSON.stringify(v) : (v === undefined ? null : v));
+    });
 
     try {
-      console.log(`Updating report ${id} with fields:`, fields);
+      console.log(`[API] Updating report ${id} with fields:`, fields);
       const result = await pool.query(
         `UPDATE energy_reports SET ${setClause} WHERE id = $1 RETURNING *`, 
         values

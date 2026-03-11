@@ -51,20 +51,38 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
       const reportId = path.split('/').pop();
       if (reportId && (!report || report.id !== reportId)) {
         setIsLoadingShared(true);
-        fetch(`/api/report/${reportId}`)
-          .then(res => res.json())
-          .then(data => {
+        
+        let retryCount = 0;
+        const maxRetries = 5;
+
+        const fetchReport = async () => {
+          try {
+            const res = await fetch(`/api/report/${reportId}`);
+            const data = await res.json();
+            
             if (data && !data.error) {
               setReport(data);
+              // If it's an empty report (no AI content yet), retry a few times
+              if (!data.todayTheme && retryCount < maxRetries) {
+                retryCount++;
+                console.log(`Report ${reportId} is still weaving... retry ${retryCount}/${maxRetries}`);
+                setTimeout(fetchReport, 3000);
+              } else {
+                setIsLoadingShared(false);
+              }
             } else {
+              console.error('API returned error or no data for report:', reportId);
               onReset();
+              setIsLoadingShared(false);
             }
-          })
-          .catch(err => {
+          } catch (err) {
             console.error('Failed to fetch shared report:', err);
             onReset();
-          })
-          .finally(() => setIsLoadingShared(false));
+            setIsLoadingShared(false);
+          }
+        };
+        
+        fetchReport();
       }
     }
   }, [setReport, report, onReset]);

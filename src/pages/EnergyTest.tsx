@@ -686,7 +686,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
               className="w-full max-w-5xl space-y-8 md:space-y-12 px-4"
             >
               <motion.div variants={itemVariants} className="text-center space-y-2 mb-8 md:mb-12">
-                <h2 className="text-xl md:text-2xl font-serif">{t('test_revealed_ready')}</h2>
+                <h2 className="text-xl md:text-2xl font-serif">{t('report_revealed_ready')}</h2>
                 <p className="text-xs md:text-sm text-ink-muted">{t('test_revealed_desc')}</p>
               </motion.div>
 
