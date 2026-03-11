@@ -88,6 +88,7 @@ export const translations = {
     test_revealed_ready: "診斷準備就緒",
     test_revealed_desc: "您編織的故事將成為能量的地圖。",
     test_draw_again: "重新抽取",
+    report_revealed_ready: "靈魂訊息已準備就緒",
 
     // Energy Report Page
     report_back: "返回",
@@ -222,6 +223,7 @@ export const translations = {
     test_revealed_ready: "診断の準備が整いました",
     test_revealed_desc: "あなたが紡いだ物語が、エネルギーの地図となります。",
     test_draw_again: "もう一度引く",
+    report_revealed_ready: "魂のメッセージが整いました",
 
     // Energy Report Page
     report_back: "戻る",

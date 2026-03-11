@@ -146,7 +146,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
         water: '水',
         None: 'なし'
       },
-      'zh-TW': {
+      'zh': {
         wood: '木',
         fire: '火',
         earth: '土',
@@ -155,7 +155,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
         None: '無'
       }
     };
-    const currentMap = map[language] || map['zh-TW'];
+    const currentMap = map[language] || map['zh'];
     return currentMap[el] || el;
   };
 

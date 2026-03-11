@@ -724,8 +724,12 @@ async function startServer() {
         shareThumbnail: row.share_thumbnail
       });
     } catch (err) {
-      console.error("Error creating energy report:", err);
-      res.status(500).json({ error: "Internal server error" });
+      console.error("[API] Error creating energy report:", err);
+      res.status(500).json({ 
+        error: "Internal server error", 
+        details: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined
+      });
     }
   });
 

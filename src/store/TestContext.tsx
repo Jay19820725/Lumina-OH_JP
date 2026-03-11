@@ -120,59 +120,50 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsCompleted(true);
 
     // Stage 1: Save basic report immediately to get a UUID
-    const savePromise = (async () => {
-      try {
-        console.log("TestContext: Saving initial report for user:", user?.uid || 'guest');
-        const response = await fetch('/api/reports', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: user?.uid || null,
-            selectedImageIds: initialReport.selectedImageIds,
-            selectedWordIds: initialReport.selectedWordIds,
-            totalScores: initialReport.totalScores,
-            dominantElement: initialReport.dominantElement,
-            weakElement: initialReport.weakElement,
-            balanceScore: initialReport.balanceScore,
-            interpretation: initialReport.interpretation,
-            pairs: initialReport.pairs
-          })
-        });
-        
-        if (response.ok) {
-          const savedReport = await response.json();
-          console.log("TestContext: Initial report saved with ID:", savedReport.id);
-          setReport(prev => prev ? { ...prev, id: savedReport.id } : null);
-          return savedReport.id as string;
-        } else {
-          const errData = await response.json();
-          console.error("TestContext: Failed to save initial report:", errData);
-        }
-      } catch (error) {
-        console.error("Error saving initial report to API:", error);
+    try {
+      console.log("TestContext: Saving initial report for user:", user?.uid || 'guest');
+      const response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.uid || null,
+          selectedImageIds: initialReport.selectedImageIds,
+          selectedWordIds: initialReport.selectedWordIds,
+          totalScores: initialReport.totalScores,
+          dominantElement: initialReport.dominantElement,
+          weakElement: initialReport.weakElement,
+          balanceScore: initialReport.balanceScore,
+          interpretation: initialReport.interpretation,
+          pairs: initialReport.pairs
+        })
+      });
+      
+      if (response.ok) {
+        const savedReport = await response.json();
+        console.log("TestContext: Initial report saved with ID:", savedReport.id);
+        initialReport.id = savedReport.id; // Update the ID in the object we're about to return
+        setReport(prev => prev ? { ...prev, id: savedReport.id } : null);
+      } else {
+        const errData = await response.json();
+        console.error("TestContext: Failed to save initial report:", errData);
       }
-      return null;
-    })();
+    } catch (error) {
+      console.error("Error saving initial report to API:", error);
+    }
 
-    // If guest, we still want to save but maybe we skip AI analysis if it's too expensive?
-    // Actually, the user said "跟用戶本人一模一樣的完整報告", so guests should also get AI analysis if possible.
-    // However, AI analysis usually requires a logged-in user or some token.
-    // Let's check if generateAIAnalysis works for guests.
-    
+    const realId = initialReport.id;
+
     // Stage 2: Asynchronously call AI Analysis and update the report
     generateAIAnalysis(selectedCards, analysis.totalScores, language).then(async (aiAnalysis) => {
-      // Wait for Stage 1 to finish to get the real ID
-      const realId = await savePromise;
-      
       const finalReport = {
         ...initialReport,
         ...aiAnalysis,
-        id: realId || initialReport.id
+        id: realId
       };
       setReport(finalReport);
 
-      // Update the existing report in the database if we have a real ID
-      if (realId) {
+      // Update the existing report in the database if we have a real ID (UUID)
+      if (realId && (realId.length > 15 || realId.includes('-'))) {
         try {
           await fetch(`/api/reports/${realId}`, {
             method: 'POST',
