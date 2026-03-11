@@ -22,6 +22,7 @@ import { useAuth } from '../hooks/useAuth';
 import { AnalysisReport, EnergyJournalEntry, EmotionTag } from '../core/types';
 import { useTest } from '../store/TestContext';
 import { journalService } from '../services/journalService';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface EnergyTimelineProps {
   onNavigate: (page: string) => void;
@@ -41,6 +42,7 @@ const EMOTIONS: { tag: EmotionTag; label: string; icon: React.ReactNode; color: 
 export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) => {
   const { user, profile } = useAuth();
   const { setReport } = useTest();
+  const { language, t } = useLanguage();
   const [reports, setReports] = useState<AnalysisReport[]>([]);
   const [journals, setJournals] = useState<EnergyJournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,9 +63,11 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
 
       try {
         setLoading(true);
+        console.log("EnergyTimeline: Fetching reports for user:", user.uid);
         // Fetch Reports
         const reportRes = await fetch(`/api/reports/${user.uid}`);
         const reportData = await reportRes.json();
+        console.log("EnergyTimeline: Fetched reports:", reportData);
         setReports(Array.isArray(reportData) ? reportData : []);
 
         // Fetch Journals if premium
@@ -133,19 +137,31 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
   };
 
   const translateElement = (el: string) => {
-    const map: Record<string, string> = {
-      wood: '木',
-      fire: '火',
-      earth: '土',
-      metal: '金',
-      water: '水',
-      None: 'なし'
+    const map: Record<string, Record<string, string>> = {
+      'ja': {
+        wood: '木',
+        fire: '火',
+        earth: '土',
+        metal: '金',
+        water: '水',
+        None: 'なし'
+      },
+      'zh-TW': {
+        wood: '木',
+        fire: '火',
+        earth: '土',
+        metal: '金',
+        water: '水',
+        None: '無'
+      }
     };
-    return map[el] || el;
+    const currentMap = map[language] || map['zh-TW'];
+    return currentMap[el] || el;
   };
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('ja-JP', {
+    const locale = language === 'ja' ? 'ja-JP' : 'zh-TW';
+    return new Date(timestamp).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -155,7 +171,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
   if (loading) {
     return (
       <div className="ma-container py-32 flex items-center justify-center">
-        <div className="animate-pulse-soft text-ink-muted uppercase tracking-widest text-xs">エネルギーの軌跡を辿っています...</div>
+        <div className="animate-pulse-soft text-ink-muted uppercase tracking-widest text-xs">{t('loading_timeline')}</div>
       </div>
     );
   }
@@ -165,10 +181,10 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-16 md:mb-24 space-y-6">
           <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted block">Energy Timeline</span>
-          <h1 className="font-serif tracking-widest text-3xl md:text-4xl">エネルギー・タイムライン</h1>
+          <h1 className="font-serif tracking-widest text-3xl md:text-4xl">{t('timeline_title')}</h1>
           <div className="w-12 h-px bg-ink/10 mx-auto" />
           <p className="text-sm md:text-lg text-ink-muted font-light tracking-widest leading-relaxed">
-            診断の記録と日々の洞察が交差する、あなたの成長の物語。
+            {t('timeline_description')}
           </p>
         </header>
 
@@ -286,7 +302,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
 
           {timelineItems.length === 0 ? (
             <div className="text-center py-20 opacity-40">
-              <p className="font-serif italic text-sm md:text-base">まだ記録がありません。診断を受けるか、日誌を記してみましょう。</p>
+              <p className="font-serif italic text-sm md:text-base">{t('timeline_empty')}</p>
             </div>
           ) : (
             timelineItems.map((item, i) => (

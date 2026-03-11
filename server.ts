@@ -18,9 +18,24 @@ async function startServer() {
 
   // Database setup with robust fallback for empty env vars
   const rawDbUrl = process.env.DATABASE_URL;
-  const connectionString = (rawDbUrl && rawDbUrl.trim() !== "") 
-    ? rawDbUrl 
+  const isValidDbUrl = (url: string | undefined): boolean => {
+    if (!url || typeof url !== 'string' || url.trim() === "" || url === "undefined" || url === "null") return false;
+    try {
+      // Basic check for protocol
+      if (!url.startsWith("postgresql://") && !url.startsWith("postgres://")) return false;
+      // Try parsing it
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const connectionString = isValidDbUrl(rawDbUrl) 
+    ? rawDbUrl! 
     : "postgresql://root:jQil9CxX8056ezb3INBHn4oLa7Mu2Ym1@tpe1.clusters.zeabur.com:27703/zeabur";
+
+  console.log("Using database connection string (masked):", connectionString.replace(/:[^:@]+@/, ":****@"));
 
   const pool = new Pool({
     connectionString,
@@ -650,6 +665,9 @@ async function startServer() {
       actionSuggestion,
       shareThumbnail
     } = req.body;
+
+    console.log("Creating report for user:", userId);
+
     try {
       const result = await pool.query(
         `INSERT INTO energy_reports (
@@ -660,25 +678,27 @@ async function startServer() {
           share_thumbnail
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
         [
-          userId, 
-          JSON.stringify(selectedImageIds), 
-          JSON.stringify(selectedWordIds), 
-          JSON.stringify(totalScores), 
-          dominantElement, 
-          weakElement, 
-          balanceScore, 
-          interpretation, 
-          JSON.stringify(pairInterpretations), 
-          JSON.stringify(pairs),
-          todayTheme,
-          cardInterpretation,
-          psychologicalInsight,
-          fiveElementAnalysis,
-          reflection,
-          actionSuggestion,
-          shareThumbnail
+          userId || null, 
+          JSON.stringify(selectedImageIds || []), 
+          JSON.stringify(selectedWordIds || []), 
+          JSON.stringify(totalScores || {}), 
+          dominantElement || null, 
+          weakElement || null, 
+          balanceScore || 0, 
+          interpretation || null, 
+          JSON.stringify(pairInterpretations || []), 
+          JSON.stringify(pairs || []),
+          todayTheme || null,
+          cardInterpretation || null,
+          psychologicalInsight || null,
+          fiveElementAnalysis ? (typeof fiveElementAnalysis === 'object' ? JSON.stringify(fiveElementAnalysis) : fiveElementAnalysis) : null,
+          reflection || null,
+          actionSuggestion || null,
+          shareThumbnail || null
         ]
       );
+      
+      console.log("Report created successfully with ID:", result.rows[0].id);
       
       // Map the returned row back to camelCase
       const row = result.rows[0];
@@ -723,10 +743,11 @@ async function startServer() {
     }).join(", ");
     
     const values = [id, ...Object.values(updates).map(v => 
-      (typeof v === 'object' && v !== null) ? JSON.stringify(v) : v
+      (v !== null && typeof v === 'object') ? JSON.stringify(v) : (v === undefined ? null : v)
     )];
 
     try {
+      console.log(`Updating report ${id} with fields:`, fields);
       const result = await pool.query(
         `UPDATE energy_reports SET ${setClause} WHERE id = $1 RETURNING *`, 
         values

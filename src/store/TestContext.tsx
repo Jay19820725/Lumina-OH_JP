@@ -122,6 +122,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Stage 1: Save basic report immediately to get a UUID
     const savePromise = (async () => {
       try {
+        console.log("TestContext: Saving initial report for user:", user?.uid || 'guest');
         const response = await fetch('/api/reports', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -140,8 +141,12 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (response.ok) {
           const savedReport = await response.json();
+          console.log("TestContext: Initial report saved with ID:", savedReport.id);
           setReport(prev => prev ? { ...prev, id: savedReport.id } : null);
           return savedReport.id as string;
+        } else {
+          const errData = await response.json();
+          console.error("TestContext: Failed to save initial report:", errData);
         }
       } catch (error) {
         console.error("Error saving initial report to API:", error);
@@ -192,7 +197,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     
     return initialReport;
-  }, [selectedCards]);
+  }, [selectedCards, language]);
 
   return (
     <TestContext.Provider value={{

@@ -126,6 +126,12 @@ export const translations = {
     report_share_settings: "分享設定",
     report_share_thumbnail_desc: "挑選一張最能代表妳今日能量的卡片作為分享縮圖",
     report_share_thumbnail_success: "縮圖已更新",
+    
+    // Timeline Page
+    timeline_title: "能量時光軸",
+    timeline_description: "診斷紀錄與每日洞察交織，見證妳的成長故事。",
+    timeline_empty: "尚無紀錄。開始一段診斷，或記錄今日的洞察吧。",
+    loading_timeline: "正在追溯能量的軌跡...",
   },
   ja: {
     // General
@@ -254,6 +260,12 @@ export const translations = {
     report_share_settings: "共有設定",
     report_share_thumbnail_desc: "今日のエネルギーを最も象徴するカードを共有サムネイルとして選んでください",
     report_share_thumbnail_success: "サムネイルが更新されました",
+
+    // Timeline Page
+    timeline_title: "エネルギー・タイムライン",
+    timeline_description: "診断の記録と日々の洞察が交差する、あなたの成長の物語。",
+    timeline_empty: "まだ記録がありません。診断を受けるか、日誌を記してみましょう。",
+    loading_timeline: "エネルギーの軌跡を辿っています...",
   }
 };
 
