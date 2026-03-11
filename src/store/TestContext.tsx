@@ -109,7 +109,11 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const user = auth.currentUser;
       const userId = user?.uid || null;
 
-      console.log("TestContext: Generating report for user:", userId || 'guest');
+      console.log("TestContext: Generating report. Auth state:", { 
+        isLoggedIn: !!user, 
+        uid: userId,
+        email: user?.email 
+      });
 
       // Create initial report with local data
       const initialReport: AnalysisReport = {
@@ -126,34 +130,37 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Stage 1: Save basic report immediately to get a UUID
       // We MUST wait for this to succeed to have a valid ID for sharing
       try {
+        const payload = {
+          userId: userId,
+          selectedImageIds: initialReport.selectedImageIds,
+          selectedWordIds: initialReport.selectedWordIds,
+          totalScores: initialReport.totalScores,
+          dominantElement: initialReport.dominantElement,
+          weakElement: initialReport.weakElement,
+          balanceScore: initialReport.balanceScore,
+          interpretation: initialReport.interpretation,
+          pairs: initialReport.pairs
+        };
+        console.log("TestContext: Sending report payload:", payload);
+
         const response = await fetch('/api/reports', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: userId,
-            selectedImageIds: initialReport.selectedImageIds,
-            selectedWordIds: initialReport.selectedWordIds,
-            totalScores: initialReport.totalScores,
-            dominantElement: initialReport.dominantElement,
-            weakElement: initialReport.weakElement,
-            balanceScore: initialReport.balanceScore,
-            interpretation: initialReport.interpretation,
-            pairs: initialReport.pairs
-          })
+          body: JSON.stringify(payload)
         });
         
         if (response.ok) {
           const savedReport = await response.json();
-          console.log("TestContext: Initial report saved with ID:", savedReport.id);
+          console.log("TestContext: Initial report saved successfully with ID:", savedReport.id);
           initialReport.id = savedReport.id;
         } else {
           const errData = await response.json();
-          console.error("TestContext: Failed to save initial report:", errData);
+          console.error("TestContext: API returned error during initial save:", errData);
           // Even if save fails, we continue with local ID so user isn't stuck, 
           // but this is why history/sharing might fail.
         }
       } catch (error) {
-        console.error("Error saving initial report to API:", error);
+        console.error("TestContext: Network error during initial report save:", error);
       }
 
       // Set the report state with the best ID we have

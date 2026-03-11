@@ -571,13 +571,16 @@ async function startServer() {
 
   app.get("/api/report/:id", async (req, res) => {
     const { id } = req.params;
+    console.log(`[API] GET /api/report/${id} - Fetching single report`);
     try {
       const result = await pool.query("SELECT * FROM energy_reports WHERE id = $1", [id]);
       if (result.rows.length === 0) {
+        console.warn(`[API] Report ${id} not found`);
         return res.status(404).json({ error: "Report not found" });
       }
       
       const row = result.rows[0];
+      console.log(`[API] Report ${id} found, user_id: ${row.user_id}`);
       const mappedReport = {
         id: row.id,
         userId: row.user_id,
@@ -609,13 +612,14 @@ async function startServer() {
 
   app.get("/api/reports/:userId", async (req, res) => {
     const { userId } = req.params;
+    console.log(`[API] GET /api/reports/${userId} - Fetching reports for user`);
     try {
       const result = await pool.query(
         "SELECT * FROM energy_reports WHERE user_id = $1 ORDER BY timestamp DESC",
         [userId]
       );
       
-      // Map snake_case database columns to camelCase frontend properties
+      console.log(`[API] Found ${result.rowCount} reports for user ${userId}`);
       const mappedReports = result.rows.map(row => ({
         id: row.id,
         userId: row.user_id,
@@ -666,9 +670,18 @@ async function startServer() {
       shareThumbnail
     } = req.body;
 
-    console.log("Creating report for user:", userId);
+    console.log(`[API] POST /api/reports - Creating report for user: ${userId || 'GUEST'}`);
+    console.log(`[API] Payload keys:`, Object.keys(req.body));
 
     try {
+      // Validate userId if present - must exist in users table
+      if (userId) {
+        const userCheck = await pool.query("SELECT uid FROM users WHERE uid = $1", [userId]);
+        if (userCheck.rowCount === 0) {
+          console.warn(`[API] User ${userId} not found in users table. Report will be saved with user_id = null.`);
+        }
+      }
+
       const result = await pool.query(
         `INSERT INTO energy_reports (
           user_id, selected_image_ids, selected_word_ids, total_scores, 
@@ -698,7 +711,7 @@ async function startServer() {
         ]
       );
       
-      console.log("Report created successfully with ID:", result.rows[0].id);
+      console.log(`[API] Report created successfully with ID: ${result.rows[0].id}`);
       
       // Map the returned row back to camelCase
       const row = result.rows[0];
