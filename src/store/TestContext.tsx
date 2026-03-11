@@ -101,93 +101,110 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const generateReport = useCallback(async (): Promise<AnalysisReport | null> => {
     if (selectedCards.images.length === 0 && selectedCards.words.length === 0) return null;
     
-    const analysis = EnergyEngine.analyze(selectedCards);
-    const user = auth.currentUser;
-
-    // Create initial report with local data
-    const initialReport: AnalysisReport = {
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: Date.now(),
-      interpretation: "您的能量分佈已生成。登入後即可獲得 AI 深度引導報告。",
-      ...analysis,
-      selectedImageIds: selectedCards.images.map(img => img.id),
-      selectedWordIds: selectedCards.words.map(w => w.id),
-      pairs: selectedCards.pairs,
-      isGuest: !user
-    };
+    // Set drawing state to show loading during generation
+    setIsDrawing(true);
     
-    setReport(initialReport);
-    setIsCompleted(true);
-
-    // Stage 1: Save basic report immediately to get a UUID
     try {
-      console.log("TestContext: Saving initial report for user:", user?.uid || 'guest');
-      const response = await fetch('/api/reports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.uid || null,
-          selectedImageIds: initialReport.selectedImageIds,
-          selectedWordIds: initialReport.selectedWordIds,
-          totalScores: initialReport.totalScores,
-          dominantElement: initialReport.dominantElement,
-          weakElement: initialReport.weakElement,
-          balanceScore: initialReport.balanceScore,
-          interpretation: initialReport.interpretation,
-          pairs: initialReport.pairs
-        })
+      const analysis = EnergyEngine.analyze(selectedCards);
+      const user = auth.currentUser;
+      const userId = user?.uid || null;
+
+      console.log("TestContext: Generating report for user:", userId || 'guest');
+
+      // Create initial report with local data
+      const initialReport: AnalysisReport = {
+        id: Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        interpretation: "您的能量分佈已生成。正在編織 AI 深度引導報告...",
+        ...analysis,
+        selectedImageIds: selectedCards.images.map(img => img.id),
+        selectedWordIds: selectedCards.words.map(w => w.id),
+        pairs: selectedCards.pairs,
+        isGuest: !user
+      };
+      
+      // Stage 1: Save basic report immediately to get a UUID
+      // We MUST wait for this to succeed to have a valid ID for sharing
+      try {
+        const response = await fetch('/api/reports', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: userId,
+            selectedImageIds: initialReport.selectedImageIds,
+            selectedWordIds: initialReport.selectedWordIds,
+            totalScores: initialReport.totalScores,
+            dominantElement: initialReport.dominantElement,
+            weakElement: initialReport.weakElement,
+            balanceScore: initialReport.balanceScore,
+            interpretation: initialReport.interpretation,
+            pairs: initialReport.pairs
+          })
+        });
+        
+        if (response.ok) {
+          const savedReport = await response.json();
+          console.log("TestContext: Initial report saved with ID:", savedReport.id);
+          initialReport.id = savedReport.id;
+        } else {
+          const errData = await response.json();
+          console.error("TestContext: Failed to save initial report:", errData);
+          // Even if save fails, we continue with local ID so user isn't stuck, 
+          // but this is why history/sharing might fail.
+        }
+      } catch (error) {
+        console.error("Error saving initial report to API:", error);
+      }
+
+      // Set the report state with the best ID we have
+      setReport(initialReport);
+      setIsCompleted(true);
+
+      const realId = initialReport.id;
+
+      // Stage 2: Asynchronously call AI Analysis and update the report
+      // We don't wait for this for the UI to transition, but we update the DB when it's done
+      generateAIAnalysis(selectedCards, analysis.totalScores, language).then(async (aiAnalysis) => {
+        const finalReport = {
+          ...initialReport,
+          ...aiAnalysis,
+          id: realId
+        };
+        setReport(finalReport);
+
+        // Update the existing report in the database if we have a real ID (UUID)
+        if (realId && (realId.length > 15 || realId.includes('-'))) {
+          try {
+            await fetch(`/api/reports/${realId}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                interpretation: finalReport.interpretation,
+                pairInterpretations: finalReport.pairInterpretations || [],
+                todayTheme: finalReport.todayTheme,
+                cardInterpretation: finalReport.cardInterpretation,
+                psychologicalInsight: finalReport.psychologicalInsight,
+                fiveElementAnalysis: finalReport.fiveElementAnalysis,
+                reflection: finalReport.reflection,
+                actionSuggestion: finalReport.actionSuggestion
+              })
+            });
+            console.log("TestContext: Report updated with AI analysis in DB");
+          } catch (error) {
+            console.error("Error updating report with AI analysis:", error);
+          }
+        }
+      }).catch(error => {
+        console.error("AI Analysis failed in background:", error);
       });
       
-      if (response.ok) {
-        const savedReport = await response.json();
-        console.log("TestContext: Initial report saved with ID:", savedReport.id);
-        initialReport.id = savedReport.id; // Update the ID in the object we're about to return
-        setReport(prev => prev ? { ...prev, id: savedReport.id } : null);
-      } else {
-        const errData = await response.json();
-        console.error("TestContext: Failed to save initial report:", errData);
-      }
+      return initialReport;
     } catch (error) {
-      console.error("Error saving initial report to API:", error);
+      console.error("Report generation failed:", error);
+      return null;
+    } finally {
+      setIsDrawing(false);
     }
-
-    const realId = initialReport.id;
-
-    // Stage 2: Asynchronously call AI Analysis and update the report
-    generateAIAnalysis(selectedCards, analysis.totalScores, language).then(async (aiAnalysis) => {
-      const finalReport = {
-        ...initialReport,
-        ...aiAnalysis,
-        id: realId
-      };
-      setReport(finalReport);
-
-      // Update the existing report in the database if we have a real ID (UUID)
-      if (realId && (realId.length > 15 || realId.includes('-'))) {
-        try {
-          await fetch(`/api/reports/${realId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              interpretation: finalReport.interpretation,
-              pairInterpretations: finalReport.pairInterpretations || [],
-              todayTheme: finalReport.todayTheme,
-              cardInterpretation: finalReport.cardInterpretation,
-              psychologicalInsight: finalReport.psychologicalInsight,
-              fiveElementAnalysis: finalReport.fiveElementAnalysis,
-              reflection: finalReport.reflection,
-              actionSuggestion: finalReport.actionSuggestion
-            })
-          });
-        } catch (error) {
-          console.error("Error updating report with AI analysis:", error);
-        }
-      }
-    }).catch(error => {
-      console.error("AI Analysis failed in background:", error);
-    });
-    
-    return initialReport;
   }, [selectedCards, language]);
 
   return (

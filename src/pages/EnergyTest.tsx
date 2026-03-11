@@ -425,6 +425,37 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
 
   return (
     <div className="ma-container pt-12 md:pt-20 pb-48 md:pb-64 min-h-screen flex flex-col items-center">
+      {/* Global Loading Overlay for Generation/Saving */}
+      <AnimatePresence>
+        {isDrawing && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center bg-paper/60 backdrop-blur-md z-[100]"
+          >
+            <div className="flex flex-col items-center gap-8">
+              <div className="relative w-20 h-20">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 border-2 border-ink/5 border-t-ink/20 rounded-full"
+                />
+                <motion.div 
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-2 border border-ink/5 border-b-ink/10 rounded-full"
+                />
+              </div>
+              <div className="space-y-2 text-center">
+                <span className="text-[11px] uppercase tracking-[0.8em] text-ink/40 font-light block">{t('report_weaving')}</span>
+                <p className="text-[10px] text-ink/20 tracking-widest uppercase animate-pulse">Synchronizing with the universe...</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-end mb-16 md:mb-24 gap-8 md:gap-20 px-4">
         <motion.div 
           key={drawStage}
