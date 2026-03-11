@@ -728,6 +728,13 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
               </div>
 
               <div className="flex flex-col items-center gap-8 pt-12">
+                <Button 
+                  onClick={handleComplete}
+                  className="h-16 px-16 gap-3 shadow-xl shadow-wood/10"
+                >
+                  {t('test_revealed_view_report')} <Sparkles size={18} />
+                </Button>
+
                 <button 
                   onClick={() => {
                     setDrawStage('idle');

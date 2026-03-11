@@ -66,8 +66,13 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
         console.log("EnergyTimeline: Fetching reports for user:", user.uid);
         // Fetch Reports
         const reportRes = await fetch(`/api/reports/${user.uid}`);
+        if (!reportRes.ok) {
+          console.error("EnergyTimeline: Failed to fetch reports. Status:", reportRes.status);
+          throw new Error(`Failed to fetch reports: ${reportRes.status}`);
+        }
         const reportData = await reportRes.json();
-        console.log("EnergyTimeline: Fetched reports:", reportData);
+        console.log("EnergyTimeline: Fetched reports count:", Array.isArray(reportData) ? reportData.length : 0);
+        console.log("EnergyTimeline: First report (if any):", Array.isArray(reportData) && reportData.length > 0 ? reportData[0] : "None");
         setReports(Array.isArray(reportData) ? reportData : []);
 
         // Fetch Journals if premium
