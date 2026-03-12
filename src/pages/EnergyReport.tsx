@@ -113,7 +113,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/report/${report.id}`;
     const shareData = {
-      title: report.todayTheme || `${t('report_title')} | JDear`,
+      title: report.todayTheme || `${t('report_title')} | EUNIE`,
       text: t('report_share_text'),
       url: shareUrl,
     };
@@ -212,7 +212,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
             transition={{ duration: 1.5, delay: 0.5 }}
             className="hidden md:block vertical-text text-[10px] uppercase tracking-[0.8em] text-ink-muted opacity-30 h-48 border-l border-ink/10 pl-4"
           >
-            Soul Resonance Analysis • JDear Editorial
+            Soul Resonance Analysis • EUNIE Editorial
           </motion.div>
         </div>
         

@@ -1,7 +1,7 @@
 import { ImageCard, WordCard, SelectedCards } from '../core/types';
 
 /**
- * JDear Card Draw Engine
+ * EUNIE Card Draw Engine
  * Role: Senior Frontend Engineer
  * 
  * Implements secure random selection from JSON collections.
@@ -126,7 +126,7 @@ function preloadImages(urls: string[]): Promise<void[]> {
 /**
  * 3. Random Selection Logic (Main Entry Point)
  */
-export async function performJDearDraw(language: string = 'zh'): Promise<SelectedCards> {
+export async function performEunieDraw(language: string = 'zh'): Promise<SelectedCards> {
   const [images, words] = await Promise.all([
     drawCardImage(3, language),
     drawCardWord(3, language)

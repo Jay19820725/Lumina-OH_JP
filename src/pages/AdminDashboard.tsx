@@ -964,7 +964,7 @@ export const AdminDashboard: React.FC = () => {
   const renderSettings = () => {
     // Provide defaults if data is missing but loading is finished
     const seo = seoSettings || {
-      title: "JDear | 能量卡片與心靈導引",
+      title: "EUNIE 嶼妳 | 懂妳的能量，平衡妳的生活",
       description: "透過五行能量卡片，探索內在自我，獲得每日心靈指引與能量平衡。",
       keywords: "能量卡片, 五行, 心靈導引, 冥想, 自我探索",
       og_image: "https://picsum.photos/seed/lumina-og/1200/630",

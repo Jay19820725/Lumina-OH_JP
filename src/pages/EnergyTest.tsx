@@ -4,7 +4,7 @@ import { useTest } from '../store/TestContext';
 import { Button } from '../components/ui/Button';
 import { Sparkles, ArrowRight, Check, Maximize2 } from 'lucide-react';
 import { ShuffleAnimation } from '../components/ShuffleAnimation';
-import { JDearCard } from '../components/JDearCard';
+import { EunieCard } from '../components/EunieCard';
 import { CardZoomModal } from '../components/CardZoomModal';
 import { ImageCard, WordCard, CardPair } from '../core/types';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -588,7 +588,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
             >
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 w-full">
                 {selectedCards.images.map((card, i) => (
-                  <JDearCard
+                  <EunieCard
                     key={card.id}
                     type="image"
                     imageUrl={card.imageUrl}
@@ -627,7 +627,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
             >
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 w-full">
                 {selectedCards.words.map((card, i) => (
-                  <JDearCard
+                  <EunieCard
                     key={card.id}
                     type="word"
                     imageUrl={card.imageUrl}

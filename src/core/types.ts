@@ -1,5 +1,5 @@
 /**
- * Core type definitions for JDear
+ * Core type definitions for EUNIE 嶼妳
  */
 
 export enum FiveElement {

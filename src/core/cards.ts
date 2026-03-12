@@ -1,7 +1,7 @@
 import { FiveElement } from './types';
 
 /**
- * The 88 JDear cards.
+ * The 88 EUNIE cards.
  * Data derived from the provided CSV datasets.
  */
 export const WORDS = [
@@ -187,7 +187,7 @@ export const IMAGES = [
 ];
 
 /**
- * Construct the 88 JDear Cards by pairing words and images.
+ * Construct the 88 EUNIE Cards by pairing words and images.
  */
 export const LUMINA_CARDS = WORDS.map((word, i) => {
   const image = IMAGES[i];

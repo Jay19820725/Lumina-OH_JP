@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { ImageCard, WordCard, SelectedCards, AnalysisReport, CardPair } from '../core/types';
 import { EnergyEngine } from '../core/engine';
 import { auth } from '../lib/firebase';
-import { performJDearDraw } from '../services/cardEngine';
+import { performEunieDraw } from '../services/cardEngine';
 import { generateAIAnalysis } from '../services/analysisService';
 import { drawSession, updateSession } from '../services/sessionService';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -61,12 +61,12 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         } catch (err) {
           console.warn("API draw session failed or timed out, falling back to local draw:", err);
-          const draw = await performJDearDraw(language);
+          const draw = await performEunieDraw(language);
           setSelectedCards(draw);
         }
       } else {
         // Fallback for guest users
-        const draw = await performJDearDraw(language);
+        const draw = await performEunieDraw(language);
         setSelectedCards(draw);
       }
       setCurrentStep(1);
@@ -135,13 +135,13 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 2. Save to localStorage immediately (Local-First)
       const saveToLocal = (data: AnalysisReport) => {
         try {
-          const history = JSON.parse(localStorage.getItem('jdear_report_history') || '[]');
+          const history = JSON.parse(localStorage.getItem('eunie_report_history') || '[]');
           const filtered = history.filter((r: any) => r.id !== data.id);
-          localStorage.setItem('jdear_report_history', JSON.stringify([data, ...filtered].slice(0, 50)));
+          localStorage.setItem('eunie_report_history', JSON.stringify([data, ...filtered].slice(0, 50)));
           
-          const pending = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
+          const pending = JSON.parse(localStorage.getItem('eunie_pending_sync') || '[]');
           const pendingFiltered = pending.filter((id: string) => id !== data.id);
-          localStorage.setItem('jdear_pending_sync', JSON.stringify([data.id, ...pendingFiltered]));
+          localStorage.setItem('eunie_pending_sync', JSON.stringify([data.id, ...pendingFiltered]));
         } catch (e) {
           console.error("LocalStorage save failed:", e);
         }
@@ -196,8 +196,8 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
               });
 
               if (response.ok) {
-                const pending = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
-                localStorage.setItem('jdear_pending_sync', JSON.stringify(pending.filter((id: string) => id !== data.id)));
+                const pending = JSON.parse(localStorage.getItem('eunie_pending_sync') || '[]');
+                localStorage.setItem('eunie_pending_sync', JSON.stringify(pending.filter((id: string) => id !== data.id)));
               }
             } catch (err) {
               console.error("Cloud sync network error:", err);
@@ -221,11 +221,11 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [selectedCards, language]);
 
   const syncPendingReports = useCallback(async () => {
-    const pendingIds = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
+    const pendingIds = JSON.parse(localStorage.getItem('eunie_pending_sync') || '[]');
     if (pendingIds.length === 0) return;
 
     console.log(`Syncing ${pendingIds.length} pending reports...`);
-    const history = JSON.parse(localStorage.getItem('jdear_report_history') || '[]');
+    const history = JSON.parse(localStorage.getItem('eunie_report_history') || '[]');
     const user = auth.currentUser;
     const userId = user?.uid || null;
 
@@ -261,8 +261,8 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (response.ok) {
-          const pending = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
-          localStorage.setItem('jdear_pending_sync', JSON.stringify(pending.filter((pid: string) => pid !== id)));
+          const pending = JSON.parse(localStorage.getItem('eunie_pending_sync') || '[]');
+          localStorage.setItem('eunie_pending_sync', JSON.stringify(pending.filter((pid: string) => pid !== id)));
         }
       } catch (err) {
         console.error(`Failed to sync report ${id}:`, err);

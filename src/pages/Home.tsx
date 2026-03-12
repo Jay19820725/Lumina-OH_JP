@@ -57,7 +57,7 @@ const InkBleedText = ({ children, delay = 0, className = "" }: { children: React
 );
 
 export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
@@ -86,7 +86,7 @@ export const Home: React.FC<HomeProps> = ({ onStartTest }) => {
               transition={{ delay: 0.5, duration: 2 }}
               className="text-[10px] md:text-xs tracking-[0.6em] uppercase text-ink-muted block"
             >
-              JDear — Dear Your True Self
+              {language === 'zh' ? 'EUNIE 嶼妳 — 懂妳的能量，平衡妳的生活' : 'EUNIE — あなたの魂と共に居なさい'}
             </motion.span>
             
             <InkBleedText className="text-4xl md:text-7xl font-serif font-extralight text-ink leading-tight whitespace-pre-line">

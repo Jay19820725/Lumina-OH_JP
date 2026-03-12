@@ -179,7 +179,7 @@ async function startServer() {
       -- Initialize default SEO settings if not exists
       INSERT INTO site_settings (key, value)
       VALUES ('seo', '{
-        "title": "JDear | 能量卡片與心靈導引",
+        "title": "EUNIE 嶼妳 | 懂妳的能量，平衡妳的生活",
         "description": "透過五行能量卡片，探索內在自我，獲得每日心靈指引與能量平衡。",
         "keywords": "能量卡片, 五行, 心靈導引, 冥想, 自我探索",
         "og_image": "https://picsum.photos/seed/lumina-og/1200/630",
@@ -267,7 +267,7 @@ async function startServer() {
     }
 
     try {
-      let title = "JDear | 能量卡片與心靈導引";
+      let title = "EUNIE 嶼妳 | 懂妳的能量，平衡妳的生活";
       let description = "透過五行能量卡片，探索內在自我，獲得每日心靈指引與能量平衡。";
       let ogImage = "https://picsum.photos/seed/lumina-og/1200/630";
       const url = `${process.env.APP_URL || 'https://' + req.get('host')}${req.originalUrl}`;
@@ -291,7 +291,7 @@ async function startServer() {
           ogImage = report.share_thumbnail || ogImage;
           
           // Optional: Add more descriptive text for reports
-          description = `這是我在 JDear 的能量剖析結果。主導元素：${report.dominant_element}。`;
+          description = `這是我在 EUNIE 的能量剖析結果。主導元素：${report.dominant_element}。`;
         }
       }
 
@@ -1034,7 +1034,7 @@ async function startServer() {
         // Provide defaults for known keys
         if (key === 'seo') {
           return res.json({
-            title: "JDear | 能量卡片與心靈導引",
+            title: "EUNIE 嶼妳 | 懂妳的能量，平衡妳的生活",
             description: "透過五行能量卡片，探索內在自我，獲得每日心靈指引與能量平衡。",
             keywords: "能量卡片, 五行, 心靈導引, 冥想, 自我探索",
             og_image: "https://picsum.photos/seed/lumina-og/1200/630",
