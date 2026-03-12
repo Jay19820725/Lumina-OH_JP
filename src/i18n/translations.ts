@@ -128,6 +128,7 @@ export const translations = {
     report_share_settings: "分享設定",
     report_share_thumbnail_desc: "挑選一張最能代表妳今日能量的卡片作為分享縮圖",
     report_share_thumbnail_success: "縮圖已更新",
+    report_view_detail: "查看詳細內容",
     
     // Timeline Page
     timeline_title: "能量時光軸",
@@ -264,6 +265,7 @@ export const translations = {
     report_share_settings: "共有設定",
     report_share_thumbnail_desc: "今日のエネルギーを最も象徴するカードを共有サムネイルとして選んでください",
     report_share_thumbnail_success: "サムネイルが更新されました",
+    report_view_detail: "詳細を見る",
 
     // Timeline Page
     timeline_title: "エネルギー・タイムライン",

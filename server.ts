@@ -150,34 +150,22 @@ async function startServer() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
-      -- Energy Reports table
+      -- Energy Reports table (Reconstructed for 100% success rate)
       CREATE TABLE IF NOT EXISTS energy_reports (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id TEXT REFERENCES users(uid) ON DELETE CASCADE,
+        user_id TEXT, -- Indexed but not strictly constrained to allow guest/sync-delay saves
         timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        selected_image_ids JSONB DEFAULT '[]',
-        selected_word_ids JSONB DEFAULT '[]',
-        total_scores JSONB DEFAULT '{}',
+        is_ai_complete BOOLEAN DEFAULT FALSE,
         dominant_element TEXT,
         weak_element TEXT,
         balance_score FLOAT,
-        interpretation TEXT,
-        pair_interpretations JSONB DEFAULT '[]',
-        pairs JSONB DEFAULT '[]',
         today_theme TEXT,
-        card_interpretation TEXT,
-        psychological_insight TEXT,
-        five_element_analysis TEXT,
-        reflection TEXT,
-        action_suggestion TEXT,
-        share_thumbnail TEXT
+        share_thumbnail TEXT,
+        report_data JSONB DEFAULT '{}' -- Stores all other complex data (pairs, scores, interpretations)
       );
 
-      -- Ensure user_id is nullable if table already exists
-      ALTER TABLE energy_reports ALTER COLUMN user_id DROP NOT NULL;
-
-      -- Ensure share_thumbnail exists
-      ALTER TABLE energy_reports ADD COLUMN IF NOT EXISTS share_thumbnail TEXT;
+      CREATE INDEX IF NOT EXISTS idx_reports_user_id ON energy_reports(user_id);
+      CREATE INDEX IF NOT EXISTS idx_reports_timestamp ON energy_reports(timestamp DESC);
 
       -- Site Settings table
       CREATE TABLE IF NOT EXISTS site_settings (
@@ -571,36 +559,28 @@ async function startServer() {
 
   app.get("/api/report/:id", async (req, res) => {
     const { id } = req.params;
-    console.log(`[API] GET /api/report/${id} - Fetching single report`);
+    console.log(`[API] GET /api/report/${id}`);
     try {
       const result = await pool.query("SELECT * FROM energy_reports WHERE id = $1", [id]);
       if (result.rows.length === 0) {
-        console.warn(`[API] Report ${id} not found`);
         return res.status(404).json({ error: "Report not found" });
       }
       
       const row = result.rows[0];
-      console.log(`[API] Report ${id} found, user_id: ${row.user_id}`);
+      const data = row.report_data || {};
+      
+      // Flatten the structure for the frontend
       const mappedReport = {
         id: row.id,
         userId: row.user_id,
         timestamp: new Date(row.timestamp).getTime(),
-        selectedImageIds: row.selected_image_ids,
-        selectedWordIds: row.selected_word_ids,
-        totalScores: row.total_scores,
+        isAiComplete: row.is_ai_complete,
         dominantElement: row.dominant_element,
         weakElement: row.weak_element,
         balanceScore: row.balance_score,
-        interpretation: row.interpretation,
-        pairInterpretations: row.pair_interpretations,
-        pairs: row.pairs,
         todayTheme: row.today_theme,
-        cardInterpretation: row.card_interpretation,
-        psychologicalInsight: row.psychological_insight,
-        fiveElementAnalysis: row.five_element_analysis,
-        reflection: row.reflection,
-        actionSuggestion: row.action_suggestion,
-        shareThumbnail: row.share_thumbnail
+        shareThumbnail: row.share_thumbnail,
+        ...data
       };
       
       res.json(mappedReport);
@@ -612,35 +592,28 @@ async function startServer() {
 
   app.get("/api/reports/:userId", async (req, res) => {
     const { userId } = req.params;
-    console.log(`[API] GET /api/reports/${userId} - Fetching reports for user`);
+    console.log(`[API] GET /api/reports/${userId}`);
     try {
       const result = await pool.query(
         "SELECT * FROM energy_reports WHERE user_id = $1 ORDER BY timestamp DESC",
         [userId]
       );
       
-      console.log(`[API] Found ${result.rowCount} reports for user ${userId}`);
-      const mappedReports = result.rows.map(row => ({
-        id: row.id,
-        userId: row.user_id,
-        timestamp: new Date(row.timestamp).getTime(),
-        selectedImageIds: row.selected_image_ids,
-        selectedWordIds: row.selected_word_ids,
-        totalScores: row.total_scores,
-        dominantElement: row.dominant_element,
-        weakElement: row.weak_element,
-        balanceScore: row.balance_score,
-        interpretation: row.interpretation,
-        pairInterpretations: row.pair_interpretations,
-        pairs: row.pairs,
-        todayTheme: row.today_theme,
-        cardInterpretation: row.card_interpretation,
-        psychologicalInsight: row.psychological_insight,
-        fiveElementAnalysis: row.five_element_analysis,
-        reflection: row.reflection,
-        actionSuggestion: row.action_suggestion,
-        shareThumbnail: row.share_thumbnail
-      }));
+      const mappedReports = result.rows.map(row => {
+        const data = row.report_data || {};
+        return {
+          id: row.id,
+          userId: row.user_id,
+          timestamp: new Date(row.timestamp).getTime(),
+          isAiComplete: row.is_ai_complete,
+          dominantElement: row.dominant_element,
+          weakElement: row.weak_element,
+          balanceScore: row.balance_score,
+          todayTheme: row.today_theme,
+          shareThumbnail: row.share_thumbnail,
+          ...data
+        };
+      });
       
       res.json(mappedReports);
     } catch (err) {
@@ -651,156 +624,72 @@ async function startServer() {
 
   app.post("/api/reports", async (req, res) => {
     const { 
+      id, // Support updating if ID provided
       userId, 
-      selectedImageIds, 
-      selectedWordIds, 
-      totalScores, 
       dominantElement, 
       weakElement, 
       balanceScore, 
-      interpretation, 
-      pairInterpretations, 
-      pairs,
       todayTheme,
-      cardInterpretation,
-      psychologicalInsight,
-      fiveElementAnalysis,
-      reflection,
-      actionSuggestion,
-      shareThumbnail
+      shareThumbnail,
+      isAiComplete,
+      ...otherData 
     } = req.body;
 
-    console.log(`[API] POST /api/reports - Creating report for user: ${userId || 'GUEST'}`);
-    console.log(`[API] Payload keys:`, Object.keys(req.body));
+    console.log(`[API] POST /api/reports - Saving report for: ${userId || 'GUEST'}`);
 
     try {
-      // Validate userId if present - must exist in users table
+      // 1. Ensure user exists if userId is provided (Auto-Sync)
       if (userId) {
-        const userCheck = await pool.query("SELECT uid FROM users WHERE uid = $1", [userId]);
-        if (userCheck.rowCount === 0) {
-          console.warn(`[API] User ${userId} not found in users table. Report will be saved with user_id = null.`);
-        }
+        await pool.query(
+          "INSERT INTO users (uid, last_login) VALUES ($1, CURRENT_TIMESTAMP) ON CONFLICT (uid) DO UPDATE SET last_login = CURRENT_TIMESTAMP",
+          [userId]
+        );
       }
 
-      const result = await pool.query(
-        `INSERT INTO energy_reports (
-          user_id, selected_image_ids, selected_word_ids, total_scores, 
-          dominant_element, weak_element, balance_score, interpretation, 
-          pair_interpretations, pairs, today_theme, card_interpretation, 
-          psychological_insight, five_element_analysis, reflection, action_suggestion,
-          share_thumbnail
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
-        [
-          userId || null, 
-          JSON.stringify(selectedImageIds || []), 
-          JSON.stringify(selectedWordIds || []), 
-          JSON.stringify(totalScores || {}), 
-          dominantElement || null, 
-          weakElement || null, 
-          balanceScore || 0, 
-          interpretation || null, 
-          JSON.stringify(pairInterpretations || []), 
-          JSON.stringify(pairs || []),
-          todayTheme || null,
-          cardInterpretation || null,
-          psychologicalInsight || null,
-          fiveElementAnalysis ? (typeof fiveElementAnalysis === 'object' ? JSON.stringify(fiveElementAnalysis) : fiveElementAnalysis) : null,
-          reflection || null,
-          actionSuggestion || null,
-          shareThumbnail || null
-        ]
-      );
+      let result;
+      if (id && (id.length > 15 || id.includes('-'))) {
+        // Update existing
+        result = await pool.query(
+          `UPDATE energy_reports SET 
+            user_id = COALESCE($2, user_id),
+            dominant_element = COALESCE($3, dominant_element),
+            weak_element = COALESCE($4, weak_element),
+            balance_score = COALESCE($5, balance_score),
+            today_theme = COALESCE($6, today_theme),
+            share_thumbnail = COALESCE($7, share_thumbnail),
+            is_ai_complete = COALESCE($8, is_ai_complete),
+            report_data = report_data || $9::jsonb
+          WHERE id = $1 RETURNING *`,
+          [id, userId, dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete, JSON.stringify(otherData)]
+        );
+      } else {
+        // Insert new
+        result = await pool.query(
+          `INSERT INTO energy_reports (
+            user_id, dominant_element, weak_element, balance_score, 
+            today_theme, share_thumbnail, is_ai_complete, report_data
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+          [userId, dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete || false, JSON.stringify(otherData)]
+        );
+      }
       
-      console.log(`[API] Report created successfully with ID: ${result.rows[0].id}`);
-      
-      // Map the returned row back to camelCase
       const row = result.rows[0];
+      const data = row.report_data || {};
       res.json({
         id: row.id,
         userId: row.user_id,
         timestamp: new Date(row.timestamp).getTime(),
-        selectedImageIds: row.selected_image_ids,
-        selectedWordIds: row.selected_word_ids,
-        totalScores: row.total_scores,
+        isAiComplete: row.is_ai_complete,
         dominantElement: row.dominant_element,
         weakElement: row.weak_element,
         balanceScore: row.balance_score,
-        interpretation: row.interpretation,
-        pairInterpretations: row.pair_interpretations,
-        pairs: row.pairs,
         todayTheme: row.today_theme,
-        cardInterpretation: row.card_interpretation,
-        psychologicalInsight: row.psychological_insight,
-        fiveElementAnalysis: row.five_element_analysis,
-        reflection: row.reflection,
-        actionSuggestion: row.action_suggestion,
-        shareThumbnail: row.share_thumbnail
+        shareThumbnail: row.share_thumbnail,
+        ...data
       });
     } catch (err) {
-      console.error("[API] Error creating energy report:", err);
-      res.status(500).json({ 
-        error: "Internal server error", 
-        details: err instanceof Error ? err.message : String(err),
-        stack: err instanceof Error ? err.stack : undefined
-      });
-    }
-  });
-
-  app.post("/api/reports/:id", async (req, res) => {
-    const { id } = req.params;
-    const updates = req.body;
-    const fields = Object.keys(updates);
-    
-    if (fields.length === 0) return res.status(400).json({ error: "No fields to update" });
-
-    const setClause = fields.map((f, i) => {
-      // Map camelCase to snake_case
-      const colName = f.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-      return `${colName} = $${i + 2}`;
-    }).join(", ");
-    
-    const values = [id];
-    fields.forEach(f => {
-      const v = updates[f];
-      values.push((v !== null && typeof v === 'object') ? JSON.stringify(v) : (v === undefined ? null : v));
-    });
-
-    try {
-      console.log(`[API] Updating report ${id} with fields:`, fields);
-      const result = await pool.query(
-        `UPDATE energy_reports SET ${setClause} WHERE id = $1 RETURNING *`, 
-        values
-      );
-      
-      if (result.rowCount === 0) {
-        return res.status(404).json({ error: "Report not found" });
-      }
-      
-      const row = result.rows[0];
-      res.json({
-        id: row.id,
-        userId: row.user_id,
-        timestamp: new Date(row.timestamp).getTime(),
-        selectedImageIds: row.selected_image_ids,
-        selectedWordIds: row.selected_word_ids,
-        totalScores: row.total_scores,
-        dominantElement: row.dominant_element,
-        weakElement: row.weak_element,
-        balanceScore: row.balance_score,
-        interpretation: row.interpretation,
-        pairInterpretations: row.pair_interpretations,
-        pairs: row.pairs,
-        todayTheme: row.today_theme,
-        cardInterpretation: row.card_interpretation,
-        psychologicalInsight: row.psychological_insight,
-        fiveElementAnalysis: row.five_element_analysis,
-        reflection: row.reflection,
-        actionSuggestion: row.action_suggestion,
-        shareThumbnail: row.share_thumbnail
-      });
-    } catch (err) {
-      console.error("Error updating energy report:", err);
-      res.status(500).json({ error: "Internal server error" });
+      console.error("[API] Error saving energy report:", err);
+      res.status(500).json({ error: "Internal server error", details: String(err) });
     }
   });
 

@@ -63,7 +63,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
             if (data && !data.error) {
               setReport(data);
               // If it's an empty report (no AI content yet), retry a few times
-              if (!data.todayTheme && retryCount < maxRetries) {
+              if (!data.isAiComplete && retryCount < maxRetries) {
                 retryCount++;
                 console.log(`Report ${reportId} is still weaving... retry ${retryCount}/${maxRetries}`);
                 setTimeout(fetchReport, 3000);
@@ -141,14 +141,14 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
     }
   };
 
-  const isAiLoading = !report.todayTheme;
+  const isAiLoading = !report.isAiComplete && !report.todayTheme;
 
   // Mark report as seen when fully loaded
   useEffect(() => {
-    if (report?.id && !isAiLoading) {
+    if (report?.id && report.isAiComplete) {
       localStorage.setItem('lastSeenReportId', report.id);
     }
-  }, [report?.id, isAiLoading]);
+  }, [report?.id, report.isAiComplete]);
   const isGuest = report.isGuest;
 
   const elements = [

@@ -83,6 +83,7 @@ export interface AnalysisReport {
   energyAdvice?: string;
   
   isGuest?: boolean;
+  isAiComplete?: boolean;
 }
 
 export type UserRole = 'guest' | 'free_member' | 'premium_member' | 'admin';

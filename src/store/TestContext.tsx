@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ImageCard, WordCard, SelectedCards, AnalysisReport, CardPair } from '../core/types';
 import { EnergyEngine } from '../core/engine';
 import { auth } from '../lib/firebase';
@@ -101,7 +101,6 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const generateReport = useCallback(async (): Promise<AnalysisReport | null> => {
     if (selectedCards.images.length === 0 && selectedCards.words.length === 0) return null;
     
-    // Set drawing state to show loading during generation
     setIsDrawing(true);
     
     try {
@@ -109,125 +108,112 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const user = auth.currentUser;
       const userId = user?.uid || null;
 
-      console.log("TestContext: Generating report. Auth state:", { 
-        isLoggedIn: !!user, 
-        uid: userId,
-        email: user?.email 
-      });
-
-      // Create initial report with local data
+      // 1. Create the initial report structure
+      const reportId = crypto.randomUUID(); // Use client-side UUID for local-first tracking
       const initialReport: AnalysisReport = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: reportId,
         timestamp: Date.now(),
-        interpretation: "您的能量分佈已生成。正在編織 AI 深度引導報告...",
+        interpretation: "正在編織 AI 深度引導報告...",
         ...analysis,
         selectedImageIds: selectedCards.images.map(img => img.id),
         selectedWordIds: selectedCards.words.map(w => w.id),
         pairs: selectedCards.pairs,
-        isGuest: !user
+        isGuest: !user,
+        isAiComplete: false
       };
-      
-      // Stage 1: Save basic report immediately to get a UUID
-      // We MUST wait for this to succeed to have a valid ID for sharing
-      try {
-        const payload = {
-          userId: userId,
-          selectedImageIds: initialReport.selectedImageIds,
-          selectedWordIds: initialReport.selectedWordIds,
-          totalScores: initialReport.totalScores,
-          dominantElement: initialReport.dominantElement,
-          weakElement: initialReport.weakElement,
-          balanceScore: initialReport.balanceScore,
-          interpretation: initialReport.interpretation,
-          pairs: initialReport.pairs
-        };
-        
-        const saveReportWithRetry = async (retries = 2): Promise<any> => {
-          try {
-            console.log(`TestContext: Attempting to save report. Retries left: ${retries}`);
-            const response = await fetch('/api/reports', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            
-            if (response.ok) return await response.json();
-            
-            if (retries > 0) {
-              await new Promise(r => setTimeout(r, 1000));
-              return await saveReportWithRetry(retries - 1);
-            }
-            
-            const errData = await response.json();
-            throw new Error(errData.error || "Failed to save report");
-          } catch (err) {
-            if (retries > 0) {
-              await new Promise(r => setTimeout(r, 1000));
-              return await saveReportWithRetry(retries - 1);
-            }
-            throw err;
-          }
-        };
 
-        const savedReport = await saveReportWithRetry();
-        console.log("TestContext: Initial report saved successfully with ID:", savedReport.id);
-        initialReport.id = savedReport.id;
-      } catch (error) {
-        console.error("TestContext: All attempts to save initial report failed:", error);
-      }
+      // 2. Save to localStorage immediately (Local-First)
+      const saveToLocal = (data: AnalysisReport) => {
+        try {
+          const history = JSON.parse(localStorage.getItem('jdear_report_history') || '[]');
+          // Remove existing if updating
+          const filtered = history.filter((r: any) => r.id !== data.id);
+          localStorage.setItem('jdear_report_history', JSON.stringify([data, ...filtered].slice(0, 50)));
+          
+          // Also save as "pending sync" if it's not synced yet
+          const pending = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
+          const pendingFiltered = pending.filter((id: string) => id !== data.id);
+          localStorage.setItem('jdear_pending_sync', JSON.stringify([data.id, ...pendingFiltered]));
+        } catch (e) {
+          console.error("LocalStorage save failed:", e);
+        }
+      };
 
-      // Set the report state with the best ID we have
+      saveToLocal(initialReport);
       setReport(initialReport);
       setIsCompleted(true);
 
-      const realId = initialReport.id;
-
-      // Stage 2: Asynchronously call AI Analysis and update the report
-      // We don't wait for this for the UI to transition, but we update the DB when it's done
-      generateAIAnalysis(selectedCards, analysis.totalScores, language).then(async (aiAnalysis) => {
-        const finalReport = {
+      // 3. Get AI Analysis
+      try {
+        const aiAnalysis = await generateAIAnalysis(selectedCards, analysis.totalScores, language);
+        
+        const finalReport: AnalysisReport = {
           ...initialReport,
           ...aiAnalysis,
-          id: realId
+          isAiComplete: true
         };
-        setReport(finalReport);
 
-        // Update the existing report in the database if we have a real ID (UUID)
-        if (realId && (realId.length > 15 || realId.includes('-'))) {
+        // Update local state and storage
+        setReport(finalReport);
+        saveToLocal(finalReport);
+
+        // 4. Sync to Cloud
+        const syncToCloud = async (data: AnalysisReport) => {
           try {
-            console.log("TestContext: Updating report with AI analysis. ID:", realId);
-            const updateResponse = await fetch(`/api/reports/${realId}`, {
+            const response = await fetch('/api/reports', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                interpretation: finalReport.interpretation,
-                pairInterpretations: finalReport.pairInterpretations || [],
-                todayTheme: finalReport.todayTheme,
-                cardInterpretation: finalReport.cardInterpretation,
-                psychologicalInsight: finalReport.psychologicalInsight,
-                fiveElementAnalysis: finalReport.fiveElementAnalysis,
-                reflection: finalReport.reflection,
-                actionSuggestion: finalReport.actionSuggestion
+                id: data.id,
+                userId: userId,
+                dominantElement: data.dominantElement,
+                weakElement: data.weakElement,
+                balanceScore: data.balanceScore,
+                todayTheme: data.todayTheme,
+                isAiComplete: data.isAiComplete,
+                // All other fields go into report_data JSONB on server
+                interpretation: data.interpretation,
+                pairInterpretations: data.pairInterpretations,
+                cardInterpretation: data.cardInterpretation,
+                psychologicalInsight: data.psychologicalInsight,
+                fiveElementAnalysis: data.fiveElementAnalysis,
+                reflection: data.reflection,
+                actionSuggestion: data.actionSuggestion,
+                selectedImageIds: data.selectedImageIds,
+                selectedWordIds: data.selectedWordIds,
+                totalScores: data.totalScores,
+                pairs: data.pairs
               })
             });
-            
-            if (updateResponse.ok) {
-              console.log("TestContext: Report updated successfully with AI analysis in DB");
+
+            if (response.ok) {
+              const saved = await response.json();
+              console.log("Cloud sync successful:", saved.id);
+              
+              // Remove from pending sync
+              const pending = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
+              localStorage.setItem('jdear_pending_sync', JSON.stringify(pending.filter((id: string) => id !== data.id)));
+              
+              // Update local report with server-confirmed ID if it changed (though we use UUID now)
+              if (saved.id !== data.id) {
+                // This shouldn't happen if we use UUIDs consistently
+              }
             } else {
-              const errData = await updateResponse.json();
-              console.error("TestContext: Failed to update report with AI analysis:", errData);
+              console.warn("Cloud sync failed, will retry later");
             }
-          } catch (error) {
-            console.error("TestContext: Network error during report update:", error);
+          } catch (err) {
+            console.error("Cloud sync network error:", err);
           }
-        } else {
-          console.warn("TestContext: Skipping DB update because ID is not a valid UUID:", realId);
-        }
-      }).catch(error => {
-        console.error("AI Analysis failed in background:", error);
-      });
-      
-      return initialReport;
+        };
+
+        await syncToCloud(finalReport);
+        return finalReport;
+
+      } catch (aiError) {
+        console.error("AI Analysis failed:", aiError);
+        // Still return the initial report so user sees something
+        return initialReport;
+      }
     } catch (error) {
       console.error("Report generation failed:", error);
       return null;
@@ -235,6 +221,68 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsDrawing(false);
     }
   }, [selectedCards, language]);
+
+  const syncPendingReports = useCallback(async () => {
+    const pendingIds = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
+    if (pendingIds.length === 0) return;
+
+    console.log(`Syncing ${pendingIds.length} pending reports...`);
+    const history = JSON.parse(localStorage.getItem('jdear_report_history') || '[]');
+    const user = auth.currentUser;
+    const userId = user?.uid || null;
+
+    for (const id of pendingIds) {
+      const reportData = history.find((r: any) => r.id === id);
+      if (!reportData) continue;
+
+      try {
+        const response = await fetch('/api/reports', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: reportData.id,
+            userId: userId,
+            dominantElement: reportData.dominantElement,
+            weakElement: reportData.weakElement,
+            balanceScore: reportData.balanceScore,
+            todayTheme: reportData.todayTheme,
+            isAiComplete: reportData.isAiComplete,
+            // All other fields
+            interpretation: reportData.interpretation,
+            pairInterpretations: reportData.pairInterpretations,
+            cardInterpretation: reportData.cardInterpretation,
+            psychologicalInsight: reportData.psychologicalInsight,
+            fiveElementAnalysis: reportData.fiveElementAnalysis,
+            reflection: reportData.reflection,
+            actionSuggestion: reportData.actionSuggestion,
+            selectedImageIds: reportData.selectedImageIds,
+            selectedWordIds: reportData.selectedWordIds,
+            totalScores: reportData.totalScores,
+            pairs: reportData.pairs
+          })
+        });
+
+        if (response.ok) {
+          const pending = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
+          localStorage.setItem('jdear_pending_sync', JSON.stringify(pending.filter((pid: string) => pid !== id)));
+        }
+      } catch (err) {
+        console.error(`Failed to sync report ${id}:`, err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Initial sync on mount
+    syncPendingReports();
+    
+    // Also sync when auth state changes
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) syncPendingReports();
+    });
+    
+    return () => unsubscribe();
+  }, [syncPendingReports]);
 
   return (
     <TestContext.Provider value={{

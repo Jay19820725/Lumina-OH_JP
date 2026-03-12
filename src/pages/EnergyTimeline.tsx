@@ -349,19 +349,24 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                       className="p-6 md:p-8 hover:bg-white/80 transition-all cursor-pointer group border-emerald-500/10 active:scale-[0.98]"
                     >
                       <div className={`flex flex-col ${i % 2 === 0 ? 'md:items-end' : 'md:items-start'} gap-4`}>
+                        {!item.data.isAiComplete && (
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-wood/5 text-wood text-[8px] uppercase tracking-[0.4em] animate-pulse">
+                            <Sparkles size={10} /> {t('report_weaving')}
+                          </div>
+                        )}
                         <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">優位な要素</span>
+                          <div className={i % 2 === 0 ? 'text-right' : 'text-left'}>
+                            <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">{t('report_dominant')}</span>
                             <span className="text-lg font-serif capitalize">{translateElement(item.data.dominantElement)}</span>
                           </div>
                           <div className="h-8 w-px bg-ink/5" />
-                          <div className="text-left">
-                            <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">バランス</span>
+                          <div className={i % 2 === 0 ? 'text-left' : 'text-right'}>
+                            <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-1">{t('report_balance')}</span>
                             <span className="text-lg font-serif">{item.data.balanceScore}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 text-[10px] text-ink-muted group-hover:text-ink transition-colors">
-                          詳細を見る <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                          {t('report_view_detail')} <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     </GlassCard>
