@@ -164,7 +164,7 @@ export const translations = {
     daily_reminder: "毎日のリマインダー",
     dark_mode: "ダークモード (準備中)",
     newsletter: "ニュースレター",
-    status_checking: "ステータスを確認中...",
+    status_checking: "ステータスを確認中....",
     
     // Premium Section
     premium_center: "Premium エネルギーセンター",
