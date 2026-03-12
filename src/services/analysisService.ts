@@ -55,6 +55,10 @@ export const generateAIAnalysis = async (
       請針對以下用戶的抽卡結果、連想文字以及五行能量數值，撰寫一份深度的能量分析報告。
       妳必須同時生成「繁體中文 (zh-TW)」與「日文 (ja-JP)」兩個版本。
       
+      【核心敘事風格：光芒與種子】
+      - 優勢能量 (Dominant Energy)：將其視為「當前綻放的光芒」。描述它如何在高頻共振，展現生命力與直覺。
+      - 需呵護能量 (Weak Energy)：將其視為「溫柔守護的種子」。描述它如何靜待萌發，邀請用戶給予耐心與覺察，而非視為缺失。
+      
       【用戶抽卡與連想】
       {{USER_DATA}}
       
@@ -65,7 +69,7 @@ export const generateAIAnalysis = async (
       1. 今日主題 (todayTheme): 富有詩意的能量定調。
       2. 牌陣解讀 (cardInterpretation): 潛意識連結分析。
       3. 心理洞察 (psychologicalInsight): 深層心理需求揭示。
-      4. 五行能量分析 (fiveElementAnalysis): 元素對生活的影響。
+      4. 五行能量分析 (fiveElementAnalysis): 元素對生活的影響，請遵循「光芒與種子」的敘事邏輯。
       5. 內在冥想/反思 (reflection): 引導向內觀察。
       6. 行動建議 (actionSuggestion): 給予具體、溫柔且可執行的生活建議，幫助能量回歸平衡。
       7. 牌組解析 (pairInterpretations): 3 組配對的深度解析。
