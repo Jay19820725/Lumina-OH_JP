@@ -30,7 +30,7 @@ export const ShuffleAnimation: React.FC<ShuffleAnimationProps> = ({ onComplete }
   };
 
   return (
-    <div className="relative w-full h-[700px] flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative w-full h-[450px] md:h-[700px] flex flex-col items-center justify-center overflow-hidden mt-0 mb-[100px] md:my-0">
       <div className="relative w-full h-full flex items-center justify-center">
         
         {/* Central Energy Core */}
@@ -125,7 +125,7 @@ export const ShuffleAnimation: React.FC<ShuffleAnimationProps> = ({ onComplete }
       </div>
 
       {/* Interaction Layer */}
-      <div className="absolute bottom-32 z-50">
+      <div className="absolute bottom-12 md:bottom-32 z-50">
         <AnimatePresence>
           {!isStopping && (
             <motion.div

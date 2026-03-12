@@ -769,6 +769,18 @@ async function startServer() {
     }
   });
 
+  app.delete("/api/admin/sessions/drafts", async (req, res) => {
+    try {
+      const result = await pool.query(
+        "DELETE FROM sessions WHERE pairs = '[]' OR pairs IS NULL"
+      );
+      res.json({ success: true, count: result.rowCount });
+    } catch (err) {
+      console.error("Error deleting session drafts:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.post("/api/admin/cards/image", async (req, res) => {
     const { id, image_url, description, elements } = req.body;
     try {

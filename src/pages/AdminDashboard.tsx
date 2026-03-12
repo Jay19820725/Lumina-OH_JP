@@ -45,7 +45,8 @@ import {
   useDeleteCardMutation,
   useSavePromptMutation,
   useDeletePromptMutation,
-  useActivatePromptMutation
+  useActivatePromptMutation,
+  useDeleteSessionDraftsMutation
 } from '../hooks/useAdminData';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserProfile, Session, ImageCard, WordCard, FiveElement, AIPrompt, SEOSettings } from '../core/types';
@@ -95,6 +96,7 @@ export const AdminDashboard: React.FC = () => {
   const deletePromptMutation = useDeletePromptMutation();
   const activatePromptMutation = useActivatePromptMutation();
   const saveSettingsMutation = useSaveSettingsMutation();
+  const deleteSessionDraftsMutation = useDeleteSessionDraftsMutation();
 
   // Card Editing State
   const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
@@ -176,6 +178,17 @@ export const AdminDashboard: React.FC = () => {
       await deleteCardMutation.mutateAsync({ type, id });
     } catch (error) {
       console.error("刪除卡片失敗:", error);
+    }
+  };
+
+  const handleDeleteSessionDrafts = async () => {
+    if (!confirm('確定要永久刪除所有「未完成」的抽卡草稿記錄嗎？已產生成果報告的數據將會保留。')) return;
+    try {
+      const result = await deleteSessionDraftsMutation.mutateAsync();
+      alert(`已成功清空 ${result.count} 筆草稿記錄`);
+    } catch (error) {
+      console.error("清空草稿失敗:", error);
+      alert('清空失敗');
     }
   };
 
@@ -1259,8 +1272,21 @@ export const AdminDashboard: React.FC = () => {
 
   const renderSessions = () => (
     <GlassCard className="overflow-hidden">
-      <div className="p-6 border-b border-ink/5 bg-white/20">
+      <div className="p-6 border-b border-ink/5 bg-white/20 flex justify-between items-center">
         <h3 className="text-xs uppercase tracking-widest">抽卡數據監測</h3>
+        <Button 
+          variant="outline" 
+          onClick={handleDeleteSessionDrafts}
+          disabled={deleteSessionDraftsMutation.isPending}
+          className="h-9 px-4 text-[10px] border-rose-200 text-rose-500 hover:bg-rose-50 gap-2"
+        >
+          {deleteSessionDraftsMutation.isPending ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Trash2 size={14} />
+          )}
+          清空所有草稿
+        </Button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">

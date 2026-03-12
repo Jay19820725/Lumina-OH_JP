@@ -50,6 +50,12 @@ export const adminService = {
     }));
   },
 
+  async deleteSessionDrafts(): Promise<{ success: boolean; count: number }> {
+    const response = await fetch('/api/admin/sessions/drafts', { method: 'DELETE' });
+    if (!response.ok) throw new Error('Failed to delete session drafts');
+    return await response.json();
+  },
+
   /**
    * Cards Management
    */

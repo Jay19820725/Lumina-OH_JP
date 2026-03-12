@@ -114,6 +114,17 @@ export const useActivatePromptMutation = () => {
   });
 };
 
+export const useDeleteSessionDraftsMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => adminService.deleteSessionDrafts(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
+    },
+  });
+};
+
 export const useAdminSettings = (key: string) => {
   return useQuery({
     queryKey: ['admin', 'settings', key],
