@@ -128,9 +128,19 @@
   }
 
   .ma-container {
-    @apply max-w-[1100px] mx-auto;
+    @apply max-w-[1200px] mx-auto;
     padding-left: var(--spacing-container);
     padding-right: var(--spacing-container);
+  }
+
+  .tracking-tighter-massive {
+    letter-spacing: -0.05em;
+  }
+
+  .editorial-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 2rem;
   }
 
   .vertical-text {

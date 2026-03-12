@@ -19,6 +19,7 @@ interface TestContextType {
   setAssociations: (associations: { pair_id: string; text: string }[]) => void;
   generateReport: () => Promise<AnalysisReport | null>;
   setReport: (report: AnalysisReport | null) => void;
+  setSelectedCards: React.Dispatch<React.SetStateAction<SelectedCards>>;
 }
 
 const TestContext = createContext<TestContextType | undefined>(undefined);
@@ -101,15 +102,16 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const generateReport = useCallback(async (): Promise<AnalysisReport | null> => {
     if (selectedCards.images.length === 0 && selectedCards.words.length === 0) return null;
     
-    setIsDrawing(true);
+    // We don't set isDrawing(true) here anymore because we want instant transition
+    // unless we want a very brief "calculating" state. Let's keep it fast.
     
     try {
       const analysis = EnergyEngine.analyze(selectedCards);
       const user = auth.currentUser;
       const userId = user?.uid || null;
 
-      // 1. Create the initial report structure
-      const reportId = crypto.randomUUID(); // Use client-side UUID for local-first tracking
+      // 1. Create the initial report structure (Instant)
+      const reportId = crypto.randomUUID();
       const initialReport: AnalysisReport = {
         id: reportId,
         timestamp: Date.now(),
@@ -126,11 +128,9 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const saveToLocal = (data: AnalysisReport) => {
         try {
           const history = JSON.parse(localStorage.getItem('jdear_report_history') || '[]');
-          // Remove existing if updating
           const filtered = history.filter((r: any) => r.id !== data.id);
           localStorage.setItem('jdear_report_history', JSON.stringify([data, ...filtered].slice(0, 50)));
           
-          // Also save as "pending sync" if it's not synced yet
           const pending = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
           const pendingFiltered = pending.filter((id: string) => id !== data.id);
           localStorage.setItem('jdear_pending_sync', JSON.stringify([data.id, ...pendingFiltered]));
@@ -141,84 +141,74 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       saveToLocal(initialReport);
       setReport(initialReport);
-      setIsCompleted(true);
+      setIsCompleted(true); // Trigger navigation to report page immediately
 
-      // 3. Get AI Analysis
-      try {
-        const aiAnalysis = await generateAIAnalysis(selectedCards, analysis.totalScores, language);
-        
-        const finalReport: AnalysisReport = {
-          ...initialReport,
-          ...aiAnalysis,
-          isAiComplete: true
-        };
+      // 3. Background AI Analysis & Cloud Sync (Non-blocking)
+      const runBackgroundTasks = async () => {
+        try {
+          // Get AI Analysis
+          const aiAnalysis = await generateAIAnalysis(selectedCards, analysis.totalScores, language);
+          
+          const finalReport: AnalysisReport = {
+            ...initialReport,
+            ...aiAnalysis,
+            isAiComplete: true
+          };
 
-        // Update local state and storage
-        setReport(finalReport);
-        saveToLocal(finalReport);
+          // Update local state and storage
+          setReport(finalReport);
+          saveToLocal(finalReport);
 
-        // 4. Sync to Cloud
-        const syncToCloud = async (data: AnalysisReport) => {
-          try {
-            const response = await fetch('/api/reports', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                id: data.id,
-                userId: userId,
-                dominantElement: data.dominantElement,
-                weakElement: data.weakElement,
-                balanceScore: data.balanceScore,
-                todayTheme: data.todayTheme,
-                isAiComplete: data.isAiComplete,
-                // All other fields go into report_data JSONB on server
-                interpretation: data.interpretation,
-                pairInterpretations: data.pairInterpretations,
-                cardInterpretation: data.cardInterpretation,
-                psychologicalInsight: data.psychologicalInsight,
-                fiveElementAnalysis: data.fiveElementAnalysis,
-                reflection: data.reflection,
-                actionSuggestion: data.actionSuggestion,
-                selectedImageIds: data.selectedImageIds,
-                selectedWordIds: data.selectedWordIds,
-                totalScores: data.totalScores,
-                pairs: data.pairs
-              })
-            });
+          // Sync to Cloud
+          const syncToCloud = async (data: AnalysisReport) => {
+            try {
+              const response = await fetch('/api/reports', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  id: data.id,
+                  userId: userId,
+                  dominantElement: data.dominantElement,
+                  weakElement: data.weakElement,
+                  balanceScore: data.balanceScore,
+                  todayTheme: data.todayTheme,
+                  isAiComplete: data.isAiComplete,
+                  interpretation: data.interpretation,
+                  pairInterpretations: data.pairInterpretations,
+                  cardInterpretation: data.cardInterpretation,
+                  psychologicalInsight: data.psychologicalInsight,
+                  fiveElementAnalysis: data.fiveElementAnalysis,
+                  reflection: data.reflection,
+                  actionSuggestion: data.actionSuggestion,
+                  selectedImageIds: data.selectedImageIds,
+                  selectedWordIds: data.selectedWordIds,
+                  totalScores: data.totalScores,
+                  pairs: data.pairs
+                })
+              });
 
-            if (response.ok) {
-              const saved = await response.json();
-              console.log("Cloud sync successful:", saved.id);
-              
-              // Remove from pending sync
-              const pending = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
-              localStorage.setItem('jdear_pending_sync', JSON.stringify(pending.filter((id: string) => id !== data.id)));
-              
-              // Update local report with server-confirmed ID if it changed (though we use UUID now)
-              if (saved.id !== data.id) {
-                // This shouldn't happen if we use UUIDs consistently
+              if (response.ok) {
+                const pending = JSON.parse(localStorage.getItem('jdear_pending_sync') || '[]');
+                localStorage.setItem('jdear_pending_sync', JSON.stringify(pending.filter((id: string) => id !== data.id)));
               }
-            } else {
-              console.warn("Cloud sync failed, will retry later");
+            } catch (err) {
+              console.error("Cloud sync network error:", err);
             }
-          } catch (err) {
-            console.error("Cloud sync network error:", err);
-          }
-        };
+          };
 
-        await syncToCloud(finalReport);
-        return finalReport;
+          await syncToCloud(finalReport);
+        } catch (aiError) {
+          console.error("Background AI Analysis failed:", aiError);
+        }
+      };
 
-      } catch (aiError) {
-        console.error("AI Analysis failed:", aiError);
-        // Still return the initial report so user sees something
-        return initialReport;
-      }
+      // Fire and forget background tasks
+      runBackgroundTasks();
+
+      return initialReport;
     } catch (error) {
       console.error("Report generation failed:", error);
       return null;
-    } finally {
-      setIsDrawing(false);
     }
   }, [selectedCards, language]);
 
@@ -296,7 +286,8 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPairs,
       setAssociations,
       generateReport,
-      setReport
+      setReport,
+      setSelectedCards
     }}>
       {children}
     </TestContext.Provider>

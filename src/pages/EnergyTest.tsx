@@ -360,7 +360,7 @@ const AssociationStage: React.FC<{
 };
 
 export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
-  const { selectedCards, startDraw, setPairs, setAssociations, generateReport, isDrawing } = useTest();
+  const { selectedCards, startDraw, setPairs, setAssociations, generateReport, isDrawing, setSelectedCards } = useTest();
   const { t } = useLanguage();
   const [drawStage, setDrawStage] = useState<DrawStage>('idle');
   const [flippedImages, setFlippedImages] = useState<number[]>([]);
@@ -386,22 +386,30 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
   }, [startDraw]);
 
   const handleFlipImage = (index: number) => {
-    if (!flippedImages.includes(index)) {
+    if (flippedImages.includes(index)) {
+      setFlippedImages(prev => prev.filter(i => i !== index));
+    } else if (flippedImages.length < 3) {
       setFlippedImages(prev => [...prev, index]);
     }
   };
 
   const handleFlipWord = (index: number) => {
-    if (!flippedWords.includes(index)) {
+    if (flippedWords.includes(index)) {
+      setFlippedWords(prev => prev.filter(i => i !== index));
+    } else if (flippedWords.length < 3) {
       setFlippedWords(prev => [...prev, index]);
     }
   };
 
   const handleContinueToWords = () => {
+    const finalImages = selectedCards.images.filter((_, i) => flippedImages.includes(i));
+    setSelectedCards(prev => ({ ...prev, images: finalImages }));
     setDrawStage('drawing_words');
   };
 
   const handleContinueToPairing = () => {
+    const finalWords = selectedCards.words.filter((_, i) => flippedWords.includes(i));
+    setSelectedCards(prev => ({ ...prev, words: finalWords }));
     setDrawStage('pairing');
   };
 
@@ -420,8 +428,8 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
     onComplete();
   };
 
-  const allImagesFlipped = flippedImages.length === selectedCards.images.length && selectedCards.images.length > 0;
-  const allWordsFlipped = flippedWords.length === selectedCards.words.length && selectedCards.words.length > 0;
+  const allImagesFlipped = flippedImages.length === 3;
+  const allWordsFlipped = flippedWords.length === 3;
 
   return (
     <div className="ma-container pt-12 md:pt-20 pb-48 md:pb-64 min-h-screen flex flex-col items-center">
@@ -513,7 +521,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
       </div>
 
       {/* Ritual Stage */}
-      <div className="relative w-full min-h-[700px] pb-32 flex items-center justify-center perspective-1000">
+      <div className="relative w-full min-h-[700px] pb-32 flex items-center justify-center perspective-1000 -translate-y-24">
         <AnimatePresence mode="wait">
           {drawStage === 'shuffling' ? (
             <motion.div

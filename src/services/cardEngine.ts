@@ -159,8 +159,8 @@ function preloadImages(urls: string[]): Promise<void[]> {
  */
 export async function performJDearDraw(): Promise<SelectedCards> {
   const [images, words] = await Promise.all([
-    drawCardImage(3),
-    drawCardWord(3)
+    drawCardImage(6),
+    drawCardWord(6)
   ]);
 
   const imageUrls = [
