@@ -19,7 +19,6 @@ interface TestContextType {
   setAssociations: (associations: { pair_id: string; text: string }[]) => void;
   generateReport: () => Promise<AnalysisReport | null>;
   setReport: (report: AnalysisReport | null) => void;
-  setSelectedCards: React.Dispatch<React.SetStateAction<SelectedCards>>;
 }
 
 const TestContext = createContext<TestContextType | undefined>(undefined);
@@ -32,13 +31,21 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isDrawing, setIsDrawing] = useState(false);
   const { language } = useLanguage();
 
+  useEffect(() => {
+    // Clear cache and preload when language changes
+    import('../services/cardEngine').then(({ clearDeckCache, preloadDecks }) => {
+      clearDeckCache(language);
+      preloadDecks(language);
+    });
+  }, [language]);
+
   const startDraw = useCallback(async () => {
     setIsDrawing(true);
     try {
       const user = auth.currentUser;
       if (user) {
         // If user is logged in, use the new drawSession service to persist the draw
-        const drawPromise = drawSession(user.uid);
+        const drawPromise = drawSession(user.uid, language);
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error("API timeout")), 8000)
         );
@@ -53,12 +60,12 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         } catch (err) {
           console.warn("API draw session failed or timed out, falling back to local draw:", err);
-          const draw = await performJDearDraw();
+          const draw = await performJDearDraw(language);
           setSelectedCards(draw);
         }
       } else {
         // Fallback for guest users
-        const draw = await performJDearDraw();
+        const draw = await performJDearDraw(language);
         setSelectedCards(draw);
       }
       setCurrentStep(1);
@@ -67,7 +74,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsDrawing(false);
     }
-  }, []);
+  }, [language]);
 
   const setPairs = useCallback((pairs: CardPair[]) => {
     setSelectedCards(prev => ({ ...prev, pairs }));
@@ -286,8 +293,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPairs,
       setAssociations,
       generateReport,
-      setReport,
-      setSelectedCards
+      setReport
     }}>
       {children}
     </TestContext.Provider>

@@ -1,0 +1,1762 @@
+[
+    {
+        "card_id": "tw_word_01",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "糾結",
+        "card_name_en": "Entangled",
+        "image_path": "cards/tw/word/word_01.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 0,
+            "metal": 10,
+            "water": 50
+        },
+        "keywords": [
+            "束縛",
+            "猶豫",
+            "內在矛盾"
+        ]
+    },
+    {
+        "card_id": "tw_word_02",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "釋懷",
+        "card_name_en": "Letting Go",
+        "image_path": "cards/tw/word/word_02.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 20,
+            "metal": 30,
+            "water": 50
+        },
+        "keywords": [
+            "放鬆",
+            "平靜",
+            "原諒"
+        ]
+    },
+    {
+        "card_id": "tw_word_03",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "疲憊",
+        "card_name_en": "Exhaustion",
+        "image_path": "cards/tw/word/word_03.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 60,
+            "earth": 10,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "累",
+            "消耗",
+            "休息"
+        ]
+    },
+    {
+        "card_id": "tw_word_04",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "綻放",
+        "card_name_en": "Blooming",
+        "image_path": "cards/tw/word/word_04.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 30,
+            "earth": 30,
+            "metal": 10,
+            "water": 10
+        },
+        "keywords": [
+            "盛開",
+            "發展",
+            "生機"
+        ]
+    },
+    {
+        "card_id": "tw_word_05",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "孤獨",
+        "card_name_en": "Solitude",
+        "image_path": "cards/tw/word/word_05.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 10,
+            "metal": 40,
+            "water": 30
+        },
+        "keywords": [
+            "自我",
+            "沉思",
+            "寂靜"
+        ]
+    },
+    {
+        "card_id": "tw_word_06",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "期待",
+        "card_name_en": "Expectation",
+        "image_path": "cards/tw/word/word_06.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 20,
+            "metal": 20,
+            "water": 50
+        },
+        "keywords": [
+            "希望",
+            "渴望",
+            "等待"
+        ]
+    },
+    {
+        "card_id": "tw_word_07",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "壓抑",
+        "card_name_en": "Suppression",
+        "image_path": "cards/tw/word/word_07.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 50,
+            "metal": 10,
+            "water": 10
+        },
+        "keywords": [
+            "控制",
+            "沈重",
+            "束縛"
+        ]
+    },
+    {
+        "card_id": "tw_word_08",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "自由",
+        "card_name_en": "Freedom",
+        "image_path": "cards/tw/word/word_08.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 50,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "解放",
+            "寬廣",
+            "無拘無束"
+        ]
+    },
+    {
+        "card_id": "tw_word_09",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "迷惘",
+        "card_name_en": "Lost",
+        "image_path": "cards/tw/word/word_09.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 40,
+            "earth": 0,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "迷失",
+            "困惑",
+            "尋找"
+        ]
+    },
+    {
+        "card_id": "tw_word_10",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "溫暖",
+        "card_name_en": "Warmth",
+        "image_path": "cards/tw/word/word_10.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 30,
+            "metal": 20,
+            "water": 50
+        },
+        "keywords": [
+            "關懷",
+            "舒服",
+            "陪伴"
+        ]
+    },
+    {
+        "card_id": "tw_word_11",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "脆弱",
+        "card_name_en": "Fragility",
+        "image_path": "cards/tw/word/word_11.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 50,
+            "earth": 0,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "柔弱",
+            "敏感",
+            "易碎"
+        ]
+    },
+    {
+        "card_id": "tw_word_12",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "憤怒",
+        "card_name_en": "Anger",
+        "image_path": "cards/tw/word/word_12.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 30,
+            "metal": 50,
+            "water": 10
+        },
+        "keywords": [
+            "爆發",
+            "情緒",
+            "反抗"
+        ]
+    },
+    {
+        "card_id": "tw_word_13",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "平靜",
+        "card_name_en": "Serenity",
+        "image_path": "cards/tw/word/word_13.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 40,
+            "metal": 0,
+            "water": 20
+        },
+        "keywords": [
+            "安穩",
+            "寧靜",
+            "無擾"
+        ]
+    },
+    {
+        "card_id": "tw_word_14",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "渴望",
+        "card_name_en": "Yearning",
+        "image_path": "cards/tw/word/word_14.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 20,
+            "earth": 10,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "追求",
+            "想要",
+            "期盼"
+        ]
+    },
+    {
+        "card_id": "tw_word_15",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "羞愧",
+        "card_name_en": "Shame",
+        "image_path": "cards/tw/word/word_15.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 30,
+            "earth": 10,
+            "metal": 0,
+            "water": 50
+        },
+        "keywords": [
+            "內疚",
+            "躲藏",
+            "自責"
+        ]
+    },
+    {
+        "card_id": "tw_word_16",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "喜悅",
+        "card_name_en": "Joy",
+        "image_path": "cards/tw/word/word_16.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 30,
+            "earth": 10,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "開心",
+            "滿足",
+            "愉悅"
+        ]
+    },
+    {
+        "card_id": "tw_word_17",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "恐懼",
+        "card_name_en": "Fear",
+        "image_path": "cards/tw/word/word_17.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 10,
+            "earth": 20,
+            "metal": 0,
+            "water": 20
+        },
+        "keywords": [
+            "不安",
+            "害怕",
+            "警覺"
+        ]
+    },
+    {
+        "card_id": "tw_word_18",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "勇氣",
+        "card_name_en": "Courage",
+        "image_path": "cards/tw/word/word_18.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 10,
+            "water": 50
+        },
+        "keywords": [
+            "冒險",
+            "力量",
+            "面對"
+        ]
+    },
+    {
+        "card_id": "tw_word_19",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "空虛",
+        "card_name_en": "Void",
+        "image_path": "cards/tw/word/word_19.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 80,
+            "earth": 0,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "孤寂",
+            "缺失",
+            "寂靜"
+        ]
+    },
+    {
+        "card_id": "tw_word_20",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "矛盾",
+        "card_name_en": "Conflict",
+        "image_path": "cards/tw/word/word_20.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 20,
+            "metal": 40,
+            "water": 40
+        },
+        "keywords": [
+            "衝突",
+            "拉扯",
+            "對立"
+        ]
+    },
+    {
+        "card_id": "tw_word_21",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "療癒",
+        "card_name_en": "Healing",
+        "image_path": "cards/tw/word/word_21.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 30,
+            "earth": 10,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "康復",
+            "滋養",
+            "轉化"
+        ]
+    },
+    {
+        "card_id": "tw_word_22",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "臣服",
+        "card_name_en": "Surrender",
+        "image_path": "cards/tw/word/word_22.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 10,
+            "earth": 40,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "接受",
+            "順應",
+            "放下"
+        ]
+    },
+    {
+        "card_id": "tw_word_23",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "停滯",
+        "card_name_en": "Stagnation",
+        "image_path": "cards/tw/word/word_23.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 30,
+            "earth": 10,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "困住",
+            "不前",
+            "等待"
+        ]
+    },
+    {
+        "card_id": "tw_word_24",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "追尋",
+        "card_name_en": "Seeking",
+        "image_path": "cards/tw/word/word_24.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 30,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "搜索",
+            "探索",
+            "目標"
+        ]
+    },
+    {
+        "card_id": "tw_word_25",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "選擇",
+        "card_name_en": "Choice",
+        "image_path": "cards/tw/word/word_25.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 50,
+            "water": 10
+        },
+        "keywords": [
+            "決策",
+            "方向",
+            "責任"
+        ]
+    },
+    {
+        "card_id": "tw_word_26",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "重啟",
+        "card_name_en": "Restart",
+        "image_path": "cards/tw/word/word_26.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 60,
+            "water": 0
+        },
+        "keywords": [
+            "開始",
+            "刷新",
+            "勇氣"
+        ]
+    },
+    {
+        "card_id": "tw_word_27",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "等待",
+        "card_name_en": "Waiting",
+        "image_path": "cards/tw/word/word_27.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 40,
+            "earth": 10,
+            "metal": 10,
+            "water": 20
+        },
+        "keywords": [
+            "耐心",
+            "期望",
+            "時間"
+        ]
+    },
+    {
+        "card_id": "tw_word_28",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "逃避",
+        "card_name_en": "Escape",
+        "image_path": "cards/tw/word/word_28.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 20,
+            "metal": 30,
+            "water": 50
+        },
+        "keywords": [
+            "遠離",
+            "躲閃",
+            "拒絕"
+        ]
+    },
+    {
+        "card_id": "tw_word_29",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "回歸",
+        "card_name_en": "Return",
+        "image_path": "cards/tw/word/word_29.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 30,
+            "earth": 20,
+            "metal": 10,
+            "water": 10
+        },
+        "keywords": [
+            "回到",
+            "本心",
+            "根源"
+        ]
+    },
+    {
+        "card_id": "tw_word_30",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "冒險",
+        "card_name_en": "Adventure",
+        "image_path": "cards/tw/word/word_30.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 40,
+            "metal": 0,
+            "water": 50
+        },
+        "keywords": [
+            "探索",
+            "挑戰",
+            "好奇"
+        ]
+    },
+    {
+        "card_id": "tw_word_31",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "執著",
+        "card_name_en": "Persistence",
+        "image_path": "cards/tw/word/word_31.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 60,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "堅持",
+            "不懈",
+            "沉迷"
+        ]
+    },
+    {
+        "card_id": "tw_word_32",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "放下",
+        "card_name_en": "Release",
+        "image_path": "cards/tw/word/word_32.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 20,
+            "earth": 10,
+            "metal": 50,
+            "water": 20
+        },
+        "keywords": [
+            "捨棄",
+            "解放",
+            "輕鬆"
+        ]
+    },
+    {
+        "card_id": "tw_word_33",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "對抗",
+        "card_name_en": "Confrontation",
+        "image_path": "cards/tw/word/word_33.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 10,
+            "metal": 20,
+            "water": 40
+        },
+        "keywords": [
+            "衝突",
+            "挑戰",
+            "防衛"
+        ]
+    },
+    {
+        "card_id": "tw_word_34",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "隱藏",
+        "card_name_en": "Hide",
+        "image_path": "cards/tw/word/word_34.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 20,
+            "earth": 30,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "遮掩",
+            "秘密",
+            "保護"
+        ]
+    },
+    {
+        "card_id": "tw_word_35",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "分享",
+        "card_name_en": "Share",
+        "image_path": "cards/tw/word/word_35.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 20,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "給予",
+            "連結",
+            "慷慨"
+        ]
+    },
+    {
+        "card_id": "tw_word_36",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "拒絕",
+        "card_name_en": "Refusal",
+        "image_path": "cards/tw/word/word_36.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 50,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "不從",
+            "界限",
+            "自我"
+        ]
+    },
+    {
+        "card_id": "tw_word_37",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "包容",
+        "card_name_en": "Tolerance",
+        "image_path": "cards/tw/word/word_37.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 50,
+            "earth": 10,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "接納",
+            "寬宏",
+            "多元"
+        ]
+    },
+    {
+        "card_id": "tw_word_38",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "前進",
+        "card_name_en": "Moving Forward",
+        "image_path": "cards/tw/word/word_38.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 30,
+            "metal": 10,
+            "water": 20
+        },
+        "keywords": [
+            "邁步",
+            "動力",
+            "進展"
+        ]
+    },
+    {
+        "card_id": "tw_word_39",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "沉溺",
+        "card_name_en": "Indulgence",
+        "image_path": "cards/tw/word/word_39.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 20,
+            "metal": 40,
+            "water": 30
+        },
+        "keywords": [
+            "迷失",
+            "享受",
+            "過度"
+        ]
+    },
+    {
+        "card_id": "tw_word_40",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "覺醒",
+        "card_name_en": "Awakening",
+        "image_path": "cards/tw/word/word_40.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 60,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "明白",
+            "洞察",
+            "轉變"
+        ]
+    },
+    {
+        "card_id": "tw_word_41",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "依賴",
+        "card_name_en": "Dependency",
+        "image_path": "cards/tw/word/word_41.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 20,
+            "earth": 20,
+            "metal": 0,
+            "water": 30
+        },
+        "keywords": [
+            "需要",
+            "依附",
+            "缺乏"
+        ]
+    },
+    {
+        "card_id": "tw_word_42",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "獨立",
+        "card_name_en": "Independence",
+        "image_path": "cards/tw/word/word_42.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 40,
+            "earth": 10,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "自立",
+            "自由",
+            "強大"
+        ]
+    },
+    {
+        "card_id": "tw_word_43",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "連結",
+        "card_name_en": "Connection",
+        "image_path": "cards/tw/word/word_43.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 40,
+            "metal": 20,
+            "water": 20
+        },
+        "keywords": [
+            "關係",
+            "互動",
+            "合一"
+        ]
+    },
+    {
+        "card_id": "tw_word_44",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "探索",
+        "card_name_en": "Exploration",
+        "image_path": "cards/tw/word/word_44.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 50,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "好奇",
+            "未知",
+            "尋找"
+        ]
+    },
+    {
+        "card_id": "tw_word_45",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "責任",
+        "card_name_en": "Responsibility",
+        "image_path": "cards/tw/word/word_45.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 30,
+            "earth": 10,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "承擔",
+            "義務",
+            "重擔"
+        ]
+    },
+    {
+        "card_id": "tw_word_46",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "犧牲",
+        "card_name_en": "Sacrifice",
+        "image_path": "cards/tw/word/word_46.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 60,
+            "metal": 10,
+            "water": 20
+        },
+        "keywords": [
+            "奉獻",
+            "付出",
+            "愛"
+        ]
+    },
+    {
+        "card_id": "tw_word_47",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "叛逆",
+        "card_name_en": "Rebellion",
+        "image_path": "cards/tw/word/word_47.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 20,
+            "earth": 10,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "反抗",
+            "自我",
+            "突破"
+        ]
+    },
+    {
+        "card_id": "tw_word_48",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "偽裝",
+        "card_name_en": "Disguise",
+        "image_path": "cards/tw/word/word_48.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 40,
+            "earth": 0,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "假裝",
+            "掩飾",
+            "表面"
+        ]
+    },
+    {
+        "card_id": "tw_word_49",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "妥協",
+        "card_name_en": "Compromise",
+        "image_path": "cards/tw/word/word_49.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 10,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "退讓",
+            "協議",
+            "平衡"
+        ]
+    },
+    {
+        "card_id": "tw_word_50",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "疏離",
+        "card_name_en": "Alienation",
+        "image_path": "cards/tw/word/word_50.jpeg",
+        "elements": {
+            "wood": 60,
+            "fire": 30,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "疏遠",
+            "冷淡",
+            "隔離"
+        ]
+    },
+    {
+        "card_id": "tw_word_51",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "競爭",
+        "card_name_en": "Competition",
+        "image_path": "cards/tw/word/word_51.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 40,
+            "metal": 10,
+            "water": 30
+        },
+        "keywords": [
+            "對手",
+            "拼搏",
+            "壓力"
+        ]
+    },
+    {
+        "card_id": "tw_word_52",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "崇拜",
+        "card_name_en": "Admiration",
+        "image_path": "cards/tw/word/word_52.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 10,
+            "metal": 0,
+            "water": 80
+        },
+        "keywords": [
+            "仰慕",
+            "尊敬",
+            "模仿"
+        ]
+    },
+    {
+        "card_id": "tw_word_53",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "承諾",
+        "card_name_en": "Promise",
+        "image_path": "cards/tw/word/word_53.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 50,
+            "earth": 0,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "誓言",
+            "守信",
+            "負責"
+        ]
+    },
+    {
+        "card_id": "tw_word_54",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "背叛",
+        "card_name_en": "Betrayal",
+        "image_path": "cards/tw/word/word_54.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 40,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "欺騙",
+            "受傷",
+            "失望"
+        ]
+    },
+    {
+        "card_id": "tw_word_55",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "寬恕",
+        "card_name_en": "Forgiveness",
+        "image_path": "cards/tw/word/word_55.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 30,
+            "earth": 10,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "原諒",
+            "和解",
+            "慈悲"
+        ]
+    },
+    {
+        "card_id": "tw_word_56",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "孤立",
+        "card_name_en": "Isolation",
+        "image_path": "cards/tw/word/word_56.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 60,
+            "metal": 10,
+            "water": 20
+        },
+        "keywords": [
+            "被排擠",
+            "獨自",
+            "封閉"
+        ]
+    },
+    {
+        "card_id": "tw_word_57",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "虛榮",
+        "card_name_en": "Vanity",
+        "image_path": "cards/tw/word/word_57.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 20,
+            "metal": 10,
+            "water": 40
+        },
+        "keywords": [
+            "面子",
+            "炫耀",
+            "表面"
+        ]
+    },
+    {
+        "card_id": "tw_word_58",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "卑微",
+        "card_name_en": "Inferiority",
+        "image_path": "cards/tw/word/word_58.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 60,
+            "earth": 0,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "低下",
+            "自卑",
+            "沈重"
+        ]
+    },
+    {
+        "card_id": "tw_word_59",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "守護",
+        "card_name_en": "Protection",
+        "image_path": "cards/tw/word/word_59.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 10,
+            "metal": 20,
+            "water": 50
+        },
+        "keywords": [
+            "保護",
+            "照顧",
+            "安全"
+        ]
+    },
+    {
+        "card_id": "tw_word_60",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "掌控",
+        "card_name_en": "Control",
+        "image_path": "cards/tw/word/word_60.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 40,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "支配",
+            "管理",
+            "權力"
+        ]
+    },
+    {
+        "card_id": "tw_word_61",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "索求",
+        "card_name_en": "Demanding",
+        "image_path": "cards/tw/word/word_61.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 60,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "索取",
+            "要求",
+            "慾望"
+        ]
+    },
+    {
+        "card_id": "tw_word_62",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "掙脫",
+        "card_name_en": "Breaking Free",
+        "image_path": "cards/tw/word/word_62.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 50,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "逃離",
+            "爆發",
+            "解開"
+        ]
+    },
+    {
+        "card_id": "tw_word_63",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "合群",
+        "card_name_en": "Fitting In",
+        "image_path": "cards/tw/word/word_63.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 20,
+            "metal": 30,
+            "water": 50
+        },
+        "keywords": [
+            "適應",
+            "社交",
+            "同化"
+        ]
+    },
+    {
+        "card_id": "tw_word_64",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "偏見",
+        "card_name_en": "Prejudice",
+        "image_path": "cards/tw/word/word_64.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 40,
+            "earth": 0,
+            "metal": 0,
+            "water": 30
+        },
+        "keywords": [
+            "誤解",
+            "固執",
+            "成見"
+        ]
+    },
+    {
+        "card_id": "tw_word_65",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "認同",
+        "card_name_en": "Validation",
+        "image_path": "cards/tw/word/word_65.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 60,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "承認",
+            "支持",
+            "歸屬"
+        ]
+    },
+    {
+        "card_id": "tw_word_66",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "牽掛",
+        "card_name_en": "Lingering Care",
+        "image_path": "cards/tw/word/word_66.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 20,
+            "metal": 60,
+            "water": 20
+        },
+        "keywords": [
+            "擔心",
+            "思念",
+            "聯繫"
+        ]
+    },
+    {
+        "card_id": "tw_word_67",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "蛻變",
+        "card_name_en": "Transformation",
+        "image_path": "cards/tw/word/word_67.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 60,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "改變",
+            "演變",
+            "進化"
+        ]
+    },
+    {
+        "card_id": "tw_word_68",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "智慧",
+        "card_name_en": "Wisdom",
+        "image_path": "cards/tw/word/word_68.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 30,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "睿智",
+            "明白",
+            "深思"
+        ]
+    },
+    {
+        "card_id": "tw_word_69",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "和解",
+        "card_name_en": "Reconciliation",
+        "image_path": "cards/tw/word/word_69.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 10,
+            "metal": 10,
+            "water": 40
+        },
+        "keywords": [
+            "和好",
+            "平息",
+            "理解"
+        ]
+    },
+    {
+        "card_id": "tw_word_70",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "完整",
+        "card_name_en": "Wholeness",
+        "image_path": "cards/tw/word/word_70.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 10,
+            "water": 50
+        },
+        "keywords": [
+            "圓滿",
+            "統一",
+            "全面"
+        ]
+    },
+    {
+        "card_id": "tw_word_71",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "重生",
+        "card_name_en": "Rebirth",
+        "image_path": "cards/tw/word/word_71.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 80,
+            "earth": 0,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "新生",
+            "改頭換面",
+            "希望"
+        ]
+    },
+    {
+        "card_id": "tw_word_72",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "豐盛",
+        "card_name_en": "Abundance",
+        "image_path": "cards/tw/word/word_72.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 10,
+            "metal": 30,
+            "water": 50
+        },
+        "keywords": [
+            "富足",
+            "充實",
+            "收穫"
+        ]
+    },
+    {
+        "card_id": "tw_word_73",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "啟示",
+        "card_name_en": "Revelation",
+        "image_path": "cards/tw/word/word_73.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 30,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "發現",
+            "神諭",
+            "引導"
+        ]
+    },
+    {
+        "card_id": "tw_word_74",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "慈悲",
+        "card_name_en": "Compassion",
+        "image_path": "cards/tw/word/word_74.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 40,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "同情",
+            "寬大",
+            "博愛"
+        ]
+    },
+    {
+        "card_id": "tw_word_75",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "靜謐",
+        "card_name_en": "Tranquility",
+        "image_path": "cards/tw/word/word_75.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 50,
+            "earth": 0,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "寂靜",
+            "祥和",
+            "安寧"
+        ]
+    },
+    {
+        "card_id": "tw_word_76",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "熱情",
+        "card_name_en": "Passion",
+        "image_path": "cards/tw/word/word_76.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 60,
+            "water": 0
+        },
+        "keywords": [
+            "動力",
+            "興奮",
+            "投入"
+        ]
+    },
+    {
+        "card_id": "tw_word_77",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "信念",
+        "card_name_en": "Faith",
+        "image_path": "cards/tw/word/word_77.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 10,
+            "metal": 10,
+            "water": 50
+        },
+        "keywords": [
+            "信仰",
+            "堅定",
+            "希望"
+        ]
+    },
+    {
+        "card_id": "tw_word_78",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "流動",
+        "card_name_en": "Flow",
+        "image_path": "cards/tw/word/word_78.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 20,
+            "metal": 20,
+            "water": 20
+        },
+        "keywords": [
+            "順暢",
+            "變化",
+            "自然"
+        ]
+    },
+    {
+        "card_id": "tw_word_79",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "當下",
+        "card_name_en": "Presence",
+        "image_path": "cards/tw/word/word_79.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 10,
+            "water": 50
+        },
+        "keywords": [
+            "現在",
+            "專注",
+            "意識"
+        ]
+    },
+    {
+        "card_id": "tw_word_80",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "寬廣",
+        "card_name_en": "Vastness",
+        "image_path": "cards/tw/word/word_80.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 60,
+            "water": 0
+        },
+        "keywords": [
+            "遼闊",
+            "胸襟",
+            "視野"
+        ]
+    },
+    {
+        "card_id": "tw_word_81",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "喜樂",
+        "card_name_en": "Bliss",
+        "image_path": "cards/tw/word/word_81.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 40,
+            "earth": 0,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "至福",
+            "極樂",
+            "欣喜"
+        ]
+    },
+    {
+        "card_id": "tw_word_82",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "透明",
+        "card_name_en": "Transparency",
+        "image_path": "cards/tw/word/word_82.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 30,
+            "earth": 20,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "誠實",
+            "坦蕩",
+            "清楚"
+        ]
+    },
+    {
+        "card_id": "tw_word_83",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "合一",
+        "card_name_en": "Oneness",
+        "image_path": "cards/tw/word/word_83.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 10,
+            "metal": 30,
+            "water": 30
+        },
+        "keywords": [
+            "融合",
+            "共體",
+            "和諧"
+        ]
+    },
+    {
+        "card_id": "tw_word_84",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "內在力量",
+        "card_name_en": "Inner Power",
+        "image_path": "cards/tw/word/word_84.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 60,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "自信",
+            "強大",
+            "根源"
+        ]
+    },
+    {
+        "card_id": "tw_word_85",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "真實",
+        "card_name_en": "Authenticity",
+        "image_path": "cards/tw/word/word_85.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 10,
+            "metal": 10,
+            "water": 50
+        },
+        "keywords": [
+            "坦誠",
+            "自然",
+            "自我"
+        ]
+    },
+    {
+        "card_id": "tw_word_86",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "恩典",
+        "card_name_en": "Grace",
+        "image_path": "cards/tw/word/word_86.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 30,
+            "metal": 20,
+            "water": 50
+        },
+        "keywords": [
+            "神聖",
+            "感謝",
+            "慈悲"
+        ]
+    },
+    {
+        "card_id": "tw_word_87",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "目的",
+        "card_name_en": "Purpose",
+        "image_path": "cards/tw/word/word_87.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 40,
+            "earth": 20,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "目標",
+            "意義",
+            "使命"
+        ]
+    },
+    {
+        "card_id": "tw_word_88",
+        "locale": "zh-TW",
+        "card_type": "word",
+        "card_name": "無限",
+        "card_name_en": "Infinity",
+        "image_path": "cards/tw/word/word_88.jpeg",
+        "elements": {
+            "wood": 25,
+            "fire": 40,
+            "earth": 25,
+            "metal": 5,
+            "water": 5
+        },
+        "keywords": [
+            "永恆",
+            "無窮",
+            "廣大"
+        ]
+    }
+]

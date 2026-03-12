@@ -6,12 +6,12 @@ import { ImageCard, WordCard, CardPair } from '../core/types';
  * 
  * Creates a new session using the PostgreSQL-backed API.
  */
-export async function drawSession(userId: string): Promise<{ sessionId: string; imageCards: ImageCard[]; wordCards: WordCard[] }> {
-  // 1. Draw 6 random image cards
-  const imageCards = await drawCardImage(6);
+export async function drawSession(userId: string, language: string = 'zh'): Promise<{ sessionId: string; imageCards: ImageCard[]; wordCards: WordCard[] }> {
+  // 1. Draw 3 random image cards
+  const imageCards = await drawCardImage(3, language);
   
-  // 2. Draw 6 random word cards
-  const wordCards = await drawCardWord(6);
+  // 2. Draw 3 random word cards
+  const wordCards = await drawCardWord(3, language);
   
   // 3. Create session via API
   try {

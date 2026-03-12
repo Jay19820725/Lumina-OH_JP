@@ -77,11 +77,17 @@ export const AdminDashboard: React.FC = () => {
   const [activeModule, setActiveModule] = useState<AdminModule>('dashboard');
   const queryClient = useQueryClient();
   
+  // Card Editing State
+  const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
+  const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
+  const [cardTab, setCardTab] = useState<'image' | 'word'>('image');
+  const [cardLang, setCardLang] = useState<string>('zh-TW');
+
   // Queries
   const { data: stats, isLoading: statsLoading } = useAdminStats();
   const { data: users, isLoading: usersLoading } = useAdminUsers();
   const { data: sessions, isLoading: sessionsLoading } = useAdminSessions();
-  const { data: cards, isLoading: cardsLoading } = useAdminCards();
+  const { data: cards, isLoading: cardsLoading } = useAdminCards(cardLang);
   const { data: subscriptions, isLoading: subscriptionsLoading } = useAdminSubscriptions();
   const { data: prompts, isLoading: promptsLoading } = useAdminPrompts();
   const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics();
@@ -95,11 +101,6 @@ export const AdminDashboard: React.FC = () => {
   const deletePromptMutation = useDeletePromptMutation();
   const activatePromptMutation = useActivatePromptMutation();
   const saveSettingsMutation = useSaveSettingsMutation();
-
-  // Card Editing State
-  const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
-  const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
-  const [cardTab, setCardTab] = useState<'image' | 'word'>('image');
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -300,30 +301,51 @@ export const AdminDashboard: React.FC = () => {
   const renderCards = () => (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-        <div className="flex bg-ink/5 p-1 rounded-2xl w-full md:w-auto">
-          <button 
-            onClick={() => setCardTab('image')}
-            className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
-              cardTab === 'image' ? 'bg-white text-wood shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
-            }`}
-          >
-            圖像卡 ({cards?.images.length || 0})
-          </button>
-          <button 
-            onClick={() => setCardTab('word')}
-            className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
-              cardTab === 'word' ? 'bg-white text-fire shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
-            }`}
-          >
-            文字卡 ({cards?.words.length || 0})
-          </button>
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex bg-ink/5 p-1 rounded-2xl">
+            <button 
+              onClick={() => setCardTab('image')}
+              className={`px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+                cardTab === 'image' ? 'bg-white text-wood shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              圖像卡 ({cards?.images.length || 0})
+            </button>
+            <button 
+              onClick={() => setCardTab('word')}
+              className={`px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+                cardTab === 'word' ? 'bg-white text-fire shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              文字卡 ({cards?.words.length || 0})
+            </button>
+          </div>
+
+          <div className="flex bg-ink/5 p-1 rounded-2xl">
+            <button 
+              onClick={() => setCardLang('zh-TW')}
+              className={`px-6 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+                cardLang === 'zh-TW' ? 'bg-white text-ink shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              繁中 (TW)
+            </button>
+            <button 
+              onClick={() => setCardLang('ja-JP')}
+              className={`px-6 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+                cardLang === 'ja-JP' ? 'bg-white text-ink shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              日文 (JP)
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-4 w-full md:w-auto">
           <Button 
             onClick={() => setEditingCard({ 
               type: 'image', 
-              data: { imageUrl: '', elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
+              data: { id: '', imageUrl: '', lang: cardLang, keywords: [], elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
             })}
             className="flex-1 md:flex-none gap-2 h-11 px-6 text-[10px] uppercase tracking-widest"
           >
@@ -332,7 +354,7 @@ export const AdminDashboard: React.FC = () => {
           <Button 
             onClick={() => setEditingCard({ 
               type: 'word', 
-              data: { text: '', imageUrl: '', elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
+              data: { id: '', text: '', imageUrl: '', lang: cardLang, keywords: [], elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
             })}
             className="flex-1 md:flex-none gap-2 h-11 px-6 text-[10px] uppercase tracking-widest"
           >
@@ -354,6 +376,11 @@ export const AdminDashboard: React.FC = () => {
                 {cards?.images.map(card => (
                   <div key={card.id} className="aspect-[3/4] rounded-2xl overflow-hidden bg-ink/5 border border-ink/5 group relative shadow-sm hover:shadow-md transition-all">
                     <img src={card.imageUrl} className="w-full h-full object-cover" />
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <span className="px-1.5 py-0.5 rounded-md bg-white/80 backdrop-blur-sm text-[8px] uppercase tracking-tighter font-bold text-ink">
+                        {card.lang === 'zh-TW' ? 'TW' : 'JP'}
+                      </span>
+                    </div>
                     <div className="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-[2px]">
                       <Button 
                         variant="outline" 
@@ -387,7 +414,8 @@ export const AdminDashboard: React.FC = () => {
                   <thead>
                     <tr className="bg-ink/[0.02] border-b border-ink/5">
                       <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">預覽</th>
-                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字 / 文本</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">標籤</th>
                       <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">五行能量</th>
                       <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium text-right">操作</th>
                     </tr>
@@ -405,6 +433,18 @@ export const AdminDashboard: React.FC = () => {
                         <td className="px-8 py-4">
                           <span className="text-sm font-serif text-ink">{card.text}</span>
                           <div className="text-[9px] text-ink-muted mt-1 uppercase tracking-widest opacity-50">ID: {card.id}</div>
+                          {card.keywords && card.keywords.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {card.keywords.map((kw: string, i: number) => (
+                                <span key={i} className="text-[8px] bg-ink/5 px-1.5 py-0.5 rounded text-ink-muted">{kw}</span>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-8 py-4">
+                          <span className="text-[9px] uppercase tracking-widest bg-ink/5 px-1.5 py-0.5 rounded text-ink-muted">
+                            {card.lang === 'zh-TW' ? '繁中' : '日文'}
+                          </span>
                         </td>
                         <td className="px-8 py-4">
                           <div className="flex gap-1.5">
@@ -515,6 +555,40 @@ export const AdminDashboard: React.FC = () => {
                   {/* Right Column: Data Entry */}
                   <div className="md:col-span-7 space-y-8">
                     <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">卡片 ID</label>
+                        <input 
+                          type="text" 
+                          value={editingCard.data.id}
+                          onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, id: e.target.value } })}
+                          className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                          placeholder="例如: tw_img_01"
+                          disabled={!!editingCard.data.id && editingCard.data.id !== ''}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">語言</label>
+                          <select 
+                            value={editingCard.data.lang}
+                            onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, lang: e.target.value } })}
+                            className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                          >
+                            <option value="zh-TW">繁體中文 (TW)</option>
+                            <option value="ja-JP">日本語 (JP)</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字 (逗號分隔)</label>
+                          <input 
+                            type="text" 
+                            value={editingCard.data.keywords?.join(', ')}
+                            onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, keywords: e.target.value.split(',').map(s => s.trim()) } })}
+                            className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                            placeholder="濕潤, 清新, 霓虹"
+                          />
+                        </div>
+                      </div>
                       {editingCard.type === 'word' && (
                         <div className="space-y-2">
                           <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字文本</label>

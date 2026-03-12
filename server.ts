@@ -109,6 +109,8 @@ async function startServer() {
         id TEXT PRIMARY KEY,
         image_url TEXT NOT NULL,
         description TEXT,
+        lang TEXT DEFAULT 'zh-TW',
+        keywords JSONB DEFAULT '[]',
         elements JSONB DEFAULT '{"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}'
       );
 
@@ -118,8 +120,35 @@ async function startServer() {
         text TEXT NOT NULL,
         image_url TEXT,
         description TEXT,
+        lang TEXT DEFAULT 'zh-TW',
+        keywords JSONB DEFAULT '[]',
         elements JSONB DEFAULT '{"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}'
       );
+
+      -- Ensure columns exist if table was created earlier
+      DO $$ 
+      BEGIN 
+        BEGIN
+          ALTER TABLE cards_image ADD COLUMN lang TEXT DEFAULT 'zh-TW';
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE cards_image ADD COLUMN keywords JSONB DEFAULT '[]';
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE cards_word ADD COLUMN lang TEXT DEFAULT 'zh-TW';
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE cards_word ADD COLUMN keywords JSONB DEFAULT '[]';
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+      END $$;
 
       -- AI Prompts table
       CREATE TABLE IF NOT EXISTS ai_prompts (
@@ -220,28 +249,60 @@ async function startServer() {
     // Auto-seed cards if empty
     const imageCount = await pool.query("SELECT COUNT(*) FROM cards_image");
     if (parseInt(imageCount.rows[0].count) === 0) {
-      console.log("Seeding image cards...");
-      for (const img of IMAGES) {
-        const idStr = img.id.toString().padStart(2, '0');
-        await pool.query(
-          `INSERT INTO cards_image (id, image_url, description, elements) 
-           VALUES ($1, $2, $3, $4)`,
-          [`img_${idStr}`, `https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/oh-cards%2Fimg_${idStr}.jpeg?alt=media`, img.description || '', JSON.stringify({ wood: 20, fire: 20, earth: 20, metal: 20, water: 20 })]
-        );
+      console.log("Seeding image cards from JSON files...");
+      const locales = ['tw', 'jp'];
+      for (const locale of locales) {
+        try {
+          const filePath = path.join(__dirname, 'public', 'data', `cards_${locale}_img.json`);
+          const fileContent = await import('fs/promises').then(fs => fs.readFile(filePath, 'utf-8'));
+          const cards = JSON.parse(fileContent);
+          
+          for (const card of cards) {
+            // Construct full URL for Firebase Storage
+            const bucket = 'yuni-8f439.firebasestorage.app';
+            const fullPath = `eunie-assets/${card.image_path}`;
+            const fullImageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(fullPath)}?alt=media`;
+            
+            await pool.query(
+              `INSERT INTO cards_image (id, image_url, description, lang, keywords, elements) 
+               VALUES ($1, $2, $3, $4, $5, $6)
+               ON CONFLICT (id) DO NOTHING`,
+              [card.card_id, fullImageUrl, card.card_name, card.locale, JSON.stringify(card.keywords || []), JSON.stringify(card.elements)]
+            );
+          }
+        } catch (err) {
+          console.error(`Error seeding image cards for ${locale}:`, err);
+        }
       }
       console.log("Image cards seeded");
     }
 
     const wordCount = await pool.query("SELECT COUNT(*) FROM cards_word");
     if (parseInt(wordCount.rows[0].count) === 0) {
-      console.log("Seeding word cards...");
-      for (const word of WORDS) {
-        const idStr = word.id.toString().padStart(2, '0');
-        await pool.query(
-          `INSERT INTO cards_word (id, text, image_url, description, elements) 
-           VALUES ($1, $2, $3, $4, $5)`,
-          [`word_${idStr}`, word.text || '', `https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/oh-cards%2Fword_${idStr}.jpeg?alt=media`, '', JSON.stringify({ wood: word.wood || 0, fire: word.fire || 0, earth: word.earth || 0, metal: word.metal || 0, water: word.water || 0 })]
-        );
+      console.log("Seeding word cards from JSON files...");
+      const locales = ['tw', 'jp'];
+      for (const locale of locales) {
+        try {
+          const filePath = path.join(__dirname, 'public', 'data', `cards_${locale}_word.json`);
+          const fileContent = await import('fs/promises').then(fs => fs.readFile(filePath, 'utf-8'));
+          const cards = JSON.parse(fileContent);
+          
+          for (const card of cards) {
+            // Construct full URL for Firebase Storage
+            const bucket = 'yuni-8f439.firebasestorage.app';
+            const fullPath = `eunie-assets/${card.image_path}`;
+            const fullImageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(fullPath)}?alt=media`;
+            
+            await pool.query(
+              `INSERT INTO cards_word (id, text, image_url, description, lang, keywords, elements) 
+               VALUES ($1, $2, $3, $4, $5, $6, $7)
+               ON CONFLICT (id) DO NOTHING`,
+              [card.card_id, card.card_name, fullImageUrl, '', card.locale, JSON.stringify(card.keywords || []), JSON.stringify(card.elements)]
+            );
+          }
+        } catch (err) {
+          console.error(`Error seeding word cards for ${locale}:`, err);
+        }
       }
       console.log("Word cards seeded");
     }
@@ -486,8 +547,15 @@ async function startServer() {
 
   // Cards API
   app.get("/api/cards/image", async (req, res) => {
+    const { lang } = req.query;
     try {
-      const result = await pool.query("SELECT * FROM cards_image");
+      let query = "SELECT * FROM cards_image";
+      const params = [];
+      if (lang) {
+        params.push(lang);
+        query += ` WHERE lang = $1`;
+      }
+      const result = await pool.query(query, params);
       res.json(result.rows);
     } catch (err) {
       console.error("Error fetching image cards:", err);
@@ -496,8 +564,15 @@ async function startServer() {
   });
 
   app.get("/api/cards/word", async (req, res) => {
+    const { lang } = req.query;
     try {
-      const result = await pool.query("SELECT * FROM cards_word");
+      let query = "SELECT * FROM cards_word";
+      const params = [];
+      if (lang) {
+        params.push(lang);
+        query += ` WHERE lang = $1`;
+      }
+      const result = await pool.query(query, params);
       res.json(result.rows);
     } catch (err) {
       console.error("Error fetching word cards:", err);
@@ -766,16 +841,18 @@ async function startServer() {
   });
 
   app.post("/api/admin/cards/image", async (req, res) => {
-    const { id, image_url, description, elements } = req.body;
+    const { id, image_url, description, elements, lang, keywords } = req.body;
     try {
       await pool.query(
-        `INSERT INTO cards_image (id, image_url, description, elements) 
-         VALUES ($1, $2, $3, $4) 
+        `INSERT INTO cards_image (id, image_url, description, elements, lang, keywords) 
+         VALUES ($1, $2, $3, $4, $5, $6) 
          ON CONFLICT (id) DO UPDATE SET 
            image_url = EXCLUDED.image_url, 
            description = EXCLUDED.description, 
-           elements = EXCLUDED.elements`,
-        [id, image_url, description, JSON.stringify(elements)]
+           elements = EXCLUDED.elements,
+           lang = EXCLUDED.lang,
+           keywords = EXCLUDED.keywords`,
+        [id, image_url, description, JSON.stringify(elements), lang || 'zh-TW', JSON.stringify(keywords || [])]
       );
       res.json({ success: true });
     } catch (err) {
@@ -796,17 +873,19 @@ async function startServer() {
   });
 
   app.post("/api/admin/cards/word", async (req, res) => {
-    const { id, text, image_url, description, elements } = req.body;
+    const { id, text, image_url, description, elements, lang, keywords } = req.body;
     try {
       await pool.query(
-        `INSERT INTO cards_word (id, text, image_url, description, elements) 
-         VALUES ($1, $2, $3, $4, $5) 
+        `INSERT INTO cards_word (id, text, image_url, description, elements, lang, keywords) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7) 
          ON CONFLICT (id) DO UPDATE SET 
            text = EXCLUDED.text, 
            image_url = EXCLUDED.image_url, 
            description = EXCLUDED.description, 
-           elements = EXCLUDED.elements`,
-        [id, text, image_url, description, JSON.stringify(elements)]
+           elements = EXCLUDED.elements,
+           lang = EXCLUDED.lang,
+           keywords = EXCLUDED.keywords`,
+        [id, text, image_url, description, JSON.stringify(elements), lang || 'zh-TW', JSON.stringify(keywords || [])]
       );
       res.json({ success: true });
     } catch (err) {

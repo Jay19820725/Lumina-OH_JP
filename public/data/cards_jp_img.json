@@ -1,0 +1,1762 @@
+[
+    {
+        "card_id": "jp_img_01",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "雨の窓辺の温かいお茶",
+        "card_name_en": "Warm Tea by a Rainy Window",
+        "image_path": "cards/jp/image/img_01.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 10,
+            "metal": 10,
+            "water": 50
+        },
+        "keywords": [
+            "安らぎ",
+            "静寂",
+            "温もり"
+        ]
+    },
+    {
+        "card_id": "jp_img_02",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "深夜の電車",
+        "card_name_en": "Late Night Train",
+        "image_path": "cards/jp/image/img_02.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 20,
+            "water": 40
+        },
+        "keywords": [
+            "孤独",
+            "帰路",
+            "静けさ"
+        ]
+    },
+    {
+        "card_id": "jp_img_03",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "散りゆく桜の花びら",
+        "card_name_en": "Scattering Cherry Blossom Petals",
+        "image_path": "cards/jp/image/img_03.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 10,
+            "earth": 0,
+            "metal": 10,
+            "water": 40
+        },
+        "keywords": [
+            "儚さ",
+            "変化",
+            "美しさ"
+        ]
+    },
+    {
+        "card_id": "jp_img_04",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "鏡の中の亀裂",
+        "card_name_en": "Crack in the Mirror",
+        "image_path": "cards/jp/image/img_04.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 10,
+            "earth": 10,
+            "metal": 60,
+            "water": 20
+        },
+        "keywords": [
+            "崩壊",
+            "違和感",
+            "二面性"
+        ]
+    },
+    {
+        "card_id": "jp_img_05",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "都会の自動販売機",
+        "card_name_en": "City Vending Machine",
+        "image_path": "cards/jp/image/img_05.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 30,
+            "earth": 20,
+            "metal": 40,
+            "water": 10
+        },
+        "keywords": [
+            "日常",
+            "孤独",
+            "便利"
+        ]
+    },
+    {
+        "card_id": "jp_img_06",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "舞い散る書類",
+        "card_name_en": "Scattering Documents",
+        "image_path": "cards/jp/image/img_06.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 0,
+            "metal": 50,
+            "water": 10
+        },
+        "keywords": [
+            "混乱",
+            "解放",
+            "忙しさ"
+        ]
+    },
+    {
+        "card_id": "jp_img_07",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "森の中の孤独なドア",
+        "card_name_en": "Lonely Door in the Forest",
+        "image_path": "cards/jp/image/img_07.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 10,
+            "earth": 20,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "神秘",
+            "未知",
+            "境界"
+        ]
+    },
+    {
+        "card_id": "jp_img_08",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "毛糸玉と猫",
+        "card_name_en": "Yarn Ball and Cat",
+        "image_path": "cards/jp/image/img_08.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 10,
+            "earth": 20,
+            "metal": 10,
+            "water": 20
+        },
+        "keywords": [
+            "癒やし",
+            "遊び",
+            "安らぎ"
+        ]
+    },
+    {
+        "card_id": "jp_img_09",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "深海で光る魚",
+        "card_name_en": "Fish Glowing in the Deep Sea",
+        "image_path": "cards/jp/image/img_09.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 0,
+            "metal": 0,
+            "water": 70
+        },
+        "keywords": [
+            "希望",
+            "深淵",
+            "神秘"
+        ]
+    },
+    {
+        "card_id": "jp_img_10",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "解かれたネクタイとスカーフ",
+        "card_name_en": "Untied Tie and Scarf",
+        "image_path": "cards/jp/image/img_10.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 0,
+            "metal": 60,
+            "water": 0
+        },
+        "keywords": [
+            "解放",
+            "休息",
+            "境界"
+        ]
+    },
+    {
+        "card_id": "jp_img_11",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "夕暮れのブランコ",
+        "card_name_en": "Swing at Dusk",
+        "image_path": "cards/jp/image/img_11.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 30,
+            "earth": 30,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "郷愁",
+            "終わり",
+            "静寂"
+        ]
+    },
+    {
+        "card_id": "jp_img_12",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "枯山水の波紋",
+        "card_name_en": "Ripples in Dry Landscape",
+        "image_path": "cards/jp/image/img_12.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 40,
+            "metal": 10,
+            "water": 40
+        },
+        "keywords": [
+            "禅",
+            "精神",
+            "静寂"
+        ]
+    },
+    {
+        "card_id": "jp_img_13",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "手のひらの蛍",
+        "card_name_en": "Firefly in Palms",
+        "image_path": "cards/jp/image/img_13.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 50,
+            "earth": 10,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "奇跡",
+            "儚さ",
+            "希望"
+        ]
+    },
+    {
+        "card_id": "jp_img_14",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "都会の空の凧",
+        "card_name_en": "Kite in the City Sky",
+        "image_path": "cards/jp/image/img_14.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 20,
+            "earth": 10,
+            "metal": 10,
+            "water": 30
+        },
+        "keywords": [
+            "自由",
+            "憧れ",
+            "対比"
+        ]
+    },
+    {
+        "card_id": "jp_img_15",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "半開きのブラインド",
+        "card_name_en": "Half-open Blinds",
+        "image_path": "cards/jp/image/img_15.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 30,
+            "earth": 10,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "秘密",
+            "境界",
+            "光影"
+        ]
+    },
+    {
+        "card_id": "jp_img_16",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "スイーツを分かち合う時",
+        "card_name_en": "Sharing Sweets",
+        "image_path": "cards/jp/image/img_16.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 40,
+            "earth": 30,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "親愛",
+            "喜び",
+            "調和"
+        ]
+    },
+    {
+        "card_id": "jp_img_17",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "玄関に脱ぎ捨てられた靴",
+        "card_name_en": "Shoes Kicked Off at the Entrance",
+        "image_path": "cards/jp/image/img_17.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 30,
+            "metal": 40,
+            "water": 10
+        },
+        "keywords": [
+            "帰宅",
+            "解放",
+            "日常"
+        ]
+    },
+    {
+        "card_id": "jp_img_18",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "洗濯機の泡",
+        "card_name_en": "Bubbles in the Washing Machine",
+        "image_path": "cards/jp/image/img_18.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 10,
+            "metal": 20,
+            "water": 50
+        },
+        "keywords": [
+            "浄化",
+            "循環",
+            "日常"
+        ]
+    },
+    {
+        "card_id": "jp_img_19",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "鍵穴から漏れる光",
+        "card_name_en": "Light Through the Keyhole",
+        "image_path": "cards/jp/image/img_19.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 50,
+            "earth": 20,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "希望",
+            "秘密",
+            "好奇心"
+        ]
+    },
+    {
+        "card_id": "jp_img_20",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "色褪せた古い写真",
+        "card_name_en": "Faded Old Photo",
+        "image_path": "cards/jp/image/img_20.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 50,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "記憶",
+            "過去",
+            "郷愁"
+        ]
+    },
+    {
+        "card_id": "jp_img_21",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "向かい合う二人の定食",
+        "card_name_en": "Dinner for Two Facing Each Other",
+        "image_path": "cards/jp/image/img_21.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 50,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "関係",
+            "日常",
+            "共有"
+        ]
+    },
+    {
+        "card_id": "jp_img_22",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "エレベーターの上昇階数",
+        "card_name_en": "Elevator Floor Number Rising",
+        "image_path": "cards/jp/image/img_22.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 30,
+            "earth": 20,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "上昇",
+            "期待",
+            "変化"
+        ]
+    },
+    {
+        "card_id": "jp_img_23",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "都会のアンテナ",
+        "card_name_en": "City Antennas",
+        "image_path": "cards/jp/image/img_23.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 20,
+            "earth": 10,
+            "metal": 60,
+            "water": 10
+        },
+        "keywords": [
+            "情報",
+            "繋がり",
+            "孤独"
+        ]
+    },
+    {
+        "card_id": "jp_img_24",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "灯されたバースデーキャンドル",
+        "card_name_en": "Lit Birthday Candles",
+        "image_path": "cards/jp/image/img_24.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 70,
+            "earth": 10,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "祝福",
+            "願い",
+            "時間"
+        ]
+    },
+    {
+        "card_id": "jp_img_25",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "滴る雨傘",
+        "card_name_en": "Dripping Umbrella",
+        "image_path": "cards/jp/image/img_25.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 0,
+            "earth": 10,
+            "metal": 10,
+            "water": 60
+        },
+        "keywords": [
+            "余韻",
+            "雨",
+            "憂鬱"
+        ]
+    },
+    {
+        "card_id": "jp_img_26",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "霜の降りた葉",
+        "card_name_en": "Frosted Leaf",
+        "image_path": "cards/jp/image/img_26.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 0,
+            "earth": 10,
+            "metal": 30,
+            "water": 20
+        },
+        "keywords": [
+            "忍耐",
+            "冷徹",
+            "美"
+        ]
+    },
+    {
+        "card_id": "jp_img_27",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "風に舞うタンポポ",
+        "card_name_en": "Dandelion in the Wind",
+        "image_path": "cards/jp/image/img_27.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 10,
+            "earth": 0,
+            "metal": 10,
+            "water": 30
+        },
+        "keywords": [
+            "旅立ち",
+            "自由",
+            "希望"
+        ]
+    },
+    {
+        "card_id": "jp_img_28",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "土から顔を出す新芽",
+        "card_name_en": "Sprout Emerging from Soil",
+        "image_path": "cards/jp/image/img_28.jpeg",
+        "elements": {
+            "wood": 80,
+            "fire": 10,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "生命力",
+            "成長",
+            "始まり"
+        ]
+    },
+    {
+        "card_id": "jp_img_29",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "巨大な月",
+        "card_name_en": "Giant Moon",
+        "image_path": "cards/jp/image/img_29.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 20,
+            "metal": 0,
+            "water": 50
+        },
+        "keywords": [
+            "神秘",
+            "圧倒",
+            "静寂"
+        ]
+    },
+    {
+        "card_id": "jp_img_30",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "清らかな渓流",
+        "card_name_en": "Pure Stream",
+        "image_path": "cards/jp/image/img_30.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 0,
+            "earth": 10,
+            "metal": 0,
+            "water": 60
+        },
+        "keywords": [
+            "浄化",
+            "流動",
+            "自然"
+        ]
+    },
+    {
+        "card_id": "jp_img_31",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "雷光に照らされた森",
+        "card_name_en": "Forest Lit by Lightning",
+        "image_path": "cards/jp/image/img_31.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 50,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "衝撃",
+            "一瞬",
+            "畏怖"
+        ]
+    },
+    {
+        "card_id": "jp_img_32",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "雲海に浮かぶ山頂",
+        "card_name_en": "Peak Above the Sea of Clouds",
+        "image_path": "cards/jp/image/img_32.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 60,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "超越",
+            "到達",
+            "静寂"
+        ]
+    },
+    {
+        "card_id": "jp_img_33",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "波打ち際の泡",
+        "card_name_en": "Bubbles at the Shore",
+        "image_path": "cards/jp/image/img_33.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 0,
+            "metal": 0,
+            "water": 90
+        },
+        "keywords": [
+            "儚さ",
+            "境界",
+            "消滅"
+        ]
+    },
+    {
+        "card_id": "jp_img_34",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "溶けゆく氷",
+        "card_name_en": "Melting Ice",
+        "image_path": "cards/jp/image/img_34.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 10,
+            "earth": 0,
+            "metal": 40,
+            "water": 50
+        },
+        "keywords": [
+            "変化",
+            "解放",
+            "時間"
+        ]
+    },
+    {
+        "card_id": "jp_img_35",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "一面の銀杏の葉",
+        "card_name_en": "Carpet of Ginkgo Leaves",
+        "image_path": "cards/jp/image/img_35.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 30,
+            "earth": 30,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "彩り",
+            "季節",
+            "豊かさ"
+        ]
+    },
+    {
+        "card_id": "jp_img_36",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "手のひらのマスク",
+        "card_name_en": "Mask in Palms",
+        "image_path": "cards/jp/image/img_36.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 50,
+            "water": 10
+        },
+        "keywords": [
+            "防御",
+            "呼吸",
+            "現代"
+        ]
+    },
+    {
+        "card_id": "jp_img_37",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "バッグの中の小物たち",
+        "card_name_en": "Items in the Bag",
+        "image_path": "cards/jp/image/img_37.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 40,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "個性",
+            "秘密",
+            "日常"
+        ]
+    },
+    {
+        "card_id": "jp_img_38",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "口紅の跡",
+        "card_name_en": "Lipstick Mark",
+        "image_path": "cards/jp/image/img_38.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 60,
+            "earth": 10,
+            "metal": 10,
+            "water": 20
+        },
+        "keywords": [
+            "情熱",
+            "記憶",
+            "痕跡"
+        ]
+    },
+    {
+        "card_id": "jp_img_39",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "咲き誇る花束",
+        "card_name_en": "Bouquet in Full Bloom",
+        "image_path": "cards/jp/image/img_39.jpeg",
+        "elements": {
+            "wood": 70,
+            "fire": 20,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "祝福",
+            "感謝",
+            "美しさ"
+        ]
+    },
+    {
+        "card_id": "jp_img_40",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "朝焼けの時計塔",
+        "card_name_en": "Clock Tower at Sunrise",
+        "image_path": "cards/jp/image/img_40.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 10,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "始まり",
+            "時間",
+            "希望"
+        ]
+    },
+    {
+        "card_id": "jp_img_41",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "日差しを浴びる向日葵",
+        "card_name_en": "Sunflower in Sunlight",
+        "image_path": "cards/jp/image/img_41.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 40,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "陽気",
+            "憧れ",
+            "生命力"
+        ]
+    },
+    {
+        "card_id": "jp_img_42",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "雪原に残る足跡",
+        "card_name_en": "Footprints in the Snow",
+        "image_path": "cards/jp/image/img_42.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 20,
+            "metal": 20,
+            "water": 50
+        },
+        "keywords": [
+            "歩み",
+            "過去",
+            "孤独"
+        ]
+    },
+    {
+        "card_id": "jp_img_43",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "光り輝く階段",
+        "card_name_en": "Shining Stairs",
+        "image_path": "cards/jp/image/img_43.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 40,
+            "earth": 10,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "向上",
+            "希望",
+            "未来"
+        ]
+    },
+    {
+        "card_id": "jp_img_44",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "本に挟んだ押し花",
+        "card_name_en": "Pressed Flower in a Book",
+        "image_path": "cards/jp/image/img_44.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 50,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "記憶",
+            "保存",
+            "時間"
+        ]
+    },
+    {
+        "card_id": "jp_img_45",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "旅支度を整える",
+        "card_name_en": "Preparing for a Journey",
+        "image_path": "cards/jp/image/img_45.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 20,
+            "earth": 20,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "期待",
+            "決意",
+            "変化"
+        ]
+    },
+    {
+        "card_id": "jp_img_46",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "マスク越しの視線",
+        "card_name_en": "Gaze Through a Mask",
+        "image_path": "cards/jp/image/img_46.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 40,
+            "water": 20
+        },
+        "keywords": [
+            "距離",
+            "眼差し",
+            "真実"
+        ]
+    },
+    {
+        "card_id": "jp_img_47",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "コンビニ弁当の割引シール",
+        "card_name_en": "Discount Sticker on Bento",
+        "image_path": "cards/jp/image/img_47.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 10,
+            "earth": 40,
+            "metal": 30,
+            "water": 20
+        },
+        "keywords": [
+            "現実",
+            "生活",
+            "妥協"
+        ]
+    },
+    {
+        "card_id": "jp_img_48",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "雨傘と桜",
+        "card_name_en": "Umbrella and Cherry Blossoms",
+        "image_path": "cards/jp/image/img_48.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 0,
+            "earth": 10,
+            "metal": 10,
+            "water": 40
+        },
+        "keywords": [
+            "儚さ",
+            "哀愁",
+            "情緒"
+        ]
+    },
+    {
+        "card_id": "jp_img_49",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "新幹線の窓の外の田園",
+        "card_name_en": "Countryside outside Shinkansen Window",
+        "image_path": "cards/jp/image/img_49.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 10,
+            "earth": 10,
+            "metal": 20,
+            "water": 10
+        },
+        "keywords": [
+            "郷愁",
+            "移動",
+            "変化"
+        ]
+    },
+    {
+        "card_id": "jp_img_50",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "一人カラオケ",
+        "card_name_en": "Solo Karaoke",
+        "image_path": "cards/jp/image/img_50.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 50,
+            "earth": 10,
+            "metal": 10,
+            "water": 20
+        },
+        "keywords": [
+            "解放",
+            "発散",
+            "自分らしさ"
+        ]
+    },
+    {
+        "card_id": "jp_img_51",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "テーブルの上の仮面",
+        "card_name_en": "Mask on the Table",
+        "image_path": "cards/jp/image/img_51.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 40,
+            "metal": 30,
+            "water": 10
+        },
+        "keywords": [
+            "偽装",
+            "休息",
+            "本質"
+        ]
+    },
+    {
+        "card_id": "jp_img_52",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "並んで海を見る",
+        "card_name_en": "Watching the Sea Side-by-Side",
+        "image_path": "cards/jp/image/img_52.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 0,
+            "water": 60
+        },
+        "keywords": [
+            "共有",
+            "静寂",
+            "関係"
+        ]
+    },
+    {
+        "card_id": "jp_img_53",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "窓ガラス越しの対話（隔たり）",
+        "card_name_en": "Dialogue Through Glass (Gap)",
+        "image_path": "cards/jp/image/img_53.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 10,
+            "metal": 10,
+            "water": 50
+        },
+        "keywords": [
+            "隔たり",
+            "切望",
+            "繋がり"
+        ]
+    },
+    {
+        "card_id": "jp_img_54",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "固く握りしめた手",
+        "card_name_en": "Firmly Clasped Hands",
+        "image_path": "cards/jp/image/img_54.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 50,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "決意",
+            "信頼",
+            "力"
+        ]
+    },
+    {
+        "card_id": "jp_img_55",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "親友の笑い声",
+        "card_name_en": "Best Friend's Laughter",
+        "image_path": "cards/jp/image/img_55.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 40,
+            "earth": 20,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "共鳴",
+            "幸福",
+            "安心"
+        ]
+    },
+    {
+        "card_id": "jp_img_56",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "人混みの中の逆走者",
+        "card_name_en": "One Running Against the Crowd",
+        "image_path": "cards/jp/image/img_56.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 30,
+            "earth": 10,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "勇気",
+            "違和感",
+            "自立"
+        ]
+    },
+    {
+        "card_id": "jp_img_57",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "鏡の中の別人",
+        "card_name_en": "Someone Else in the Mirror",
+        "image_path": "cards/jp/image/img_57.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 10,
+            "metal": 40,
+            "water": 20
+        },
+        "keywords": [
+            "葛藤",
+            "変容",
+            "発見"
+        ]
+    },
+    {
+        "card_id": "jp_img_58",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "イヤホンを分け合う",
+        "card_name_en": "Sharing Earphones",
+        "image_path": "cards/jp/image/img_58.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 20,
+            "earth": 10,
+            "metal": 10,
+            "water": 30
+        },
+        "keywords": [
+            "親密",
+            "同調",
+            "共有"
+        ]
+    },
+    {
+        "card_id": "jp_img_59",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "仲直りのホットココア",
+        "card_name_en": "Hot Cocoa for Reconciliation",
+        "image_path": "cards/jp/image/img_59.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 40,
+            "earth": 40,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "許し",
+            "温もり",
+            "修復"
+        ]
+    },
+    {
+        "card_id": "jp_img_60",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "蛍の森の出会い",
+        "card_name_en": "Meeting in the Firefly Forest",
+        "image_path": "cards/jp/image/img_60.jpeg",
+        "elements": {
+            "wood": 60,
+            "fire": 30,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "神秘",
+            "奇跡",
+            "縁"
+        ]
+    },
+    {
+        "card_id": "jp_img_61",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "ひなたぼっこの読書",
+        "card_name_en": "Reading in the Sun",
+        "image_path": "cards/jp/image/img_61.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 40,
+            "earth": 20,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "至福",
+            "知識",
+            "穏やか"
+        ]
+    },
+    {
+        "card_id": "jp_img_62",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "宙に浮く時計",
+        "card_name_en": "Floating Clock",
+        "image_path": "cards/jp/image/img_62.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 10,
+            "metal": 50,
+            "water": 20
+        },
+        "keywords": [
+            "超越",
+            "焦燥",
+            "夢幻"
+        ]
+    },
+    {
+        "card_id": "jp_img_63",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "迷路の出口の光",
+        "card_name_en": "Light at the Maze Exit",
+        "image_path": "cards/jp/image/img_63.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 50,
+            "earth": 20,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "希望",
+            "解決",
+            "達成"
+        ]
+    },
+    {
+        "card_id": "jp_img_64",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "鳥かごを開ける瞬間",
+        "card_name_en": "Moment of Opening the Birdcage",
+        "image_path": "cards/jp/image/img_64.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 30,
+            "earth": 0,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "自由",
+            "解放",
+            "勇気"
+        ]
+    },
+    {
+        "card_id": "jp_img_65",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "峡谷の虹の橋",
+        "card_name_en": "Rainbow Bridge in the Canyon",
+        "image_path": "cards/jp/image/img_65.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 40,
+            "earth": 20,
+            "metal": 0,
+            "water": 20
+        },
+        "keywords": [
+            "架け橋",
+            "希望",
+            "壮麗"
+        ]
+    },
+    {
+        "card_id": "jp_img_66",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "金継ぎされた陶器の器",
+        "card_name_en": "Kintsugi Pottery",
+        "image_path": "cards/jp/image/img_66.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 40,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "修復",
+            "歴史",
+            "美学"
+        ]
+    },
+    {
+        "card_id": "jp_img_67",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "手のひらの光の核",
+        "card_name_en": "Core of Light in Palms",
+        "image_path": "cards/jp/image/img_67.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 70,
+            "earth": 20,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "本質",
+            "力",
+            "内面"
+        ]
+    },
+    {
+        "card_id": "jp_img_68",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "指先を繋ぐ赤い糸",
+        "card_name_en": "Red Thread Connecting Fingertips",
+        "image_path": "cards/jp/image/img_68.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 50,
+            "earth": 10,
+            "metal": 10,
+            "water": 10
+        },
+        "keywords": [
+            "運命",
+            "縁",
+            "不可視"
+        ]
+    },
+    {
+        "card_id": "jp_img_69",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "断崖絶壁のブランコ",
+        "card_name_en": "Swing on a Precipice",
+        "image_path": "cards/jp/image/img_69.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 20,
+            "earth": 40,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "恐怖",
+            "勇気",
+            "スリル"
+        ]
+    },
+    {
+        "card_id": "jp_img_70",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "公園のシャボン玉",
+        "card_name_en": "Soap Bubbles in the Park",
+        "image_path": "cards/jp/image/img_70.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 10,
+            "earth": 10,
+            "metal": 0,
+            "water": 40
+        },
+        "keywords": [
+            "無邪気",
+            "儚さ",
+            "遊び"
+        ]
+    },
+    {
+        "card_id": "jp_img_71",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "祭りの提灯",
+        "card_name_en": "Festival Lanterns",
+        "image_path": "cards/jp/image/img_71.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 70,
+            "earth": 20,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "活気",
+            "伝統",
+            "輝き"
+        ]
+    },
+    {
+        "card_id": "jp_img_72",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "和傘と現代の傘の交差",
+        "card_name_en": "Crossing of Wagasa and Modern Umbrella",
+        "image_path": "cards/jp/image/img_72.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 20,
+            "metal": 20,
+            "water": 30
+        },
+        "keywords": [
+            "伝統",
+            "対比",
+            "融合"
+        ]
+    },
+    {
+        "card_id": "jp_img_73",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "枯山水の超現実的な波紋",
+        "card_name_en": "Surreal Ripples in Dry Landscape",
+        "image_path": "cards/jp/image/img_73.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 40,
+            "metal": 10,
+            "water": 30
+        },
+        "keywords": [
+            "精神",
+            "超越",
+            "創造"
+        ]
+    },
+    {
+        "card_id": "jp_img_74",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "参拝の柏手",
+        "card_name_en": "Kashiwade at a Shrine",
+        "image_path": "cards/jp/image/img_74.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 30,
+            "earth": 30,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "祈り",
+            "清浄",
+            "敬意"
+        ]
+    },
+    {
+        "card_id": "jp_img_75",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "お守りを受け取る",
+        "card_name_en": "Receiving an Amulet",
+        "image_path": "cards/jp/image/img_75.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 50,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "安心",
+            "祈願",
+            "加護"
+        ]
+    },
+    {
+        "card_id": "jp_img_76",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "体と影の分離",
+        "card_name_en": "Separation of Body and Shadow",
+        "image_path": "cards/jp/image/img_76.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 20,
+            "metal": 30,
+            "water": 40
+        },
+        "keywords": [
+            "乖離",
+            "自己",
+            "神秘"
+        ]
+    },
+    {
+        "card_id": "jp_img_77",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "北極星を指し示す",
+        "card_name_en": "Pointing to the North Star",
+        "image_path": "cards/jp/image/img_77.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 40,
+            "earth": 10,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "指針",
+            "希望",
+            "不動"
+        ]
+    },
+    {
+        "card_id": "jp_img_78",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "森の中の光る扉",
+        "card_name_en": "Glowing Door in the Forest",
+        "image_path": "cards/jp/image/img_78.jpeg",
+        "elements": {
+            "wood": 60,
+            "fire": 30,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "入り口",
+            "未知",
+            "招待"
+        ]
+    },
+    {
+        "card_id": "jp_img_79",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "風船を積んだ自転車",
+        "card_name_en": "Bicycle with Balloons",
+        "image_path": "cards/jp/image/img_79.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 40,
+            "earth": 10,
+            "metal": 0,
+            "water": 20
+        },
+        "keywords": [
+            "夢想",
+            "祝祭",
+            "軽やか"
+        ]
+    },
+    {
+        "card_id": "jp_img_80",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "遠方からの手紙",
+        "card_name_en": "Letter from Afar",
+        "image_path": "cards/jp/image/img_80.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 40,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "想い",
+            "距離",
+            "懐かしさ"
+        ]
+    },
+    {
+        "card_id": "jp_img_81",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "羽化する蝶",
+        "card_name_en": "Butterfly Emerging",
+        "image_path": "cards/jp/image/img_81.jpeg",
+        "elements": {
+            "wood": 70,
+            "fire": 20,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "変容",
+            "新生",
+            "自由"
+        ]
+    },
+    {
+        "card_id": "jp_img_82",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "ビル群の空の凧",
+        "card_name_en": "Kite in the Sky of Buildings",
+        "image_path": "cards/jp/image/img_82.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 20,
+            "earth": 10,
+            "metal": 20,
+            "water": 20
+        },
+        "keywords": [
+            "自由",
+            "対比",
+            "解放"
+        ]
+    },
+    {
+        "card_id": "jp_img_83",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "ブラインド越しの光と影",
+        "card_name_en": "Light and Shadow Through Blinds",
+        "image_path": "cards/jp/image/img_83.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 40,
+            "earth": 20,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "境界",
+            "美",
+            "秘密"
+        ]
+    },
+    {
+        "card_id": "jp_img_84",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "月へ飛ぶ魚",
+        "card_name_en": "Fish Flying to the Moon",
+        "image_path": "cards/jp/image/img_84.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 0,
+            "metal": 0,
+            "water": 70
+        },
+        "keywords": [
+            "不可能",
+            "夢想",
+            "神秘"
+        ]
+    },
+    {
+        "card_id": "jp_img_85",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "真珠となった涙",
+        "card_name_en": "Tears Turned into Pearls",
+        "image_path": "cards/jp/image/img_85.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 20,
+            "metal": 30,
+            "water": 30
+        },
+        "keywords": [
+            "価値",
+            "哀しみ",
+            "結晶"
+        ]
+    },
+    {
+        "card_id": "jp_img_86",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "水晶の中の満開の庭",
+        "card_name_en": "Full Bloom Garden in Crystal",
+        "image_path": "cards/jp/image/img_86.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 30,
+            "earth": 20,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "理想",
+            "保存",
+            "小宇宙"
+        ]
+    },
+    {
+        "card_id": "jp_img_87",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "夜明けの街並み",
+        "card_name_en": "Cityscape at Dawn",
+        "image_path": "cards/jp/image/img_87.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 50,
+            "earth": 20,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "希望",
+            "静寂",
+            "始まり"
+        ]
+    },
+    {
+        "card_id": "jp_img_88",
+        "locale": "ja-JP",
+        "card_type": "img",
+        "card_name": "回帰原点の円",
+        "card_name_en": "Circle of Returning to Origin",
+        "image_path": "cards/jp/image/img_88.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 20,
+            "metal": 20,
+            "water": 20
+        },
+        "keywords": [
+            "循環",
+            "完結",
+            "真理"
+        ]
+    }
+]

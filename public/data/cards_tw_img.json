@@ -1,0 +1,1762 @@
+[
+    {
+        "card_id": "tw_img_01",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "雨後的台北街頭",
+        "card_name_en": "Taipei Street After Rain",
+        "image_path": "cards/tw/image/img_01.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 10,
+            "metal": 10,
+            "water": 50
+        },
+        "keywords": [
+            "濕潤",
+            "清新",
+            "霓虹"
+        ]
+    },
+    {
+        "card_id": "tw_img_02",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "老屋與窗花",
+        "card_name_en": "Old House and Window Grilles",
+        "image_path": "cards/tw/image/img_02.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 50,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "懷舊",
+            "傳承",
+            "靜謐"
+        ]
+    },
+    {
+        "card_id": "tw_img_03",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "深夜的便利商店",
+        "card_name_en": "Late Night Convenience Store",
+        "image_path": "cards/tw/image/img_03.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 30,
+            "earth": 10,
+            "metal": 20,
+            "water": 40
+        },
+        "keywords": [
+            "陪伴",
+            "孤寂",
+            "日常"
+        ]
+    },
+    {
+        "card_id": "tw_img_04",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "捷運上的放空",
+        "card_name_en": "Dazed on the MRT",
+        "image_path": "cards/tw/image/img_04.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 10,
+            "metal": 30,
+            "water": 40
+        },
+        "keywords": [
+            "迷茫",
+            "抽離",
+            "喧囂"
+        ]
+    },
+    {
+        "card_id": "tw_img_05",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "九份的霧氣",
+        "card_name_en": "Misty Jiufen",
+        "image_path": "cards/tw/image/img_05.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 10,
+            "metal": 0,
+            "water": 60
+        },
+        "keywords": [
+            "朦朧",
+            "懷舊",
+            "幻境"
+        ]
+    },
+    {
+        "card_id": "tw_img_06",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "陽明山的繡球花",
+        "card_name_en": "Hydrangeas on Yangmingshan",
+        "image_path": "cards/tw/image/img_06.jpeg",
+        "elements": {
+            "wood": 70,
+            "fire": 10,
+            "earth": 10,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "盛放",
+            "色彩",
+            "季節"
+        ]
+    },
+    {
+        "card_id": "tw_img_07",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "租屋處的小森林",
+        "card_name_en": "Small Forest in a Rental",
+        "image_path": "cards/tw/image/img_07.jpeg",
+        "elements": {
+            "wood": 80,
+            "fire": 10,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "溫暖",
+            "治癒",
+            "生命力"
+        ]
+    },
+    {
+        "card_id": "tw_img_08",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "市場的生命力",
+        "card_name_en": "Vitality of the Market",
+        "image_path": "cards/tw/image/img_08.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 30,
+            "earth": 40,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "喧鬧",
+            "真實",
+            "連結"
+        ]
+    },
+    {
+        "card_id": "tw_img_09",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "海邊的告別",
+        "card_name_en": "Farewell by the Sea",
+        "image_path": "cards/tw/image/img_09.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 20,
+            "metal": 10,
+            "water": 70
+        },
+        "keywords": [
+            "憂傷",
+            "釋放",
+            "廣大"
+        ]
+    },
+    {
+        "card_id": "tw_img_10",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "工作間的片刻",
+        "card_name_en": "Moment in the Studio",
+        "image_path": "cards/tw/image/img_10.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 10,
+            "metal": 50,
+            "water": 10
+        },
+        "keywords": [
+            "專注",
+            "獨處",
+            "創造"
+        ]
+    },
+    {
+        "card_id": "tw_img_11",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "機車車流",
+        "card_name_en": "Motorcycle Traffic",
+        "image_path": "cards/tw/image/img_11.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 50,
+            "earth": 10,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "忙碌",
+            "焦慮",
+            "日常"
+        ]
+    },
+    {
+        "card_id": "tw_img_12",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "夜市的燈火",
+        "card_name_en": "Night Market Lights",
+        "image_path": "cards/tw/image/img_12.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 70,
+            "earth": 10,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "熱鬧",
+            "慾望",
+            "溫暖"
+        ]
+    },
+    {
+        "card_id": "tw_img_13",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "老舊公寓頂樓",
+        "card_name_en": "Old Apartment Rooftop",
+        "image_path": "cards/tw/image/img_13.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 40,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "視野",
+            "自由",
+            "孤獨"
+        ]
+    },
+    {
+        "card_id": "tw_img_14",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "瑜伽與光影",
+        "card_name_en": "Yoga and Light/Shadow",
+        "image_path": "cards/tw/image/img_14.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 30,
+            "earth": 20,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "平衡",
+            "覺知",
+            "律動"
+        ]
+    },
+    {
+        "card_id": "tw_img_15",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "便利商店的微波爐",
+        "card_name_en": "Convenience Store Microwave",
+        "image_path": "cards/tw/image/img_15.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 50,
+            "earth": 10,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "等待",
+            "便利",
+            "疏離"
+        ]
+    },
+    {
+        "card_id": "tw_img_16",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "信箱裡的帳單",
+        "card_name_en": "Bills in the Mailbox",
+        "image_path": "cards/tw/image/img_16.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 20,
+            "metal": 70,
+            "water": 0
+        },
+        "keywords": [
+            "壓力",
+            "責任",
+            "現實"
+        ]
+    },
+    {
+        "card_id": "tw_img_17",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "捷運拉環",
+        "card_name_en": "MRT Strap",
+        "image_path": "cards/tw/image/img_17.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 10,
+            "metal": 80,
+            "water": 0
+        },
+        "keywords": [
+            "支撐",
+            "移動",
+            "妥協"
+        ]
+    },
+    {
+        "card_id": "tw_img_18",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "深夜的泡麵",
+        "card_name_en": "Late Night Instant Noodles",
+        "image_path": "cards/tw/image/img_18.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 40,
+            "earth": 20,
+            "metal": 10,
+            "water": 30
+        },
+        "keywords": [
+            "慰藉",
+            "孤獨",
+            "過渡"
+        ]
+    },
+    {
+        "card_id": "tw_img_19",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "洗髮時的泡沫",
+        "card_name_en": "Bubbles during Shampoo",
+        "image_path": "cards/tw/image/img_19.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 0,
+            "metal": 10,
+            "water": 80
+        },
+        "keywords": [
+            "洗滌",
+            "柔軟",
+            "消失"
+        ]
+    },
+    {
+        "card_id": "tw_img_20",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "手搖飲的珍珠",
+        "card_name_en": "Bubbles in Boba",
+        "image_path": "cards/tw/image/img_20.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 10,
+            "metal": 0,
+            "water": 70
+        },
+        "keywords": [
+            "小確幸",
+            "甜美",
+            "習慣"
+        ]
+    },
+    {
+        "card_id": "tw_img_21",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "垃圾車的黃燈",
+        "card_name_en": "Yellow Light of Garbage Truck",
+        "image_path": "cards/tw/image/img_21.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 60,
+            "earth": 20,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "規律",
+            "清除",
+            "釋放"
+        ]
+    },
+    {
+        "card_id": "tw_img_22",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "化妝台的口紅",
+        "card_name_en": "Lipstick on Vanity",
+        "image_path": "cards/tw/image/img_22.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 40,
+            "earth": 10,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "偽裝",
+            "展現",
+            "自我"
+        ]
+    },
+    {
+        "card_id": "tw_img_23",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "老式理髮廳",
+        "card_name_en": "Old-fashioned Barbershop",
+        "image_path": "cards/tw/image/img_23.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 40,
+            "earth": 20,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "時光",
+            "經典",
+            "信任"
+        ]
+    },
+    {
+        "card_id": "tw_img_24",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "高鐵窗外的稻田",
+        "card_name_en": "Rice Fields outside HSR",
+        "image_path": "cards/tw/image/img_24.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 0,
+            "earth": 30,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "速度",
+            "鄉土",
+            "遠行"
+        ]
+    },
+    {
+        "card_id": "tw_img_25",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "百貨公司的櫥窗",
+        "card_name_en": "Department Store Window",
+        "image_path": "cards/tw/image/img_25.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 10,
+            "earth": 10,
+            "metal": 70,
+            "water": 10
+        },
+        "keywords": [
+            "嚮往",
+            "虛榮",
+            "隔閡"
+        ]
+    },
+    {
+        "card_id": "tw_img_26",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "腳踏車籃的花",
+        "card_name_en": "Flowers in Bicycle Basket",
+        "image_path": "cards/tw/image/img_26.jpeg",
+        "elements": {
+            "wood": 60,
+            "fire": 20,
+            "earth": 10,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "浪漫",
+            "悠閒",
+            "移動"
+        ]
+    },
+    {
+        "card_id": "tw_img_27",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "濕透的高跟鞋",
+        "card_name_en": "Soaked High Heels",
+        "image_path": "cards/tw/image/img_27.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 10,
+            "metal": 40,
+            "water": 50
+        },
+        "keywords": [
+            "狼狽",
+            "堅持",
+            "辛勞"
+        ]
+    },
+    {
+        "card_id": "tw_img_28",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "陽台的盆栽",
+        "card_name_en": "Potted Plants on Balcony",
+        "image_path": "cards/tw/image/img_28.jpeg",
+        "elements": {
+            "wood": 80,
+            "fire": 0,
+            "earth": 10,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "照顧",
+            "希望",
+            "緩慢"
+        ]
+    },
+    {
+        "card_id": "tw_img_29",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "咖啡拉花",
+        "card_name_en": "Coffee Latte Art",
+        "image_path": "cards/tw/image/img_29.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 20,
+            "metal": 0,
+            "water": 50
+        },
+        "keywords": [
+            "短暫",
+            "精緻",
+            "心思"
+        ]
+    },
+    {
+        "card_id": "tw_img_30",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "藥盒與開水",
+        "card_name_en": "Pillbox and Water",
+        "image_path": "cards/tw/image/img_30.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 10,
+            "metal": 60,
+            "water": 30
+        },
+        "keywords": [
+            "病痛",
+            "照護",
+            "面對"
+        ]
+    },
+    {
+        "card_id": "tw_img_31",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "擁擠的衣櫥",
+        "card_name_en": "Crowded Closet",
+        "image_path": "cards/tw/image/img_31.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 50,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "堆積",
+            "選擇",
+            "念舊"
+        ]
+    },
+    {
+        "card_id": "tw_img_32",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "公園的長椅",
+        "card_name_en": "Park Bench",
+        "image_path": "cards/tw/image/img_32.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 0,
+            "earth": 40,
+            "metal": 20,
+            "water": 20
+        },
+        "keywords": [
+            "休息",
+            "等待",
+            "觀察"
+        ]
+    },
+    {
+        "card_id": "tw_img_33",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "門口的柴犬",
+        "card_name_en": "Shiba Inu at Door",
+        "image_path": "cards/tw/image/img_33.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 30,
+            "earth": 40,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "忠誠",
+            "守候",
+            "喜悅"
+        ]
+    },
+    {
+        "card_id": "tw_img_34",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "手機螢幕的微光",
+        "card_name_en": "Glimmer of Phone Screen",
+        "image_path": "cards/tw/image/img_34.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 40,
+            "earth": 0,
+            "metal": 50,
+            "water": 10
+        },
+        "keywords": [
+            "沉迷",
+            "焦慮",
+            "連結"
+        ]
+    },
+    {
+        "card_id": "tw_img_35",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "紅綠燈的倒數",
+        "card_name_en": "Traffic Light Countdown",
+        "image_path": "cards/tw/image/img_35.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 60,
+            "earth": 10,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "焦急",
+            "時間",
+            "停頓"
+        ]
+    },
+    {
+        "card_id": "tw_img_36",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "背對背的餐桌",
+        "card_name_en": "Dining Table Back-to-Back",
+        "image_path": "cards/tw/image/img_36.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 40,
+            "metal": 50,
+            "water": 10
+        },
+        "keywords": [
+            "疏離",
+            "無言",
+            "隔閡"
+        ]
+    },
+    {
+        "card_id": "tw_img_37",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "化妝鏡中的陌生人",
+        "card_name_en": "Stranger in the Mirror",
+        "image_path": "cards/tw/image/img_37.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 20,
+            "earth": 0,
+            "metal": 40,
+            "water": 30
+        },
+        "keywords": [
+            "懷疑",
+            "改變",
+            "探索"
+        ]
+    },
+    {
+        "card_id": "tw_img_38",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "紅包與壓力",
+        "card_name_en": "Red Envelope and Pressure",
+        "image_path": "cards/tw/image/img_38.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 60,
+            "earth": 30,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "習俗",
+            "負擔",
+            "面子"
+        ]
+    },
+    {
+        "card_id": "tw_img_39",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "透明的籠子",
+        "card_name_en": "Transparent Cage",
+        "image_path": "cards/tw/image/img_39.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 10,
+            "metal": 70,
+            "water": 10
+        },
+        "keywords": [
+            "束縛",
+            "可見",
+            "限制"
+        ]
+    },
+    {
+        "card_id": "tw_img_40",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "牽手或拉扯",
+        "card_name_en": "Holding Hands or Tugging",
+        "image_path": "cards/tw/image/img_40.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 20,
+            "earth": 20,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "關係",
+            "力量",
+            "矛盾"
+        ]
+    },
+    {
+        "card_id": "tw_img_41",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "破碎的珍珠項鍊",
+        "card_name_en": "Broken Pearl Necklace",
+        "image_path": "cards/tw/image/img_41.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 10,
+            "earth": 20,
+            "metal": 60,
+            "water": 10
+        },
+        "keywords": [
+            "破裂",
+            "遺憾",
+            "散落"
+        ]
+    },
+    {
+        "card_id": "tw_img_42",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "影子裡的擁抱",
+        "card_name_en": "Hugging in the Shadows",
+        "image_path": "cards/tw/image/img_42.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 30,
+            "earth": 0,
+            "metal": 0,
+            "water": 60
+        },
+        "keywords": [
+            "秘密",
+            "渴望",
+            "脆弱"
+        ]
+    },
+    {
+        "card_id": "tw_img_43",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "廟宇的線香",
+        "card_name_en": "Temple Incense",
+        "image_path": "cards/tw/image/img_43.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 40,
+            "earth": 50,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "祈願",
+            "信仰",
+            "煙塵"
+        ]
+    },
+    {
+        "card_id": "tw_img_44",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "童年的舊洋裝",
+        "card_name_en": "Childhood Old Dress",
+        "image_path": "cards/tw/image/img_44.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 40,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "回憶",
+            "純真",
+            "成長"
+        ]
+    },
+    {
+        "card_id": "tw_img_45",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "兩杯冷掉的咖啡",
+        "card_name_en": "Two Cold Coffees",
+        "image_path": "cards/tw/image/img_45.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 10,
+            "earth": 20,
+            "metal": 20,
+            "water": 50
+        },
+        "keywords": [
+            "終結",
+            "靜止",
+            "失望"
+        ]
+    },
+    {
+        "card_id": "tw_img_46",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "共用一副耳機",
+        "card_name_en": "Sharing Headphones",
+        "image_path": "cards/tw/image/img_46.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 20,
+            "earth": 0,
+            "metal": 10,
+            "water": 30
+        },
+        "keywords": [
+            "親密",
+            "連結",
+            "同步"
+        ]
+    },
+    {
+        "card_id": "tw_img_47",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "時鐘與面具",
+        "card_name_en": "Clock and Mask",
+        "image_path": "cards/tw/image/img_47.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 10,
+            "earth": 20,
+            "metal": 60,
+            "water": 10
+        },
+        "keywords": [
+            "時間",
+            "隱藏",
+            "扮演"
+        ]
+    },
+    {
+        "card_id": "tw_img_48",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "半開的家門",
+        "card_name_en": "Half-open Door",
+        "image_path": "cards/tw/image/img_48.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 30,
+            "earth": 40,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "好奇",
+            "機會",
+            "猶豫"
+        ]
+    },
+    {
+        "card_id": "tw_img_49",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "糾練的紅線",
+        "card_name_en": "Entangled Red Strings",
+        "image_path": "cards/tw/image/img_49.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 40,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "緣分",
+            "糾纏",
+            "束縛"
+        ]
+    },
+    {
+        "card_id": "tw_img_50",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "廚房的背影",
+        "card_name_en": "Back in the Kitchen",
+        "image_path": "cards/tw/image/img_50.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 30,
+            "earth": 50,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "奉獻",
+            "溫柔",
+            "辛勞"
+        ]
+    },
+    {
+        "card_id": "tw_img_51",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "紙飛機與公事包",
+        "card_name_en": "Paper Plane and Briefcase",
+        "image_path": "cards/tw/image/img_51.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 10,
+            "earth": 10,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "夢想",
+            "現實",
+            "反差"
+        ]
+    },
+    {
+        "card_id": "tw_img_52",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "懷中的重量",
+        "card_name_en": "Weight in Arms",
+        "image_path": "cards/tw/image/img_52.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 60,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "承擔",
+            "責任",
+            "情感"
+        ]
+    },
+    {
+        "card_id": "tw_img_53",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "分岔的路口",
+        "card_name_en": "Fork in the Road",
+        "image_path": "cards/tw/image/img_53.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 20,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "選擇",
+            "迷惘",
+            "未知"
+        ]
+    },
+    {
+        "card_id": "tw_img_54",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "高跟鞋與赤腳",
+        "card_name_en": "High Heels and Barefoot",
+        "image_path": "cards/tw/image/img_54.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 10,
+            "earth": 10,
+            "metal": 40,
+            "water": 0
+        },
+        "keywords": [
+            "解放",
+            "真實",
+            "疲憊"
+        ]
+    },
+    {
+        "card_id": "tw_img_55",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "空掉的鳥籠",
+        "card_name_en": "Empty Birdcage",
+        "image_path": "cards/tw/image/img_55.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 0,
+            "earth": 10,
+            "metal": 50,
+            "water": 10
+        },
+        "keywords": [
+            "自由",
+            "離去",
+            "寂靜"
+        ]
+    },
+    {
+        "card_id": "tw_img_56",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "影子的重量",
+        "card_name_en": "Weight of the Shadow",
+        "image_path": "cards/tw/image/img_56.jpeg",
+        "elements": {
+            "wood": 0,
+            "fire": 0,
+            "earth": 70,
+            "metal": 20,
+            "water": 10
+        },
+        "keywords": [
+            "壓力",
+            "沉重",
+            "陰影"
+        ]
+    },
+    {
+        "card_id": "tw_img_57",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "未拆封的禮物",
+        "card_name_en": "Unopened Gift",
+        "image_path": "cards/tw/image/img_57.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 60,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "驚喜",
+            "期盼",
+            "延遲"
+        ]
+    },
+    {
+        "card_id": "tw_img_58",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "望海的露台",
+        "card_name_en": "Sea-view Terrace",
+        "image_path": "cards/tw/image/img_58.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 20,
+            "earth": 10,
+            "metal": 0,
+            "water": 50
+        },
+        "keywords": [
+            "遼闊",
+            "沉思",
+            "寂靜"
+        ]
+    },
+    {
+        "card_id": "tw_img_59",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "兩把並排的傘",
+        "card_name_en": "Two Umbrellas Side by Side",
+        "image_path": "cards/tw/image/img_59.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 10,
+            "metal": 0,
+            "water": 80
+        },
+        "keywords": [
+            "陪伴",
+            "保護",
+            "同行"
+        ]
+    },
+    {
+        "card_id": "tw_img_60",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "褪色的情書",
+        "card_name_en": "Faded Love Letter",
+        "image_path": "cards/tw/image/img_60.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 50,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "過去",
+            "遺憾",
+            "溫柔"
+        ]
+    },
+    {
+        "card_id": "tw_img_61",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "阿里山雲海日出",
+        "card_name_en": "Alishan Sea of Clouds Sunrise",
+        "image_path": "cards/tw/image/img_61.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 80,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "希望",
+            "壯闊",
+            "新生"
+        ]
+    },
+    {
+        "card_id": "tw_img_62",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "赤腳踩在泥土上",
+        "card_name_en": "Barefoot on Soil",
+        "image_path": "cards/tw/image/img_62.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 0,
+            "earth": 70,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "連結",
+            "本能",
+            "原始"
+        ]
+    },
+    {
+        "card_id": "tw_img_63",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "修復破裂的陶器",
+        "card_name_en": "Repairing Broken Pottery",
+        "image_path": "cards/tw/image/img_63.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 30,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "修復",
+            "韌性",
+            "轉化"
+        ]
+    },
+    {
+        "card_id": "tw_img_64",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "溫泉中的呼吸",
+        "card_name_en": "Breathing in the Hot Spring",
+        "image_path": "cards/tw/image/img_64.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 30,
+            "earth": 10,
+            "metal": 0,
+            "water": 50
+        },
+        "keywords": [
+            "放鬆",
+            "舒緩",
+            "歸零"
+        ]
+    },
+    {
+        "card_id": "tw_img_65",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "破繭而出的蝴蝶",
+        "card_name_en": "Butterfly Emerging",
+        "image_path": "cards/tw/image/img_65.jpeg",
+        "elements": {
+            "wood": 70,
+            "fire": 20,
+            "earth": 0,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "蛻變",
+            "勇氣",
+            "新生"
+        ]
+    },
+    {
+        "card_id": "tw_img_66",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "森林裡的抱抱",
+        "card_name_en": "Hugging in the Forest",
+        "image_path": "cards/tw/image/img_66.jpeg",
+        "elements": {
+            "wood": 80,
+            "fire": 0,
+            "earth": 20,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "療癒",
+            "連結",
+            "溫暖"
+        ]
+    },
+    {
+        "card_id": "tw_img_67",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "黑暗中的螢火蟲",
+        "card_name_en": "Fireflies in the Dark",
+        "image_path": "cards/tw/image/img_67.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 60,
+            "earth": 0,
+            "metal": 0,
+            "water": 20
+        },
+        "keywords": [
+            "希望",
+            "微光",
+            "引導"
+        ]
+    },
+    {
+        "card_id": "tw_img_68",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "在雨中跳舞",
+        "card_name_en": "Dancing in the Rain",
+        "image_path": "cards/tw/image/img_68.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 40,
+            "earth": 0,
+            "metal": 0,
+            "water": 40
+        },
+        "keywords": [
+            "釋放",
+            "喜悅",
+            "無懼"
+        ]
+    },
+    {
+        "card_id": "tw_img_69",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "編織自己的網",
+        "card_name_en": "Weaving Own Web",
+        "image_path": "cards/tw/image/img_69.jpeg",
+        "elements": {
+            "wood": 50,
+            "fire": 10,
+            "earth": 20,
+            "metal": 20,
+            "water": 0
+        },
+        "keywords": [
+            "創造",
+            "保護",
+            "連結"
+        ]
+    },
+    {
+        "card_id": "tw_img_70",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "把煩惱寫在沙灘",
+        "card_name_en": "Writing Troubles on Sand",
+        "image_path": "cards/tw/image/img_70.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 0,
+            "earth": 20,
+            "metal": 0,
+            "water": 70
+        },
+        "keywords": [
+            "放下",
+            "消逝",
+            "轉念"
+        ]
+    },
+    {
+        "card_id": "tw_img_71",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "開在石縫的花",
+        "card_name_en": "Flower in Rock Crevice",
+        "image_path": "cards/tw/image/img_71.jpeg",
+        "elements": {
+            "wood": 80,
+            "fire": 10,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "堅韌",
+            "生命",
+            "奇蹟"
+        ]
+    },
+    {
+        "card_id": "tw_img_72",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "老宅窗光的閱讀",
+        "card_name_en": "Reading by Old House Window",
+        "image_path": "cards/tw/image/img_72.jpeg",
+        "elements": {
+            "wood": 40,
+            "fire": 20,
+            "earth": 30,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "知識",
+            "靜謐",
+            "時光"
+        ]
+    },
+    {
+        "card_id": "tw_img_73",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "放飛天燈的時刻",
+        "card_name_en": "Releasing Sky Lantern",
+        "image_path": "cards/tw/image/img_73.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 70,
+            "earth": 20,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "祈福",
+            "願望",
+            "升華"
+        ]
+    },
+    {
+        "card_id": "tw_img_74",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "鏡中微笑的自己",
+        "card_name_en": "Smiling Self in Mirror",
+        "image_path": "cards/tw/image/img_74.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 50,
+            "earth": 10,
+            "metal": 10,
+            "water": 10
+        },
+        "keywords": [
+            "自愛",
+            "認同",
+            "喜悅"
+        ]
+    },
+    {
+        "card_id": "tw_img_75",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "擁抱內在小孩",
+        "card_name_en": "Embracing Inner Child",
+        "image_path": "cards/tw/image/img_75.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 20,
+            "earth": 50,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "療癒",
+            "接納",
+            "溫柔"
+        ]
+    },
+    {
+        "card_id": "tw_img_76",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "種下一顆種子",
+        "card_name_en": "Planting a Seed",
+        "image_path": "cards/tw/image/img_76.jpeg",
+        "elements": {
+            "wood": 80,
+            "fire": 10,
+            "earth": 10,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "開始",
+            "耐心",
+            "未來"
+        ]
+    },
+    {
+        "card_id": "tw_img_77",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "剪去長髮的瞬間",
+        "card_name_en": "Moment of Cutting Long Hair",
+        "image_path": "cards/tw/image/img_77.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 0,
+            "metal": 70,
+            "water": 0
+        },
+        "keywords": [
+            "決心",
+            "斷捨離",
+            "勇氣"
+        ]
+    },
+    {
+        "card_id": "tw_img_78",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "太平洋的風",
+        "card_name_en": "Pacific Wind",
+        "image_path": "cards/tw/image/img_78.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 0,
+            "earth": 10,
+            "metal": 0,
+            "water": 70
+        },
+        "keywords": [
+            "廣大",
+            "自由",
+            "狂放"
+        ]
+    },
+    {
+        "card_id": "tw_img_79",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "黑暗過後的彩虹",
+        "card_name_en": "Rainbow after Darkness",
+        "image_path": "cards/tw/image/img_79.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 40,
+            "earth": 10,
+            "metal": 0,
+            "water": 30
+        },
+        "keywords": [
+            "希望",
+            "奇蹟",
+            "轉機"
+        ]
+    },
+    {
+        "card_id": "tw_img_80",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "自己的房間",
+        "card_name_en": "A Room of One's Own",
+        "image_path": "cards/tw/image/img_80.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 10,
+            "earth": 40,
+            "metal": 30,
+            "water": 0
+        },
+        "keywords": [
+            "獨立",
+            "安全",
+            "自我"
+        ]
+    },
+    {
+        "card_id": "tw_img_81",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "提燈上山的人",
+        "card_name_en": "Person with Lantern up Mountain",
+        "image_path": "cards/tw/image/img_81.jpeg",
+        "elements": {
+            "wood": 20,
+            "fire": 60,
+            "earth": 20,
+            "metal": 0,
+            "water": 0
+        },
+        "keywords": [
+            "引導",
+            "尋求",
+            "孤獨"
+        ]
+    },
+    {
+        "card_id": "tw_img_82",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "融化的冰山",
+        "card_name_en": "Melting Iceberg",
+        "image_path": "cards/tw/image/img_82.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 30,
+            "earth": 0,
+            "metal": 20,
+            "water": 40
+        },
+        "keywords": [
+            "改變",
+            "危機",
+            "釋放"
+        ]
+    },
+    {
+        "card_id": "tw_img_83",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "手中綻放的花朵",
+        "card_name_en": "Flower Blooming in Hand",
+        "image_path": "cards/tw/image/img_83.jpeg",
+        "elements": {
+            "wood": 60,
+            "fire": 30,
+            "earth": 0,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "奇蹟",
+            "顯化",
+            "美麗"
+        ]
+    },
+    {
+        "card_id": "tw_img_84",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "飛翔的公事包",
+        "card_name_en": "Flying Briefcase",
+        "image_path": "cards/tw/image/img_84.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 20,
+            "earth": 0,
+            "metal": 50,
+            "water": 0
+        },
+        "keywords": [
+            "解放",
+            "想像",
+            "脫離"
+        ]
+    },
+    {
+        "card_id": "tw_img_85",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "疊石儀式",
+        "card_name_en": "Stone Stacking Ritual",
+        "image_path": "cards/tw/image/img_85.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 70,
+            "metal": 10,
+            "water": 0
+        },
+        "keywords": [
+            "平衡",
+            "祈願",
+            "專注"
+        ]
+    },
+    {
+        "card_id": "tw_img_86",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "光影中的太極",
+        "card_name_en": "Tai Chi in Light/Shadow",
+        "image_path": "cards/tw/image/img_86.jpeg",
+        "elements": {
+            "wood": 30,
+            "fire": 10,
+            "earth": 10,
+            "metal": 0,
+            "water": 50
+        },
+        "keywords": [
+            "流動",
+            "和諧",
+            "平衡"
+        ]
+    },
+    {
+        "card_id": "tw_img_87",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "打開枷鎖的鑰匙",
+        "card_name_en": "Key to the Chains",
+        "image_path": "cards/tw/image/img_87.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 10,
+            "earth": 10,
+            "metal": 70,
+            "water": 0
+        },
+        "keywords": [
+            "解放",
+            "突破",
+            "自由"
+        ]
+    },
+    {
+        "card_id": "tw_img_88",
+        "locale": "zh-TW",
+        "card_type": "img",
+        "card_name": "與光源合一",
+        "card_name_en": "One with the Light",
+        "image_path": "cards/tw/image/img_88.jpeg",
+        "elements": {
+            "wood": 10,
+            "fire": 70,
+            "earth": 10,
+            "metal": 0,
+            "water": 10
+        },
+        "keywords": [
+            "覺醒",
+            "終點",
+            "神聖"
+        ]
+    }
+]
