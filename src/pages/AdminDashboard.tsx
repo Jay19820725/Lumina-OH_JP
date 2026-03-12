@@ -625,15 +625,15 @@ export const AdminDashboard: React.FC = () => {
             }}
           >
             <option value="">所有分類</option>
-            <option value="analysis">能量分析</option>
-            <option value="daily">每日指引</option>
-            <option value="manifestation">願望顯化</option>
-            <option value="persona">人格設定</option>
+            <option value="analysis">能量分析 (Core)</option>
+            <option value="daily">每日指引 (Daily)</option>
+            <option value="persona">人格設定 (Persona)</option>
           </select>
           <select 
             className="bg-white/40 border border-ink/5 rounded-xl px-4 py-2 text-xs focus:outline-none"
           >
             <option value="">所有語言</option>
+            <option value="dual">一鍵雙語 (Dual)</option>
             <option value="zh-TW">繁體中文</option>
             <option value="ja-JP">日文</option>
           </select>
@@ -645,9 +645,9 @@ export const AdminDashboard: React.FC = () => {
             version: '1.0.0', 
             status: 'draft',
             category: 'analysis',
-            lang: 'zh-TW',
-            is_default: false,
-            ab_test_group: 'control'
+            lang: 'dual',
+            style_tags: ['gentle'],
+            is_default: false
           })}
           className="gap-2 h-10 px-4 text-xs"
         >
@@ -674,17 +674,15 @@ export const AdminDashboard: React.FC = () => {
                     <span className="text-[9px] uppercase tracking-widest bg-ink/5 px-1.5 py-0.5 rounded text-ink-muted">v{prompt.version}</span>
                     <span className="text-[9px] uppercase tracking-widest bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">{prompt.category}</span>
                     <span className="text-[9px] uppercase tracking-widest bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded">{prompt.lang}</span>
+                    {prompt.style_tags?.map(tag => (
+                      <span key={tag} className="text-[9px] uppercase tracking-widest bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded">#{tag}</span>
+                    ))}
                     <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
                       prompt.status === 'active' ? 'bg-wood/10 text-wood' : 
                       prompt.status === 'draft' ? 'bg-amber-100 text-amber-700' : 'bg-ink/5 text-ink-muted'
                     }`}>
                       {prompt.status === 'active' ? '已啟用' : prompt.status === 'draft' ? '草稿' : '已封存'}
                     </span>
-                    {prompt.ab_test_group && (
-                      <span className="text-[9px] uppercase tracking-widest bg-fire/10 text-fire px-1.5 py-0.5 rounded flex items-center gap-1">
-                        <Zap size={8} /> A/B 測試: {prompt.ab_test_group}
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
@@ -794,10 +792,9 @@ export const AdminDashboard: React.FC = () => {
                       onChange={(e) => setEditingPrompt({ ...editingPrompt, category: e.target.value as any })}
                       className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
                     >
-                      <option value="analysis">能量分析</option>
-                      <option value="daily">每日指引</option>
-                      <option value="manifestation">願望顯化</option>
-                      <option value="persona">人格設定</option>
+                      <option value="analysis">能量分析 (Core)</option>
+                      <option value="daily">每日指引 (Daily)</option>
+                      <option value="persona">人格設定 (Persona)</option>
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -807,11 +804,57 @@ export const AdminDashboard: React.FC = () => {
                       onChange={(e) => setEditingPrompt({ ...editingPrompt, lang: e.target.value as any })}
                       className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
                     >
+                      <option value="dual">一鍵雙語 (Dual)</option>
                       <option value="zh-TW">繁體中文</option>
                       <option value="ja-JP">日文</option>
                     </select>
                   </div>
                 </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] uppercase tracking-widest text-ink-muted">AI 風格標籤</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: 'gentle', label: '溫柔傾聽' },
+                      { id: 'ethereal', label: '韓式空靈' },
+                      { id: 'poetic', label: '富有詩意' },
+                      { id: 'professional', label: '專業條理' },
+                      { id: 'healing', label: '療癒能量' },
+                      { id: 'custom', label: '自定義' }
+                    ].map(style => (
+                      <button
+                        key={style.id}
+                        onClick={() => {
+                          const currentTags = editingPrompt.style_tags || [];
+                          const newTags = currentTags.includes(style.id as any)
+                            ? currentTags.filter(t => t !== style.id)
+                            : [...currentTags, style.id as any];
+                          setEditingPrompt({ ...editingPrompt, style_tags: newTags });
+                        }}
+                        className={`px-4 py-2 rounded-full text-[10px] uppercase tracking-widest transition-all ${
+                          editingPrompt.style_tags?.includes(style.id as any)
+                            ? 'bg-wood text-white shadow-md'
+                            : 'bg-ink/5 text-ink-muted hover:bg-ink/10'
+                        }`}
+                      >
+                        {style.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {editingPrompt.style_tags?.includes('custom') && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">自定義風格指令</label>
+                    <input 
+                      type="text" 
+                      value={editingPrompt.custom_style_instruction || ''}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, custom_style_instruction: e.target.value })}
+                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                      placeholder="例如：語氣幽默、多使用表情符號..."
+                    />
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -836,19 +879,6 @@ export const AdminDashboard: React.FC = () => {
                     />
                     <label htmlFor="is_default" className="text-[10px] uppercase tracking-widest text-ink-muted cursor-pointer">設為該分類預設</label>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest text-ink-muted">A/B 測試分組</label>
-                  <select 
-                    value={editingPrompt.ab_test_group || 'control'}
-                    onChange={(e) => setEditingPrompt({ ...editingPrompt, ab_test_group: e.target.value as any })}
-                    className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
-                  >
-                    <option value="control">對照組 (Control)</option>
-                    <option value="A">實驗組 A</option>
-                    <option value="B">實驗組 B</option>
-                  </select>
                 </div>
               </div>
 

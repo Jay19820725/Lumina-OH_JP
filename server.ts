@@ -131,6 +131,8 @@ async function startServer() {
         category TEXT DEFAULT 'analysis',
         lang TEXT DEFAULT 'zh-TW',
         is_default BOOLEAN DEFAULT false,
+        style_tags TEXT[] DEFAULT '{}',
+        custom_style_instruction TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
@@ -139,6 +141,8 @@ async function startServer() {
       ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'analysis';
       ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'zh-TW';
       ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS is_default BOOLEAN DEFAULT false;
+      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS style_tags TEXT[] DEFAULT '{}';
+      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS custom_style_instruction TEXT;
 
       -- Manifestations table
       CREATE TABLE IF NOT EXISTS manifestations (
@@ -865,17 +869,17 @@ async function startServer() {
   });
 
   app.post("/api/admin/prompts", async (req, res) => {
-    const { id, name, content, status, version, category, lang, is_default } = req.body;
+    const { id, name, content, status, version, category, lang, is_default, style_tags, custom_style_instruction } = req.body;
     try {
       if (id) {
         await pool.query(
-          "UPDATE ai_prompts SET name = $1, content = $2, status = $3, version = $4, category = $5, lang = $6, is_default = $7, updated_at = CURRENT_TIMESTAMP WHERE id = $8",
-          [name, content, status, version, category, lang, is_default, id]
+          "UPDATE ai_prompts SET name = $1, content = $2, status = $3, version = $4, category = $5, lang = $6, is_default = $7, style_tags = $8, custom_style_instruction = $9, updated_at = CURRENT_TIMESTAMP WHERE id = $10",
+          [name, content, status, version, category, lang, is_default, style_tags || [], custom_style_instruction, id]
         );
       } else {
         await pool.query(
-          "INSERT INTO ai_prompts (name, content, status, version, category, lang, is_default) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-          [name, content, status, version, category, lang, is_default]
+          "INSERT INTO ai_prompts (name, content, status, version, category, lang, is_default, style_tags, custom_style_instruction) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+          [name, content, status, version, category, lang, is_default, style_tags || [], custom_style_instruction]
         );
       }
       

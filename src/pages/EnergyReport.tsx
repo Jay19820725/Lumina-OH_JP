@@ -137,6 +137,22 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   };
 
   const isAiLoading = !report.isAiComplete && !report.todayTheme;
+  const { language: currentLangCode } = useLanguage();
+
+  // Determine which content to show based on current language
+  const displayContent = React.useMemo(() => {
+    if (!report.multilingualContent) return report;
+    
+    const langKey = currentLangCode === 'ja' ? 'ja-JP' : 'zh-TW';
+    const langContent = report.multilingualContent[langKey];
+    
+    if (!langContent) return report;
+    
+    return {
+      ...report,
+      ...langContent
+    };
+  }, [report, currentLangCode]);
 
   // Mark report as seen when fully loaded
   useEffect(() => {
@@ -203,7 +219,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
           >
             <span className="text-[14px] md:text-[10px] uppercase tracking-[0.8em] text-ink-muted mb-4 md:mb-6 block">{t('report_subtitle')}</span>
             <h1 className="text-[38px] md:text-[60px] font-serif italic font-extralight tracking-tighter-massive leading-[60.533px] md:leading-[111.533px] text-ink mb-8 text-left">
-              {report.todayTheme || "..."}
+              {displayContent.todayTheme || "..."}
             </h1>
           </motion.div>
           <motion.div 
@@ -327,18 +343,18 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
           <div className={`grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20 transition-all duration-1000 ${isAiLoading ? 'blur-md opacity-20' : 'blur-0 opacity-100'}`}>
             <div className="md:col-span-8">
               <p className="text-[28px] md:text-[35px] font-serif leading-[1.4] font-extralight text-ink tracking-tight mb-10">
-                {report.psychologicalInsight}
+                {displayContent.psychologicalInsight}
               </p>
               <div className="w-16 h-px bg-ink/20 mb-10" />
               <div className="columns-1 md:columns-2 gap-10 text-[16px] text-ink-muted leading-[2] font-light tracking-wide">
-                {report.cardInterpretation}
+                {displayContent.cardInterpretation}
               </div>
             </div>
             <div className="md:col-span-4 space-y-10">
               <div className="bg-ink/5 p-8 md:p-10 rounded-[2.5rem] space-y-6">
                 <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block border-b border-ink/10 pb-3">{t('report_five_element')}</span>
                 <p className="text-[15px] leading-[2] font-light text-ink tracking-wider italic">
-                  {report.fiveElementAnalysis}
+                  {displayContent.fiveElementAnalysis}
                 </p>
               </div>
               
@@ -347,7 +363,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                 <div className="flex items-start gap-4">
                   <RefreshCw size={14} className="text-ink-muted mt-1" />
                   <p className="text-sm leading-[1.8] font-light text-ink-muted">
-                    {report.actionSuggestion}
+                    {displayContent.actionSuggestion}
                   </p>
                 </div>
               </div>
@@ -366,7 +382,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 md:gap-16">
           {[0, 1, 2].map((i) => {
-            const interp = report.pairInterpretations?.[i];
+            const interp = displayContent.pairInterpretations?.[i];
             const pair = (report.pairs && report.pairs.length > i) ? report.pairs[i] : selectedCards.pairs?.[i];
             
             if (!pair) return null;
@@ -424,7 +440,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         >
           <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted block">{t('report_reflection')}</span>
           <p className="text-[28px] md:text-[35px] font-serif font-extralight leading-relaxed text-ink italic tracking-tight md:w-[900px] md:text-center p-[10px] md:ml-[10px] mb-0">
-            「{report.reflection || "..."}」
+            「{displayContent.reflection || "..."}」
           </p>
           <div className="w-px h-16 bg-ink/10 mx-auto" />
         </motion.div>

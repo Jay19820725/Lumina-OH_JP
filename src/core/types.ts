@@ -77,8 +77,30 @@ export interface AnalysisReport {
   reflection?: string;
   actionSuggestion?: string;
   shareThumbnail?: string;
+
+  // Multilingual Content
+  multilingualContent?: {
+    'zh-TW': {
+      todayTheme: string;
+      cardInterpretation: string;
+      psychologicalInsight: string;
+      fiveElementAnalysis: string;
+      reflection: string;
+      actionSuggestion: string;
+      pairInterpretations: { pair_id: string; text: string }[];
+    };
+    'ja-JP': {
+      todayTheme: string;
+      cardInterpretation: string;
+      psychologicalInsight: string;
+      fiveElementAnalysis: string;
+      reflection: string;
+      actionSuggestion: string;
+      pairInterpretations: { pair_id: string; text: string }[];
+    };
+  };
   
-  // Legacy fields (keep for backward compatibility if needed, but we'll use new ones)
+  // Legacy fields (keep for backward compatibility)
   psychologicalReflection?: string;
   energyAdvice?: string;
   
@@ -140,18 +162,22 @@ export interface EnergyJournalEntry {
   created_at: any;
 }
 
+export type AIPromptCategory = 'analysis' | 'daily' | 'persona';
+export type AIPromptStyle = 'gentle' | 'ethereal' | 'poetic' | 'professional' | 'healing' | 'custom';
+
 export interface AIPrompt {
   id: string;
   prompt_name: string;
   prompt_content: string;
   version: string;
   status: 'active' | 'draft' | 'archived';
-  category: 'analysis' | 'daily' | 'manifestation' | 'persona';
-  lang: 'zh-TW' | 'ja-JP';
+  category: AIPromptCategory;
+  style_tags: AIPromptStyle[];
+  custom_style_instruction?: string;
+  lang: 'dual' | 'zh-TW' | 'ja-JP';
   is_default: boolean;
   created_at: any;
   updated_at: any;
-  ab_test_group?: 'A' | 'B' | 'control';
 }
 
 export interface SEOSettings {
