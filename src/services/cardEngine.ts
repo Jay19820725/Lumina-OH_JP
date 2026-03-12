@@ -27,22 +27,31 @@ function secureShuffle<T>(array: T[]): T[] {
 }
 
 /**
- * Maps app language to database locale
+ * Maps app language to data file key
  */
-function getDbLocale(language: string): string {
-  return language === 'ja' ? 'ja-JP' : 'zh-TW';
+function getLocaleKey(language: string): string {
+  return language === 'ja' ? 'jp' : 'tw';
 }
 
 /**
- * Fetches card data from backend API
+ * Constructs Firebase Storage URL for an asset
+ */
+function getFirebaseUrl(imagePath: string): string {
+  const bucket = 'yuni-8f439.firebasestorage.app';
+  const fullPath = `eunie-assets/${imagePath}`;
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(fullPath)}?alt=media`;
+}
+
+/**
+ * Fetches card data from JSON files
  */
 async function fetchCardData(language: string, type: 'img' | 'word'): Promise<any[]> {
-  const lang = getDbLocale(language);
-  const endpoint = type === 'img' ? '/api/cards/image' : '/api/cards/word';
+  const localeKey = getLocaleKey(language);
+  const fileName = `cards_${localeKey}_${type}.json`;
   try {
-    const response = await fetch(`${endpoint}?lang=${lang}`);
+    const response = await fetch(`/data/${fileName}`);
     if (!response.ok) {
-      throw new Error(`Failed to fetch ${type} cards`);
+      throw new Error(`Failed to fetch ${fileName}`);
     }
     return await response.json();
   } catch (error) {
@@ -58,12 +67,10 @@ export async function drawCardImage(count: number = 3, language: string = 'zh'):
   if (!imageDeckCache[language]) {
     const rawData = await fetchCardData(language, 'img');
     imageDeckCache[language] = rawData.map(item => ({
-      id: item.id,
-      imageUrl: item.imageUrl || item.image_url,
-      description: item.description,
-      elements: item.elements,
-      lang: item.lang,
-      keywords: item.keywords
+      id: item.card_id,
+      imageUrl: getFirebaseUrl(item.image_path),
+      description: item.card_name_en || item.card_name,
+      elements: item.elements
     } as ImageCard));
   }
 
@@ -78,13 +85,11 @@ export async function drawCardWord(count: number = 3, language: string = 'zh'): 
   if (!wordDeckCache[language]) {
     const rawData = await fetchCardData(language, 'word');
     wordDeckCache[language] = rawData.map(item => ({
-      id: item.id,
-      text: item.text,
-      imageUrl: item.imageUrl || item.image_url,
-      description: item.description,
-      elements: item.elements,
-      lang: item.lang,
-      keywords: item.keywords
+      id: item.card_id,
+      text: item.card_name,
+      imageUrl: getFirebaseUrl(item.image_path),
+      description: item.card_name_en || item.card_name,
+      elements: item.elements
     } as WordCard));
   }
 

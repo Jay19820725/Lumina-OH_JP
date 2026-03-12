@@ -53,9 +53,8 @@ export const adminService = {
   /**
    * Cards Management
    */
-  async getAllImageCards(lang?: string): Promise<ImageCard[]> {
-    const url = lang ? `/api/cards/image?lang=${lang}` : '/api/cards/image';
-    const response = await fetch(url);
+  async getAllImageCards(): Promise<ImageCard[]> {
+    const response = await fetch('/api/cards/image');
     if (!response.ok) return [];
     const cards = await response.json();
     return cards.map((c: any) => ({
@@ -64,9 +63,8 @@ export const adminService = {
     }));
   },
 
-  async getAllWordCards(lang?: string): Promise<WordCard[]> {
-    const url = lang ? `/api/cards/word?lang=${lang}` : '/api/cards/word';
-    const response = await fetch(url);
+  async getAllWordCards(): Promise<WordCard[]> {
+    const response = await fetch('/api/cards/word');
     if (!response.ok) return [];
     const cards = await response.json();
     return cards.map((c: any) => ({

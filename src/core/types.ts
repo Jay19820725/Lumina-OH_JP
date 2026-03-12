@@ -23,8 +23,6 @@ export interface ImageCard {
   imageUrl: string;
   elements: FiveElementValues;
   description?: string;
-  lang?: string;
-  keywords?: string[];
   metadata?: {
     artist?: string;
     series?: string;
@@ -37,8 +35,6 @@ export interface WordCard {
   imageUrl: string;
   elements: FiveElementValues;
   description?: string;
-  lang?: string;
-  keywords?: string[];
   metadata?: {
     language?: string;
     category?: string;

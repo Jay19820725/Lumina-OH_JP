@@ -9,6 +9,7 @@ import { useLanguage } from '../i18n/LanguageContext';
 
 interface TestContextType {
   selectedCards: SelectedCards;
+  setSelectedCards: React.Dispatch<React.SetStateAction<SelectedCards>>;
   currentStep: number;
   isCompleted: boolean;
   isDrawing: boolean;
@@ -284,6 +285,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <TestContext.Provider value={{
       selectedCards,
+      setSelectedCards,
       currentStep,
       isCompleted,
       isDrawing,
