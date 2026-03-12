@@ -34,10 +34,33 @@ const WeavingLoader: React.FC<{ label?: string }> = ({ label }) => {
 
 export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => {
   const { report, selectedCards, setReport } = useTest();
-  const { t } = useLanguage();
+  const { t, language: currentLangCode } = useLanguage();
   const reportRef = useRef<HTMLDivElement>(null);
   const [isLoadingShared, setIsLoadingShared] = useState(false);
   const [selectedShareThumbnail, setSelectedShareThumbnail] = useState<string | null>(report?.shareThumbnail || null);
+
+  // Determine which content to show based on current language
+  const displayContent = React.useMemo(() => {
+    if (!report) return null;
+    if (!report.multilingualContent) return report;
+    
+    const langKey = currentLangCode === 'ja' ? 'ja-JP' : 'zh-TW';
+    const langContent = report.multilingualContent[langKey];
+    
+    if (!langContent) return report;
+    
+    return {
+      ...report,
+      ...langContent
+    };
+  }, [report?.id, report?.isAiComplete, currentLangCode]);
+
+  // Mark report as seen when fully loaded
+  useEffect(() => {
+    if (report?.id && report.isAiComplete) {
+      localStorage.setItem('lastSeenReportId', report.id);
+    }
+  }, [report?.id, report?.isAiComplete]);
 
   // Handle shared report fetching
   useEffect(() => {
@@ -80,7 +103,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         fetchReport();
       }
     }
-  }, [setReport, report, onReset]);
+  }, [setReport, report?.id, onReset]);
 
   if (isLoadingShared) {
     return (
@@ -90,7 +113,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
     );
   }
 
-  if (!report) return null;
+  if (!report || !displayContent) return null;
 
   const handleSelectThumbnail = async (url: string) => {
     setSelectedShareThumbnail(url);
@@ -137,29 +160,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   };
 
   const isAiLoading = !report.isAiComplete && !report.todayTheme;
-  const { language: currentLangCode } = useLanguage();
 
-  // Determine which content to show based on current language
-  const displayContent = React.useMemo(() => {
-    if (!report.multilingualContent) return report;
-    
-    const langKey = currentLangCode === 'ja' ? 'ja-JP' : 'zh-TW';
-    const langContent = report.multilingualContent[langKey];
-    
-    if (!langContent) return report;
-    
-    return {
-      ...report,
-      ...langContent
-    };
-  }, [report, currentLangCode]);
-
-  // Mark report as seen when fully loaded
-  useEffect(() => {
-    if (report?.id && report.isAiComplete) {
-      localStorage.setItem('lastSeenReportId', report.id);
-    }
-  }, [report?.id, report.isAiComplete]);
   const isGuest = report.isGuest;
 
   const elements = [
