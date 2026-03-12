@@ -586,6 +586,7 @@ async function startServer() {
         balanceScore: row.balance_score,
         todayTheme: row.today_theme,
         shareThumbnail: row.share_thumbnail,
+        multilingualContent: data.multilingualContent || {},
         ...data
       };
       
