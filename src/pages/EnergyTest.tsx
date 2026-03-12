@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
 import { useTest } from '../store/TestContext';
 import { Button } from '../components/ui/Button';
-import { Sparkles, ArrowRight, Check, Maximize2 } from 'lucide-react';
+import { Sparkles, ArrowRight, Check, Maximize2, PenLine } from 'lucide-react';
 import { ShuffleAnimation } from '../components/ShuffleAnimation';
 import { EunieCard } from '../components/EunieCard';
 import { CardZoomModal } from '../components/CardZoomModal';
@@ -88,7 +88,7 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full max-w-7xl flex flex-col items-center gap-10 md:gap-32 px-4"
+      className="w-full max-w-7xl flex flex-col items-center gap-10 md:gap-16 px-4"
     >
       <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-32 items-start">
         {/* Images Section */}
@@ -248,10 +248,10 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
       <AnimatePresence>
         {isAllPaired && (
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            className="fixed bottom-12 z-50"
+            exit={{ opacity: 0, y: 20 }}
+            className="mt-8 md:mt-10 mb-8"
           >
             <Button onClick={handleFinish} className="h-20 px-16 gap-4 text-lg shadow-2xl shadow-emerald-900/20 bg-emerald-500 hover:bg-emerald-600">
               {t('test_pairing_confirm')} <ArrowRight size={20} />
@@ -269,8 +269,14 @@ const AssociationStage: React.FC<{
   onZoom: (card: ImageCard | WordCard) => void;
 }> = ({ pairs, onComplete, onZoom }) => {
   const { t } = useLanguage();
+  const [modes, setModes] = useState<{ [key: string]: 'guided' | 'free' }>(
+    pairs.reduce((acc, _, i) => ({ ...acc, [i]: 'guided' }), {})
+  );
   const [associations, setAssociations] = useState<{ [key: string]: string }>(
     pairs.reduce((acc, _, i) => ({ ...acc, [i]: '' }), {})
+  );
+  const [guidedValues, setGuidedValues] = useState<{ [key: string]: [string, string, string] }>(
+    pairs.reduce((acc, _, i) => ({ ...acc, [i]: ['', '', ''] }), {})
   );
 
   const handleTextChange = (index: number, text: string) => {
@@ -279,13 +285,37 @@ const AssociationStage: React.FC<{
     }
   };
 
-  const isComplete = Object.values(associations).every((text: string) => text.trim().length > 0);
+  const handleGuidedChange = (index: number, partIndex: number, value: string) => {
+    if (value.length <= 50) {
+      setGuidedValues(prev => {
+        const newVal = [...prev[index]] as [string, string, string];
+        newVal[partIndex] = value;
+        return { ...prev, [index]: newVal };
+      });
+    }
+  };
+
+  const isComplete = Object.keys(modes).every((key) => {
+    const i = parseInt(key);
+    if (modes[i] === 'free') {
+      return associations[i].trim().length > 0;
+    } else {
+      return guidedValues[i].every(v => v.trim().length > 0);
+    }
+  });
 
   const handleFinish = () => {
-    const results = pairs.map((_, i) => ({
-      pair_id: i.toString(),
-      text: associations[i]
-    }));
+    const results = pairs.map((_, i) => {
+      let finalPath = associations[i];
+      if (modes[i] === 'guided') {
+        const v = guidedValues[i];
+        finalPath = `${t('test_associating_guided_1')} ${v[0]} ${t('test_associating_guided_2')} ${v[1]} ${t('test_associating_guided_3')} ${v[2]} ${t('test_associating_guided_4')}`;
+      }
+      return {
+        pair_id: i.toString(),
+        text: finalPath
+      };
+    });
     onComplete(results);
   };
 
@@ -301,9 +331,9 @@ const AssociationStage: React.FC<{
           <motion.div 
             key={i}
             variants={itemVariants}
-            className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 md:gap-8 items-center bg-white/50 backdrop-blur-sm p-6 md:p-8 rounded-3xl border border-white/20"
+            className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 md:gap-8 items-start bg-white/50 backdrop-blur-sm p-6 md:p-8 rounded-3xl border border-white/20"
           >
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-2 justify-center sticky top-0">
               <div 
                 className="w-16 h-24 md:w-20 md:h-32 rounded-lg overflow-hidden shadow-md cursor-zoom-in relative group"
                 onClick={() => onZoom(pair.image)}
@@ -324,19 +354,86 @@ const AssociationStage: React.FC<{
               </div>
             </div>
 
-            <div className="space-y-3 md:space-y-4">
-              <div className="flex justify-between items-end">
-                <span className="text-[10px] uppercase tracking-widest text-ink-muted">Association {i + 1}</span>
-                <span className={`text-[10px] ${associations[i].length >= 180 ? 'text-rose-400' : 'text-ink-muted'}`}>
-                  {associations[i].length} / 200
-                </span>
+            <div className="space-y-8">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-ink-muted">Association {i + 1}</span>
+                <div className="flex bg-ink/5 rounded-full p-1 self-start md:self-auto">
+                  <button
+                    onClick={() => setModes(prev => ({ ...prev, [i]: 'guided' }))}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] transition-all ${modes[i] === 'guided' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}
+                  >
+                    <Sparkles size={10} /> {t('test_associating_mode_guided')}
+                  </button>
+                  <button
+                    onClick={() => setModes(prev => ({ ...prev, [i]: 'free' }))}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] transition-all ${modes[i] === 'free' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}
+                  >
+                    <PenLine size={10} /> {t('test_associating_mode_free')}
+                  </button>
+                </div>
               </div>
-              <textarea
-                value={associations[i]}
-                onChange={(e) => handleTextChange(i, e.target.value)}
-                placeholder={t('test_associating_placeholder')}
-                className="w-full h-32 md:h-40 bg-white/50 border border-white/30 rounded-2xl p-4 text-base focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all resize-none"
-              />
+
+              <AnimatePresence mode="wait">
+                {modes[i] === 'guided' ? (
+                  <motion.div
+                    key="guided"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-4"
+                  >
+                    <div className="text-left text-base md:text-lg text-ink/70 font-light">
+                      <div className="flex flex-wrap items-center gap-y-6 md:gap-y-10">
+                        <span className="whitespace-nowrap">{t('test_associating_guided_1')}</span>
+                        <input
+                          type="text"
+                          value={guidedValues[i][0]}
+                          onChange={(e) => handleGuidedChange(i, 0, e.target.value)}
+                          placeholder={t('test_associating_guided_placeholder_1')}
+                          className="w-full md:w-auto md:mx-4 px-8 py-3 bg-ink/[0.03] hover:bg-ink/[0.05] rounded-full border border-transparent focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-center md:min-w-[200px]"
+                        />
+                        <span className="whitespace-nowrap">{t('test_associating_guided_2')}</span>
+                        <input
+                          type="text"
+                          value={guidedValues[i][1]}
+                          onChange={(e) => handleGuidedChange(i, 1, e.target.value)}
+                          placeholder={t('test_associating_guided_placeholder_2')}
+                          className="w-full md:w-auto md:mx-4 px-8 py-3 bg-ink/[0.03] hover:bg-ink/[0.05] rounded-full border border-transparent focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-center md:min-w-[200px]"
+                        />
+                        <span className="whitespace-nowrap">{t('test_associating_guided_3')}</span>
+                        <input
+                          type="text"
+                          value={guidedValues[i][2]}
+                          onChange={(e) => handleGuidedChange(i, 2, e.target.value)}
+                          placeholder={t('test_associating_guided_placeholder_3')}
+                          className="w-full md:w-auto md:mx-4 px-8 py-3 bg-ink/[0.03] hover:bg-ink/[0.05] rounded-full border border-transparent focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-center md:min-w-[200px]"
+                        />
+                        <span className="whitespace-nowrap">{t('test_associating_guided_4')}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="free"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="relative"
+                  >
+                    <textarea
+                      value={associations[i]}
+                      onChange={(e) => handleTextChange(i, e.target.value)}
+                      placeholder={t('test_associating_placeholder')}
+                      className="w-full h-32 md:h-40 bg-white/50 border border-white/30 rounded-2xl p-4 pb-10 text-base focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all resize-none"
+                    />
+                    <div className="absolute bottom-4 right-4">
+                      <span className={`text-[10px] ${associations[i].length >= 180 ? 'text-rose-400' : 'text-ink-muted'}`}>
+                        {associations[i].length} / 200
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         ))}
@@ -365,6 +462,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
   const [flippedImages, setFlippedImages] = useState<number[]>([]);
   const [flippedWords, setFlippedWords] = useState<number[]>([]);
   const [zoomedCard, setZoomedCard] = useState<ImageCard | WordCard | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Automatic scroll to top on stage change
   useEffect(() => {
@@ -423,6 +521,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
   };
 
   const handleComplete = async () => {
+    setIsGenerating(true);
     await generateReport();
     onComplete();
   };
@@ -434,7 +533,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
     <div className="ma-container pt-8 md:pt-16 pb-40 md:pb-80 min-h-screen flex flex-col items-center">
       {/* Global Loading Overlay for Generation/Saving */}
       <AnimatePresence>
-        {isDrawing && (
+        {(isDrawing || isGenerating) && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -509,18 +608,11 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
               {flippedImages.length + flippedWords.length} / 6
             </span>
           </div>
-          <Button 
-            onClick={handleComplete} 
-            disabled={drawStage !== 'revealed'}
-            className="h-16 md:h-20 px-12 md:px-16 text-base md:text-lg shadow-2xl shadow-ink/5 active:scale-95 transition-transform"
-          >
-            {t('test_create_report')}
-          </Button>
         </motion.div>
       </div>
 
       {/* Ritual Stage */}
-      <div className="relative w-full min-h-[380px] md:min-h-[700px] pb-10 md:pb-32 flex items-center justify-center perspective-1000 mt-0 md:mt-0">
+      <div className="relative w-full min-h-[380px] md:min-h-[900px] pb-10 md:pb-32 flex items-center justify-center perspective-1000 mt-0 md:mt-0">
         <AnimatePresence mode="wait">
           {drawStage === 'shuffling' ? (
             <motion.div
