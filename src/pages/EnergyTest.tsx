@@ -88,11 +88,11 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full max-w-5xl flex flex-col items-center gap-16 md:gap-24 px-4"
+      className="w-full max-w-[1136px] flex flex-col items-center gap-16 md:gap-24 px-4"
     >
       <div className="w-full space-y-20 md:space-y-32">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32">
-          <motion.div variants={itemVariants} className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 w-full md:w-[1136px]">
+          <motion.div variants={itemVariants} className="space-y-8 md:ml-0 md:mt-0 md:mb-[100px]">
             <div className="flex items-center justify-center gap-4">
               <div className="h-px w-8 bg-ink/5" />
               <h3 className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('test_pairing_images')}</h3>
@@ -432,7 +432,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
   const allWordsFlipped = flippedWords.length === 3;
 
   return (
-    <div className="ma-container pt-12 md:pt-20 pb-48 md:pb-64 min-h-screen flex flex-col items-center">
+    <div className="ma-container pt-12 md:pt-20 pb-48 md:pb-64 min-h-screen md:h-[1000px] flex flex-col items-center">
       {/* Global Loading Overlay for Generation/Saving */}
       <AnimatePresence>
         {isDrawing && (
@@ -473,7 +473,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
           className="space-y-3 md:space-y-6 text-left"
         >
           <motion.div variants={itemVariants} className="flex items-center gap-4">
-            <span className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">
+            <span className="text-[10px] md:text-[12px] uppercase tracking-[0.6em] text-ink-muted">
               {drawStage === 'revealed' ? t('test_step_final') : 
                drawStage === 'associating' ? t('test_step_4') :
                drawStage === 'pairing' ? t('test_step_3') :
@@ -481,7 +481,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
             </span>
             <div className="h-px w-8 bg-ink/10" />
           </motion.div>
-          <motion.h1 variants={itemVariants} className="text-4xl md:text-6xl lg:text-7xl font-serif tracking-[0.05em] leading-[1.1] max-w-2xl">
+          <motion.h1 variants={itemVariants} className="text-4xl md:text-[60px] lg:text-7xl font-serif tracking-[0.05em] leading-[1.1] max-w-2xl">
             {drawStage === 'drawing_images' ? t('test_title_images') : 
              drawStage === 'drawing_words' ? t('test_title_words') : 
              drawStage === 'pairing' ? t('test_title_pairing') :
@@ -521,7 +521,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
       </div>
 
       {/* Ritual Stage */}
-      <div className="relative w-full min-h-[700px] pb-32 flex items-center justify-center perspective-1000 -translate-y-24">
+      <div className="relative w-full min-h-[700px] pb-32 flex items-center justify-center perspective-1000 -translate-y-24 mt-[10px] mb-0 mr-0 md:mt-0">
         <AnimatePresence mode="wait">
           {drawStage === 'shuffling' ? (
             <motion.div
