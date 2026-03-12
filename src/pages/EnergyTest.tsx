@@ -92,7 +92,7 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
     >
       <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-32 items-start">
         {/* Images Section */}
-        <motion.div variants={itemVariants} className="space-y-4 md:space-y-10">
+        <motion.div variants={itemVariants} className="space-y-4 md:space-y-6">
           <div className="flex items-center gap-6">
             <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('test_pairing_images')}</span>
             <div className="h-px flex-1 bg-ink/5" />
@@ -145,7 +145,7 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
         </motion.div>
 
         {/* Words Section */}
-        <motion.div variants={itemVariants} className="space-y-4 md:space-y-10">
+        <motion.div variants={itemVariants} className="space-y-4 md:space-y-6">
           <div className="flex items-center gap-6">
             <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('test_pairing_words')}</span>
             <div className="h-px flex-1 bg-ink/5" />
@@ -324,7 +324,7 @@ const AssociationStage: React.FC<{
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full max-w-4xl flex flex-col items-center gap-12 md:gap-20 px-4"
+      className="w-full max-w-4xl flex flex-col items-center gap-12 md:gap-10 px-4"
     >
       <div className="space-y-8 md:space-y-12 w-full">
         {pairs.map((pair, i) => (
@@ -562,7 +562,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
         )}
       </AnimatePresence>
 
-      <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-end mb-4 md:mb-16 gap-8 md:gap-20 px-4">
+      <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-end mb-4 md:mb-6 gap-8 md:gap-20 px-4">
         <motion.div 
           key={drawStage}
           variants={containerVariants}
@@ -782,9 +782,9 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="w-full max-w-5xl space-y-8 md:space-y-12 px-4"
+              className="w-full max-w-5xl space-y-8 md:space-y-6 px-4"
             >
-              <motion.div variants={itemVariants} className="text-center space-y-2 mb-8 md:mb-12">
+              <motion.div variants={itemVariants} className="text-center space-y-2 mb-8 md:mb-6">
                 <h2 className="text-xl md:text-2xl font-serif">{t('report_revealed_ready')}</h2>
                 <p className="text-xs md:text-sm text-ink-muted">{t('test_revealed_desc')}</p>
               </motion.div>
