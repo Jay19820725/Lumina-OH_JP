@@ -48,6 +48,8 @@ async function startServer() {
     console.log("Connected to PostgreSQL");
     
     await client.query(`
+      CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
       -- Users table
       CREATE TABLE IF NOT EXISTS users (
         uid TEXT PRIMARY KEY,
@@ -624,7 +626,7 @@ async function startServer() {
 
   app.post("/api/reports", async (req, res) => {
     const { 
-      id, // Support updating if ID provided
+      id, 
       userId, 
       dominantElement, 
       weakElement, 
@@ -635,7 +637,7 @@ async function startServer() {
       ...otherData 
     } = req.body;
 
-    console.log(`[API] POST /api/reports - Saving report for: ${userId || 'GUEST'}`);
+    console.log(`[API] POST /api/reports - Saving report: ${id || 'NEW'} for: ${userId || 'GUEST'}`);
 
     try {
       // 1. Ensure user exists if userId is provided (Auto-Sync)
@@ -646,24 +648,28 @@ async function startServer() {
         );
       }
 
+      // 2. UPSERT logic: Insert or Update if ID exists
+      // If no ID provided, we let the database generate one
       let result;
-      if (id && (id.length > 15 || id.includes('-'))) {
-        // Update existing
+      if (id) {
         result = await pool.query(
-          `UPDATE energy_reports SET 
-            user_id = COALESCE($2, user_id),
-            dominant_element = COALESCE($3, dominant_element),
-            weak_element = COALESCE($4, weak_element),
-            balance_score = COALESCE($5, balance_score),
-            today_theme = COALESCE($6, today_theme),
-            share_thumbnail = COALESCE($7, share_thumbnail),
-            is_ai_complete = COALESCE($8, is_ai_complete),
-            report_data = report_data || $9::jsonb
-          WHERE id = $1 RETURNING *`,
-          [id, userId, dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete, JSON.stringify(otherData)]
+          `INSERT INTO energy_reports (
+            id, user_id, dominant_element, weak_element, balance_score, 
+            today_theme, share_thumbnail, is_ai_complete, report_data
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          ON CONFLICT (id) DO UPDATE SET
+            user_id = COALESCE(EXCLUDED.user_id, energy_reports.user_id),
+            dominant_element = COALESCE(EXCLUDED.dominant_element, energy_reports.dominant_element),
+            weak_element = COALESCE(EXCLUDED.weak_element, energy_reports.weak_element),
+            balance_score = COALESCE(EXCLUDED.balance_score, energy_reports.balance_score),
+            today_theme = COALESCE(EXCLUDED.today_theme, energy_reports.today_theme),
+            share_thumbnail = COALESCE(EXCLUDED.share_thumbnail, energy_reports.share_thumbnail),
+            is_ai_complete = COALESCE(EXCLUDED.is_ai_complete, energy_reports.is_ai_complete),
+            report_data = energy_reports.report_data || EXCLUDED.report_data
+          RETURNING *`,
+          [id, userId, dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete || false, JSON.stringify(otherData)]
         );
       } else {
-        // Insert new
         result = await pool.query(
           `INSERT INTO energy_reports (
             user_id, dominant_element, weak_element, balance_score, 
@@ -673,6 +679,10 @@ async function startServer() {
         );
       }
       
+      if (result.rows.length === 0) {
+        throw new Error("Failed to save or update report - no rows returned");
+      }
+
       const row = result.rows[0];
       const data = row.report_data || {};
       res.json({
@@ -689,7 +699,11 @@ async function startServer() {
       });
     } catch (err) {
       console.error("[API] Error saving energy report:", err);
-      res.status(500).json({ error: "Internal server error", details: String(err) });
+      res.status(500).json({ 
+        error: "Internal server error", 
+        details: String(err),
+        message: "Failed to save energy report. Please check server logs."
+      });
     }
   });
 
