@@ -381,7 +381,7 @@ const AssociationStage: React.FC<{
       let finalPath = associations[i];
       if (modes[i] === 'guided') {
         const v = guidedValues[i];
-        finalPath = `${t('test_associating_guided_1')} ${v[0]} ${t('test_associating_guided_2')} ${v[1]} ${t('test_associating_guided_3')} ${v[2]} ${t('test_associating_guided_4')}`;
+        finalPath = `${t('test_associating_guided_1')} ${v[0]} ${t('test_associating_guided_2')} ${v[1]} ${t('test_associating_guided_3')} ${v[2]}`;
       }
       return {
         pair_id: i.toString(),
@@ -454,15 +454,15 @@ const AssociationStage: React.FC<{
                     exit={{ opacity: 0, y: -10 }}
                     className="space-y-4"
                   >
-                    <div className="text-left text-base md:text-lg text-ink/70 font-light">
-                      <div className="flex flex-wrap items-center gap-y-6 md:gap-y-10">
+                    <div className="text-left text-base md:text-lg text-ink/70 font-light leading-relaxed">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-6 md:gap-y-8">
                         <span className="whitespace-nowrap">{t('test_associating_guided_1')}</span>
                         <input
                           type="text"
                           value={guidedValues[i][0]}
                           onChange={(e) => handleGuidedChange(i, 0, e.target.value)}
                           placeholder={t('test_associating_guided_placeholder_1')}
-                          className="w-full md:w-auto md:mx-4 px-8 py-3 bg-ink/[0.03] hover:bg-ink/[0.05] rounded-full border border-transparent focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-center md:min-w-[200px]"
+                          className="w-full md:w-auto px-6 py-2.5 bg-emerald-50/50 hover:bg-emerald-50/80 rounded-full border border-emerald-100/20 focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-left md:min-w-[180px]"
                         />
                         <span className="whitespace-nowrap">{t('test_associating_guided_2')}</span>
                         <input
@@ -470,7 +470,7 @@ const AssociationStage: React.FC<{
                           value={guidedValues[i][1]}
                           onChange={(e) => handleGuidedChange(i, 1, e.target.value)}
                           placeholder={t('test_associating_guided_placeholder_2')}
-                          className="w-full md:w-auto md:mx-4 px-8 py-3 bg-ink/[0.03] hover:bg-ink/[0.05] rounded-full border border-transparent focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-center md:min-w-[200px]"
+                          className="w-full md:w-auto px-6 py-2.5 bg-emerald-50/50 hover:bg-emerald-50/80 rounded-full border border-emerald-100/20 focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-left md:min-w-[180px]"
                         />
                         <span className="whitespace-nowrap">{t('test_associating_guided_3')}</span>
                         <input
@@ -478,9 +478,8 @@ const AssociationStage: React.FC<{
                           value={guidedValues[i][2]}
                           onChange={(e) => handleGuidedChange(i, 2, e.target.value)}
                           placeholder={t('test_associating_guided_placeholder_3')}
-                          className="w-full md:w-auto md:mx-4 px-8 py-3 bg-ink/[0.03] hover:bg-ink/[0.05] rounded-full border border-transparent focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-center md:min-w-[200px]"
+                          className="w-full md:w-auto px-6 py-2.5 bg-emerald-50/50 hover:bg-emerald-50/80 rounded-full border border-emerald-100/20 focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-left md:min-w-[180px]"
                         />
-                        <span className="whitespace-nowrap">{t('test_associating_guided_4')}</span>
                       </div>
                     </div>
                   </motion.div>
