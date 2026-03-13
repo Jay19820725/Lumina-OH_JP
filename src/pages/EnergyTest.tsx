@@ -37,6 +37,46 @@ const itemVariants = {
   }
 };
 
+const DynamicSubtitle: React.FC<{ stage: DrawStage }> = ({ stage }) => {
+  const { t } = useLanguage();
+  
+  const getKeys = (): [string, string] => {
+    switch (stage) {
+      case 'drawing_images': return ['test_desc_images_1', 'test_desc_images_2'];
+      case 'drawing_words': return ['test_desc_words_1', 'test_desc_words_2'];
+      case 'pairing': return ['test_desc_pairing_1', 'test_desc_pairing_2'];
+      case 'associating': return ['test_desc_associating_1', 'test_desc_associating_2'];
+      case 'revealed': return ['test_desc_revealed_1', 'test_desc_revealed_2'];
+      default: return ['test_desc_ritual_1', 'test_desc_ritual_2'];
+    }
+  };
+
+  const [key1, key2] = getKeys();
+
+  return (
+    <div className="flex flex-col gap-1 md:gap-2">
+      <motion.span
+        key={`${stage}-1`}
+        initial={{ opacity: 0, filter: 'blur(8px)' }}
+        animate={{ opacity: 0.8, filter: 'blur(0px)' }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+        className="text-[18px] md:text-[20px] font-serif tracking-[0.2em] text-ink leading-relaxed"
+      >
+        {t(key1 as any)}
+      </motion.span>
+      <motion.span
+        key={`${stage}-2`}
+        initial={{ opacity: 0, filter: 'blur(8px)' }}
+        animate={{ opacity: 0.5, filter: 'blur(0px)' }}
+        transition={{ duration: 1.5, delay: 1.2, ease: "easeOut" }}
+        className="text-[13px] md:text-[16px] tracking-[0.15em] text-[#468565] md:text-[#509673] font-light leading-relaxed"
+      >
+        {t(key2 as any)}
+      </motion.span>
+    </div>
+  );
+};
+
 interface PairingStageProps {
   images: ImageCard[];
   words: WordCard[];
@@ -144,6 +184,22 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
           </div>
         </motion.div>
 
+        {/* Energy Bridge Hint - Mobile: Vertical spacer */}
+        <div className="lg:hidden flex items-center gap-4 w-full py-4">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-ink/10 to-ink/20" />
+          <motion.div 
+            key={selectedImageId || selectedWordId || 'idle-mobile'}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[10px] tracking-[0.3em] text-[#468565] uppercase whitespace-nowrap font-light"
+          >
+            {selectedImageId && !selectedWordId ? t('test_pairing_hint_selecting_word') :
+             selectedWordId && !selectedImageId ? t('test_pairing_hint_selecting_image') :
+             t('test_pairing_hint_idle')}
+          </motion.div>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent via-ink/10 to-ink/20" />
+        </div>
+
         {/* Words Section */}
         <motion.div variants={itemVariants} className="space-y-4 md:space-y-6">
           <div className="flex items-center gap-6">
@@ -196,6 +252,22 @@ const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, 
             })}
           </div>
         </motion.div>
+      </div>
+
+      {/* Desktop Bridge Hint */}
+      <div className="hidden lg:flex items-center gap-8 w-full max-w-2xl my-4">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-ink/10 to-ink/20" />
+        <motion.div 
+          key={selectedImageId || selectedWordId || 'idle-desktop'}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-xs tracking-[0.4em] text-[#509673] uppercase whitespace-nowrap font-light"
+        >
+          {selectedImageId && !selectedWordId ? t('test_pairing_hint_selecting_word') :
+           selectedWordId && !selectedImageId ? t('test_pairing_hint_selecting_image') :
+           t('test_pairing_hint_idle')}
+        </motion.div>
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-ink/10 to-ink/20" />
       </div>
 
       {/* Connected Pairs Section */}
@@ -679,14 +751,10 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
              drawStage === 'associating' ? t('test_title_associating') :
              drawStage === 'revealed' ? t('test_title_revealed') : t('test_title_ritual')}
           </motion.h1>
-          <motion.p variants={itemVariants} className="text-sm md:text-base text-ink-muted max-w-lg font-light leading-[1.8] tracking-wide opacity-80">
-            {drawStage === 'drawing_images' ? t('test_desc_images') : 
-             drawStage === 'drawing_words' ? t('test_desc_words') : 
-             drawStage === 'pairing' ? t('test_desc_pairing') :
-             drawStage === 'associating' ? t('test_desc_associating') :
-             drawStage === 'revealed' ? t('test_desc_revealed') : 
-             t('test_desc_ritual')}
-          </motion.p>
+          
+          <motion.div variants={itemVariants} className="max-w-lg">
+            <DynamicSubtitle stage={drawStage} />
+          </motion.div>
         </motion.div>
         
         <motion.div 
@@ -713,9 +781,19 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="w-full relative"
+              className="w-full relative flex flex-col items-center"
             >
               <ShuffleAnimation onComplete={handleShuffleComplete} />
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-12 text-center"
+              >
+                <span className="text-[10px] uppercase tracking-[0.6em] text-ink/40 animate-pulse">
+                  {t('test_shuffling_text')}
+                </span>
+              </motion.div>
               {isDrawing && (
                 <motion.div 
                   initial={{ opacity: 0 }}
