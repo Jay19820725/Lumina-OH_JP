@@ -140,6 +140,18 @@ export const translations = {
     report_share_thumbnail_success: "縮圖已更新",
     report_view_detail: "查看詳細內容",
     
+    // Loading Stages
+    report_loading_stage_1: "正在感應您的能量共鳴...",
+    report_loading_stage_2: "正在解讀卡牌間的潛在連結...",
+    report_loading_stage_3: "正在為您撰寫專屬洞察...",
+    report_loading_subtitle: "AI 正在根據您的選擇進行深度解讀，這可能需要幾秒鐘的時間。",
+    
+    // Energy Weaving Dialog
+    report_weaving_dialog_title: "正在為您編織深層啟示",
+    report_weaving_dialog_desc: "您的能量圖譜已初步成形，AI 引導師正深入靈魂核心，為您撰寫專屬的引導報告。這段過程大約需要 10 至 15 秒。",
+    report_weaving_dialog_notice: "您可以留在這裡見證啟示的誕生。即使您現在離開，完整報告也會在完成後自動存入您的「成長軌跡」。",
+    report_weaving_dialog_btn: "在此靜心等待",
+    
     timeline_title: "能量時光軸",
     timeline_description: "探索紀錄與每日洞察交織，見證妳的成長故事。",
     timeline_empty: "尚無紀錄。從一次探索開始，記錄今日的洞察吧。",
@@ -285,6 +297,18 @@ export const translations = {
     report_share_thumbnail_desc: "今日のエネルギーを最も象徴するカードを共有サムネイルとして選んでください",
     report_share_thumbnail_success: "サムネイルが更新されました",
     report_view_detail: "詳細を見る",
+
+    // Loading Stages
+    report_loading_stage_1: "あなたのエネルギー共鳴を感じ取っています...",
+    report_loading_stage_2: "カード間の潜在的な繋がりを読み解いています...",
+    report_loading_stage_3: "あなただけの特別なインサイトを綴っています...",
+    report_loading_subtitle: "AIがあなたの選択に基づき深く読み解いています。これには数秒かかる場合があります。",
+
+    // Energy Weaving Dialog
+    report_weaving_dialog_title: "深層の啓示を紡いでいます",
+    report_weaving_dialog_desc: "あなたのエネルギー図譜が形作られました。AIガイドが魂の核心に触れ、特別なメッセージを綴っています。これには約 10〜15秒 ほどかかります。",
+    report_weaving_dialog_notice: "このまま啓示が生まれる瞬間を見守ることもできます。今ここを離れても、レポートは完成次第「成長軌跡」に自動的に保存されます。",
+    report_weaving_dialog_btn: "このまま静かに待つ",
 
     // Timeline Page
     timeline_title: "エネルギー・タイムライン",

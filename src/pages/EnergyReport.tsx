@@ -1,11 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTest } from '../store/TestContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 import { FiveElement } from '../core/types';
 import { useLanguage } from '../i18n/LanguageContext';
-import { Share2, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Share2, RefreshCw, ArrowLeft, X, Clock, Sparkles } from 'lucide-react';
 
 import { 
   Radar, 
@@ -14,6 +15,15 @@ import {
   PolarAngleAxis, 
   ResponsiveContainer 
 } from 'recharts';
+
+const WeavingPlaceholder: React.FC = () => (
+  <div className="space-y-4 animate-pulse">
+    <div className="h-8 bg-ink/[0.03] rounded-lg w-3/4" />
+    <div className="h-4 bg-ink/[0.02] rounded-lg w-full" />
+    <div className="h-4 bg-ink/[0.02] rounded-lg w-5/6" />
+    <div className="h-4 bg-ink/[0.02] rounded-lg w-4/6" />
+  </div>
+);
 
 const WeavingLoader: React.FC<{ label?: string }> = ({ label }) => {
   const { t } = useLanguage();
@@ -37,7 +47,18 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   const { t, language: currentLangCode } = useLanguage();
   const reportRef = useRef<HTMLDivElement>(null);
   const [isLoadingShared, setIsLoadingShared] = useState(false);
+  const [showWeavingDialog, setShowWeavingDialog] = useState(false);
   const [selectedShareThumbnail, setSelectedShareThumbnail] = useState<string | null>(report?.shareThumbnail || null);
+
+  // Show dialog if AI analysis is not yet complete
+  useEffect(() => {
+    // Scroll to top when report page mounts
+    window.scrollTo(0, 0);
+
+    if (report && !report.isAiComplete && !isLoadingShared) {
+      setShowWeavingDialog(true);
+    }
+  }, [report?.id, report?.isAiComplete, isLoadingShared]);
 
   // Determine which content to show based on current language
   const displayContent = React.useMemo(() => {
@@ -191,6 +212,70 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
 
   return (
     <div ref={reportRef} className="ma-container pt-12 md:pt-20 pb-48 md:pb-64 min-h-screen px-4 bg-[#FDFCF8]">
+      {/* Weaving Guidance Dialog - Using Portal to ensure visibility */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showWeavingDialog && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 flex items-center justify-center p-6 bg-ink/40 backdrop-blur-md z-[9999]"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 40 }}
+                className="w-full max-w-md bg-white/95 backdrop-blur-2xl border border-white/40 rounded-[32px] p-8 md:p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] relative overflow-hidden"
+              >
+                {/* Background Glow */}
+                <div className="absolute -top-24 -right-24 w-48 h-48 bg-wood/5 blur-3xl rounded-full" />
+                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-400/5 blur-3xl rounded-full" />
+
+                <button 
+                  onClick={() => {
+                    setShowWeavingDialog(false);
+                    onReset();
+                  }}
+                  className="absolute top-6 right-6 p-2 hover:bg-ink/5 rounded-full transition-colors text-ink-muted"
+                >
+                  <X size={20} />
+                </button>
+
+                <div className="flex flex-col items-center text-center space-y-6 relative z-10">
+                  <div className="w-16 h-16 rounded-3xl bg-wood/5 flex items-center justify-center text-wood">
+                    <Clock size={32} strokeWidth={1.5} />
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-xl md:text-2xl font-serif text-ink tracking-wide">
+                      {t('report_weaving_dialog_title')}
+                    </h3>
+                    <p className="text-sm text-ink-muted leading-relaxed font-light">
+                      {t('report_weaving_dialog_desc')}
+                    </p>
+                  </div>
+
+                  <div className="py-4 px-6 bg-ink/[0.02] rounded-2xl border border-ink/[0.05]">
+                    <p className="text-[11px] text-ink/40 tracking-wider leading-relaxed">
+                      {t('report_weaving_dialog_notice')}
+                    </p>
+                  </div>
+
+                  <Button 
+                    onClick={() => setShowWeavingDialog(false)}
+                    className="w-full h-14 md:h-16 rounded-2xl md:rounded-3xl text-sm md:text-base tracking-[0.2em] shadow-xl shadow-wood/10"
+                  >
+                    {t('report_weaving_dialog_btn')}
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
       {/* Editorial Header */}
       <motion.div 
         initial={{ opacity: 0 }}
@@ -328,44 +413,48 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         </div>
         
         <div className="relative">
-          <AnimatePresence>
-            {isAiLoading && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#FDFCF8]/80 backdrop-blur-sm rounded-3xl"
-              >
-                <WeavingLoader label={t('report_weaving')} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className={`grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20 transition-all duration-1000 ${isAiLoading ? 'blur-md opacity-20' : 'blur-0 opacity-100'}`}>
+          <div className={`grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20 transition-all duration-1000 ${isAiLoading ? 'opacity-50' : 'opacity-100'}`}>
             <div className="md:col-span-8">
-              <p className="text-[28px] md:text-[35px] font-serif leading-[1.4] font-extralight text-ink tracking-tight mb-10">
-                {displayContent.psychologicalInsight}
-              </p>
-              <div className="w-16 h-px bg-ink/20 mb-10" />
-              <div className="columns-1 md:columns-2 gap-10 text-[16px] text-ink-muted leading-[2] font-light tracking-wide">
-                {displayContent.cardInterpretation}
-              </div>
+              {isAiLoading ? (
+                <WeavingPlaceholder />
+              ) : (
+                <>
+                  <p className="text-[28px] md:text-[35px] font-serif leading-[1.4] font-extralight text-ink tracking-tight mb-10">
+                    {displayContent.psychologicalInsight}
+                  </p>
+                  <div className="w-16 h-px bg-ink/20 mb-10" />
+                  <div className="columns-1 md:columns-2 gap-10 text-[16px] text-ink-muted leading-[2] font-light tracking-wide">
+                    {displayContent.cardInterpretation}
+                  </div>
+                </>
+              )}
             </div>
             <div className="md:col-span-4 space-y-10">
               <div className="bg-ink/5 p-8 md:p-10 rounded-[2.5rem] space-y-6">
                 <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block border-b border-ink/10 pb-3">{t('report_five_element')}</span>
-                <p className="text-[15px] leading-[2] font-light text-ink tracking-wider italic">
-                  {displayContent.fiveElementAnalysis}
-                </p>
+                {isAiLoading ? (
+                  <div className="space-y-2 animate-pulse">
+                    <div className="h-4 bg-ink/5 rounded w-full" />
+                    <div className="h-4 bg-ink/5 rounded w-5/6" />
+                  </div>
+                ) : (
+                  <p className="text-[15px] leading-[2] font-light text-ink tracking-wider italic">
+                    {displayContent.fiveElementAnalysis}
+                  </p>
+                )}
               </div>
               
               <div className="p-8 md:p-10 space-y-6 border border-ink/5 rounded-[2.5rem]">
                 <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block border-b border-ink/10 pb-3">{t('report_action')}</span>
                 <div className="flex items-start gap-4">
                   <RefreshCw size={14} className="text-ink-muted mt-1" />
-                  <p className="text-sm leading-[1.8] font-light text-ink-muted">
-                    {displayContent.actionSuggestion}
-                  </p>
+                  {isAiLoading ? (
+                    <div className="h-4 bg-ink/5 rounded w-full animate-pulse" />
+                  ) : (
+                    <p className="text-sm leading-[1.8] font-light text-ink-muted">
+                      {displayContent.actionSuggestion}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -421,9 +510,16 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
                     "{pair.association}"
                   </p>
                   <div className="h-px bg-ink/10 w-6 mx-0" />
-                  <p className="text-[15px] text-ink-muted leading-[1.8] font-light">
-                    {interp?.text || "..."}
-                  </p>
+                  {isAiLoading ? (
+                    <div className="space-y-2 animate-pulse">
+                      <div className="h-4 bg-ink/5 rounded w-full" />
+                      <div className="h-4 bg-ink/5 rounded w-2/3" />
+                    </div>
+                  ) : (
+                    <p className="text-[15px] text-ink-muted leading-[1.8] font-light">
+                      {interp?.text || "..."}
+                    </p>
+                  )}
                 </div>
               </motion.div>
             );
@@ -440,9 +536,13 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
           className="max-w-5xl mx-auto space-y-10 flex flex-col items-center"
         >
           <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted block">{t('report_reflection')}</span>
-          <p className="text-[28px] md:text-[35px] font-serif font-extralight leading-relaxed text-ink italic tracking-tight md:w-[900px] md:text-center p-[10px] md:ml-[10px] mb-0">
-            「{displayContent.reflection || "..."}」
-          </p>
+          {isAiLoading ? (
+            <div className="h-12 bg-ink/5 rounded-xl w-full max-w-2xl animate-pulse" />
+          ) : (
+            <p className="text-[28px] md:text-[35px] font-serif font-extralight leading-relaxed text-ink italic tracking-tight md:w-[900px] md:text-center p-[10px] md:ml-[10px] mb-0">
+              「{displayContent.reflection || "..."}」
+            </p>
+          )}
           <div className="w-px h-16 bg-ink/10 mx-auto" />
         </motion.div>
       </section>
