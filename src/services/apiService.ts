@@ -1,22 +1,22 @@
-import { EnergyWeights } from "../types";
+import { FiveElementValues, FiveElement } from "../core/types";
 
 export const apiService = {
-  async getUserEnergy(userId: string): Promise<EnergyWeights> {
+  async getUserEnergy(userId: string): Promise<FiveElementValues> {
     const response = await fetch(`/api/energy/${userId}`);
     if (!response.ok) {
       throw new Error("Failed to fetch user energy");
     }
     const data = await response.json();
     return {
-      Wood: data.wood,
-      Fire: data.fire,
-      Earth: data.earth,
-      Metal: data.metal,
-      Water: data.water
+      [FiveElement.WOOD]: data.wood,
+      [FiveElement.FIRE]: data.fire,
+      [FiveElement.EARTH]: data.earth,
+      [FiveElement.METAL]: data.metal,
+      [FiveElement.WATER]: data.water
     };
   },
 
-  async updateUserEnergy(userId: string, energy: EnergyWeights): Promise<void> {
+  async updateUserEnergy(userId: string, energy: FiveElementValues): Promise<void> {
     const response = await fetch("/api/energy", {
       method: "POST",
       headers: {
@@ -24,11 +24,11 @@ export const apiService = {
       },
       body: JSON.stringify({
         userId,
-        wood: energy.Wood,
-        fire: energy.Fire,
-        earth: energy.Earth,
-        metal: energy.Metal,
-        water: energy.Water
+        wood: energy[FiveElement.WOOD],
+        fire: energy[FiveElement.FIRE],
+        earth: energy[FiveElement.EARTH],
+        metal: energy[FiveElement.METAL],
+        water: energy[FiveElement.WATER]
       })
     });
     if (!response.ok) {

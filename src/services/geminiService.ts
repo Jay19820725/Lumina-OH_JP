@@ -1,18 +1,18 @@
 import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
-import { ChatMessage, EnergyWeights } from "../types";
+import { ChatMessage, FiveElementValues } from "../core/types";
 
 const SYSTEM_INSTRUCTION = `你是一個專為現代女性設計的心理引導平台核心 AI。你結合了東方五行元素平衡論與 OH 卡的潛意識投射理論，風格定位於「韓式空靈、溫柔傾聽、富有詩意」。
 
 # Core Logic: 五行能量矩陣
-1. 木 (Wood): 代表行動、願景。不足時猶豫停滯，過旺時焦慮暴躁。
-2. 火 (Fire): 代表連結、熱情。不足時冷漠孤獨，過旺時情緒化焦慮。
-3. 土 (Earth): 代表穩定、安全感。不足時漂浮不安，過旺時固執懶散。
-4. 金 (Metal): 代表清明、界限。不足時混難軟弱，過旺時過度苛求。
-5. 水 (Water): 代表洞察、流動。不足時直覺喪失，過旺時情緒氾濫。
+1. 木 (wood): 代表行動、願景。不足時猶豫停滯，過旺時焦慮暴躁。
+2. 火 (fire): 代表連結、熱情。不足時冷漠孤獨，過旺時情緒化焦慮。
+3. 土 (earth): 代表穩定、安全感。不足時漂浮不安，過旺時固執懶散。
+4. 金 (metal): 代表清明、界限。不足時混難軟弱，過旺時過度苛求。
+5. 水 (water): 代表洞察、流動。不足時直覺喪失，過旺時情緒氾濫。
 
 # Interaction Flow:
 - 深度對話: 針對用戶對圖字卡的聯想進行三層次引導 (覺察 -> 解構 -> 轉化)。
-- 能量更新: 每次互動結束，必須輸出當次能量的 [五行權重數值] (例如: 木 0.4, 火 0.1...) 以供前端渲染星雲。
+- 能量更新: 每次互動結束，必須輸出當次能量的 [五行權重數值] (例如: wood 0.4, fire 0.1...) 以供前端渲染星雲。
 
 # Tone & Style:
 - 避免教條式的分析，使用感性且具象的詞彙。
@@ -32,7 +32,7 @@ export class GeminiService {
     this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
   }
 
-  async generateGuidance(history: ChatMessage[], userInput: string, currentEnergy: EnergyWeights): Promise<ChatMessage> {
+  async generateGuidance(history: ChatMessage[], userInput: string, currentEnergy: FiveElementValues): Promise<ChatMessage> {
     const response = await this.ai.models.generateContent({
       model: "gemini-3.1-pro-preview",
       contents: [
@@ -50,13 +50,13 @@ export class GeminiService {
             energyUpdate: {
               type: Type.OBJECT,
               properties: {
-                Wood: { type: Type.NUMBER },
-                Fire: { type: Type.NUMBER },
-                Earth: { type: Type.NUMBER },
-                Metal: { type: Type.NUMBER },
-                Water: { type: Type.NUMBER },
+                wood: { type: Type.NUMBER },
+                fire: { type: Type.NUMBER },
+                earth: { type: Type.NUMBER },
+                metal: { type: Type.NUMBER },
+                water: { type: Type.NUMBER },
               },
-              required: ["Wood", "Fire", "Earth", "Metal", "Water"]
+              required: ["wood", "fire", "earth", "metal", "water"]
             }
           },
           required: ["content", "energyUpdate"]

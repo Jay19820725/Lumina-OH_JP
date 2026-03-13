@@ -1,0 +1,109 @@
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTest } from '../store/TestContext';
+import { useLanguage } from '../i18n/LanguageContext';
+
+export const useEnergyReport = (onReset: () => void) => {
+  const { report, setReport } = useTest();
+  const { language: currentLangCode } = useLanguage();
+  const [isLoadingShared, setIsLoadingShared] = useState(false);
+  const [showWeavingDialog, setShowWeavingDialog] = useState(false);
+  const [selectedShareThumbnail, setSelectedShareThumbnail] = useState<string | null>(report?.shareThumbnail || null);
+
+  // Show dialog if AI analysis is not yet complete
+  useEffect(() => {
+    if (report && !report.isAiComplete && !isLoadingShared) {
+      setShowWeavingDialog(true);
+    }
+  }, [report?.id, report?.isAiComplete, isLoadingShared]);
+
+  // Determine which content to show based on current language
+  const displayContent = useMemo(() => {
+    if (!report) return null;
+    if (!report.multilingualContent) return report;
+    
+    const langKey = currentLangCode === 'ja' ? 'ja-JP' : 'zh-TW';
+    const langContent = report.multilingualContent[langKey];
+    
+    if (!langContent) return report;
+    
+    return {
+      ...report,
+      ...langContent
+    };
+  }, [report?.id, report?.isAiComplete, currentLangCode]);
+
+  // Mark report as seen when fully loaded
+  useEffect(() => {
+    if (report?.id && report.isAiComplete) {
+      localStorage.setItem('lastSeenReportId', report.id);
+    }
+  }, [report?.id, report?.isAiComplete]);
+
+  // Handle shared report fetching
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/report/')) {
+      const reportId = path.split('/').pop();
+      if (reportId && (!report || report.id !== reportId)) {
+        setIsLoadingShared(true);
+        
+        let retryCount = 0;
+        const maxRetries = 5;
+
+        const fetchReport = async () => {
+          try {
+            const res = await fetch(`/api/report/${reportId}`);
+            const data = await res.json();
+            
+            if (data && !data.error) {
+              setReport(data);
+              if (!data.isAiComplete && retryCount < maxRetries) {
+                retryCount++;
+                setTimeout(fetchReport, 3000);
+              } else {
+                setIsLoadingShared(false);
+              }
+            } else {
+              onReset();
+              setIsLoadingShared(false);
+            }
+          } catch (err) {
+            onReset();
+            setIsLoadingShared(false);
+          }
+        };
+        
+        fetchReport();
+      }
+    }
+  }, [setReport, report?.id, onReset]);
+
+  const handleSelectThumbnail = useCallback(async (url: string) => {
+    setSelectedShareThumbnail(url);
+    if (report?.id) {
+      try {
+        const response = await fetch(`/api/reports/${report.id}/share`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shareThumbnail: url })
+        });
+        if (response.ok) {
+          setReport({ ...report, shareThumbnail: url });
+        }
+      } catch (error) {
+        console.error('Failed to update share thumbnail:', error);
+      }
+    }
+  }, [report, setReport]);
+
+  return {
+    report,
+    displayContent,
+    isLoadingShared,
+    showWeavingDialog,
+    setShowWeavingDialog,
+    selectedShareThumbnail,
+    handleSelectThumbnail,
+    isAiLoading: !report?.isAiComplete && !report?.todayTheme,
+  };
+};

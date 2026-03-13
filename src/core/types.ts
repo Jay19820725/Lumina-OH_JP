@@ -10,6 +10,22 @@ export enum FiveElement {
   WATER = 'water'
 }
 
+export const ELEMENT_COLORS: Record<FiveElement, string> = {
+  [FiveElement.WOOD]: "#A8E6CF",
+  [FiveElement.FIRE]: "#FFB7B2",
+  [FiveElement.EARTH]: "#FDFD96",
+  [FiveElement.METAL]: "#E0E0E0",
+  [FiveElement.WATER]: "#B39DDB",
+};
+
+export const ELEMENT_NAMES_ZH: Record<FiveElement, string> = {
+  [FiveElement.WOOD]: "木",
+  [FiveElement.FIRE]: "火",
+  [FiveElement.EARTH]: "土",
+  [FiveElement.METAL]: "金",
+  [FiveElement.WATER]: "水",
+};
+
 export interface FiveElementValues {
   [FiveElement.WOOD]: number;
   [FiveElement.FIRE]: number;
@@ -189,6 +205,16 @@ export interface SEOSettings {
   search_console_id: string;
   index_enabled: boolean;
 }
+
+export interface ChatMessage {
+  role: "user" | "model";
+  content: string;
+  energyUpdate?: FiveElementValues;
+}
+
+export type DrawStage = 'idle' | 'shuffling' | 'drawing_images' | 'drawing_words' | 'pairing' | 'associating' | 'revealed';
+
+export type EnergyReportData = AnalysisReport;
 
 export interface SiteSettings {
   key: string;

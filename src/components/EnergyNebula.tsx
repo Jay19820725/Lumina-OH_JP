@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { EnergyWeights, ELEMENT_COLORS, ElementType } from '../types';
+import { FiveElement, FiveElementValues, ELEMENT_COLORS } from '../core/types';
 
 interface EnergyNebulaProps {
-  weights: EnergyWeights;
+  weights: FiveElementValues;
   className?: string;
 }
 
@@ -19,11 +19,11 @@ export const EnergyNebula: React.FC<EnergyNebulaProps> = ({ weights, className }
     svg.selectAll("*").remove();
 
     const data = [
-      { axis: ElementType.WOOD, value: weights.Wood },
-      { axis: ElementType.FIRE, value: weights.Fire },
-      { axis: ElementType.EARTH, value: weights.Earth },
-      { axis: ElementType.METAL, value: weights.Metal },
-      { axis: ElementType.WATER, value: weights.Water },
+      { axis: FiveElement.WOOD, value: weights[FiveElement.WOOD] },
+      { axis: FiveElement.FIRE, value: weights[FiveElement.FIRE] },
+      { axis: FiveElement.EARTH, value: weights[FiveElement.EARTH] },
+      { axis: FiveElement.METAL, value: weights[FiveElement.METAL] },
+      { axis: FiveElement.WATER, value: weights[FiveElement.WATER] },
     ];
 
     const radius = Math.min(width, height) / 2 - 40;
@@ -43,7 +43,7 @@ export const EnergyNebula: React.FC<EnergyNebulaProps> = ({ weights, className }
     }
 
     // Radar line generator
-    const line = d3.lineRadial<{ axis: ElementType; value: number }>()
+    const line = d3.lineRadial<{ axis: FiveElement; value: number }>()
       .radius(d => d.value * radius * 1.5) // Scale up for visibility
       .angle((d, i) => i * angleStep)
       .curve(d3.curveCardinalClosed.tension(0.4));

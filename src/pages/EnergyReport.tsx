@@ -1,29 +1,14 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTest } from '../store/TestContext';
-import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
-import { FiveElement } from '../core/types';
 import { useLanguage } from '../i18n/LanguageContext';
-import { Share2, RefreshCw, ArrowLeft, X, Clock, Sparkles } from 'lucide-react';
-
-import { 
-  Radar, 
-  RadarChart, 
-  PolarGrid, 
-  PolarAngleAxis, 
-  ResponsiveContainer 
-} from 'recharts';
-
-const WeavingPlaceholder: React.FC = () => (
-  <div className="space-y-4 animate-pulse">
-    <div className="h-8 bg-ink/[0.03] rounded-lg w-3/4" />
-    <div className="h-4 bg-ink/[0.02] rounded-lg w-full" />
-    <div className="h-4 bg-ink/[0.02] rounded-lg w-5/6" />
-    <div className="h-4 bg-ink/[0.02] rounded-lg w-4/6" />
-  </div>
-);
+import { Share2, RefreshCw, ArrowLeft, Sparkles } from 'lucide-react';
+import { useEnergyReport } from '../hooks/useEnergyReport';
+import { WeavingGuidanceDialog } from '../components/report/WeavingGuidanceDialog';
+import { EnergyProfile } from '../components/report/EnergyProfile';
+import { PsychInsight } from '../components/report/PsychInsight';
+import { CardCollage } from '../components/report/CardCollage';
 
 const WeavingLoader: React.FC<{ label?: string }> = ({ label }) => {
   const { t } = useLanguage();
@@ -43,88 +28,19 @@ const WeavingLoader: React.FC<{ label?: string }> = ({ label }) => {
 };
 
 export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => {
-  const { report, selectedCards, setReport } = useTest();
-  const { t, language: currentLangCode } = useLanguage();
+  const { selectedCards } = useTest();
+  const { t } = useLanguage();
   const reportRef = useRef<HTMLDivElement>(null);
-  const [isLoadingShared, setIsLoadingShared] = useState(false);
-  const [showWeavingDialog, setShowWeavingDialog] = useState(false);
-  const [selectedShareThumbnail, setSelectedShareThumbnail] = useState<string | null>(report?.shareThumbnail || null);
-
-  // Show dialog if AI analysis is not yet complete
-  useEffect(() => {
-    // Scroll to top when report page mounts
-    window.scrollTo(0, 0);
-
-    if (report && !report.isAiComplete && !isLoadingShared) {
-      setShowWeavingDialog(true);
-    }
-  }, [report?.id, report?.isAiComplete, isLoadingShared]);
-
-  // Determine which content to show based on current language
-  const displayContent = React.useMemo(() => {
-    if (!report) return null;
-    if (!report.multilingualContent) return report;
-    
-    const langKey = currentLangCode === 'ja' ? 'ja-JP' : 'zh-TW';
-    const langContent = report.multilingualContent[langKey];
-    
-    if (!langContent) return report;
-    
-    return {
-      ...report,
-      ...langContent
-    };
-  }, [report?.id, report?.isAiComplete, currentLangCode]);
-
-  // Mark report as seen when fully loaded
-  useEffect(() => {
-    if (report?.id && report.isAiComplete) {
-      localStorage.setItem('lastSeenReportId', report.id);
-    }
-  }, [report?.id, report?.isAiComplete]);
-
-  // Handle shared report fetching
-  useEffect(() => {
-    const path = window.location.pathname;
-    if (path.startsWith('/report/')) {
-      const reportId = path.split('/').pop();
-      if (reportId && (!report || report.id !== reportId)) {
-        setIsLoadingShared(true);
-        
-        let retryCount = 0;
-        const maxRetries = 5;
-
-        const fetchReport = async () => {
-          try {
-            const res = await fetch(`/api/report/${reportId}`);
-            const data = await res.json();
-            
-            if (data && !data.error) {
-              setReport(data);
-              // If it's an empty report (no AI content yet), retry a few times
-              if (!data.isAiComplete && retryCount < maxRetries) {
-                retryCount++;
-                console.log(`Report ${reportId} is still weaving... retry ${retryCount}/${maxRetries}`);
-                setTimeout(fetchReport, 3000);
-              } else {
-                setIsLoadingShared(false);
-              }
-            } else {
-              console.error('API returned error or no data for report:', reportId);
-              onReset();
-              setIsLoadingShared(false);
-            }
-          } catch (err) {
-            console.error('Failed to fetch shared report:', err);
-            onReset();
-            setIsLoadingShared(false);
-          }
-        };
-        
-        fetchReport();
-      }
-    }
-  }, [setReport, report?.id, onReset]);
+  const {
+    report,
+    displayContent,
+    isLoadingShared,
+    showWeavingDialog,
+    setShowWeavingDialog,
+    selectedShareThumbnail,
+    handleSelectThumbnail,
+    isAiLoading,
+  } = useEnergyReport(onReset);
 
   if (isLoadingShared) {
     return (
@@ -135,24 +51,6 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
   }
 
   if (!report || !displayContent) return null;
-
-  const handleSelectThumbnail = async (url: string) => {
-    setSelectedShareThumbnail(url);
-    if (report.id) {
-      try {
-        const response = await fetch(`/api/reports/${report.id}/share`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ shareThumbnail: url })
-        });
-        if (response.ok) {
-          setReport({ ...report, shareThumbnail: url });
-        }
-      } catch (error) {
-        console.error('Failed to update share thumbnail:', error);
-      }
-    }
-  };
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/report/${report.id}`;
@@ -180,101 +78,15 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
     }
   };
 
-  const isAiLoading = !report.isAiComplete && !report.todayTheme;
-
   const isGuest = report.isGuest;
-
-  const elements = [
-    { key: FiveElement.WOOD, label: t('home_element_wood'), color: 'bg-wood', hex: '#A8C97F' },
-    { key: FiveElement.FIRE, label: t('home_element_fire'), color: 'bg-fire', hex: '#E95464' },
-    { key: FiveElement.EARTH, label: t('home_element_earth'), color: 'bg-earth', hex: '#FFB11B' },
-    { key: FiveElement.METAL, label: t('home_element_metal'), color: 'bg-metal', hex: '#F8FBF8' },
-    { key: FiveElement.WATER, label: t('home_element_water'), color: 'bg-water', hex: '#33A6B8' },
-  ];
-
-  const chartData = elements.map(el => ({
-    subject: el.label,
-    value: report.totalScores[el.key],
-    fullMark: 100,
-  }));
-
-  const translateElement = (el: string) => {
-    const map: Record<string, string> = {
-      wood: t('home_element_wood'),
-      fire: t('home_element_fire'),
-      earth: t('home_element_earth'),
-      metal: t('home_element_metal'),
-      water: t('home_element_water'),
-      None: t('none')
-    };
-    return map[el] || el;
-  };
 
   return (
     <div ref={reportRef} className="ma-container pt-12 md:pt-20 pb-48 md:pb-64 min-h-screen px-4 bg-[#FDFCF8]">
-      {/* Weaving Guidance Dialog - Using Portal to ensure visibility */}
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {showWeavingDialog && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 flex items-center justify-center p-6 bg-ink/40 backdrop-blur-md z-[9999]"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 40 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 40 }}
-                className="w-full max-w-md bg-white/95 backdrop-blur-2xl border border-white/40 rounded-[32px] p-8 md:p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] relative overflow-hidden"
-              >
-                {/* Background Glow */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-wood/5 blur-3xl rounded-full" />
-                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-400/5 blur-3xl rounded-full" />
-
-                <button 
-                  onClick={() => {
-                    setShowWeavingDialog(false);
-                    onReset();
-                  }}
-                  className="absolute top-6 right-6 p-2 hover:bg-ink/5 rounded-full transition-colors text-ink-muted"
-                >
-                  <X size={20} />
-                </button>
-
-                <div className="flex flex-col items-center text-center space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-3xl bg-wood/5 flex items-center justify-center text-wood">
-                    <Clock size={32} strokeWidth={1.5} />
-                  </div>
-
-                  <div className="space-y-3">
-                    <h3 className="text-xl md:text-2xl font-serif text-ink tracking-wide">
-                      {t('report_weaving_dialog_title')}
-                    </h3>
-                    <p className="text-sm text-ink-muted leading-relaxed font-light">
-                      {t('report_weaving_dialog_desc')}
-                    </p>
-                  </div>
-
-                  <div className="py-4 px-6 bg-ink/[0.02] rounded-2xl border border-ink/[0.05]">
-                    <p className="text-[11px] text-ink/40 tracking-wider leading-relaxed">
-                      {t('report_weaving_dialog_notice')}
-                    </p>
-                  </div>
-
-                  <Button 
-                    onClick={() => setShowWeavingDialog(false)}
-                    className="w-full h-14 md:h-16 rounded-2xl md:rounded-3xl text-sm md:text-base tracking-[0.2em] shadow-xl shadow-wood/10"
-                  >
-                    {t('report_weaving_dialog_btn')}
-                  </Button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+      <WeavingGuidanceDialog 
+        isOpen={showWeavingDialog} 
+        onClose={() => setShowWeavingDialog(false)} 
+        onReset={onReset} 
+      />
 
       {/* Editorial Header */}
       <motion.div 
@@ -327,205 +139,16 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         />
       </section>
 
-      {/* Energy Profile: Asymmetric Grid */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20 mb-20 md:mb-32 items-center -mt-[100px]">
-        <div className="lg:col-span-7 relative">
-          <div className="absolute -top-12 -left-12 text-[15vw] font-serif font-black text-ink/[0.02] pointer-events-none select-none">
-            {report.balanceScore}
-          </div>
-          <div className="relative aspect-square w-full max-w-[450px] mx-auto">
-            {/* Blurred Energy Aura */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
-              {elements.map((el, i) => {
-                const score = report.totalScores[el.key];
-                const size = 120 + score * 2;
-                return (
-                  <motion.div
-                    key={el.key}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 0.4 }}
-                    transition={{ duration: 3, delay: i * 0.3 }}
-                    className={`absolute rounded-full ${el.color} blur-[80px] md:blur-[100px]`}
-                    style={{ width: size, height: size }}
-                  />
-                );
-              })}
-            </div>
-            
-            <div className="w-full h-full z-10 relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
-                  <PolarGrid stroke="#1A1A1A" strokeOpacity={0.08} />
-                  <PolarAngleAxis 
-                    dataKey="subject" 
-                    tick={{ fill: '#1A1A1A', fontSize: 10, fontWeight: 300, letterSpacing: '0.3em' }}
-                  />
-                  <Radar
-                    name="Energy"
-                    dataKey="value"
-                    stroke="#1A1A1A"
-                    strokeWidth={0.5}
-                    fill="#1A1A1A"
-                    fillOpacity={0.08}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
+      <EnergyProfile report={report} />
 
-        <div className="lg:col-span-5 space-y-12">
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <span className="text-[13px] uppercase tracking-[0.4em] text-ink-muted">{t('report_balance')}</span>
-              <div className="h-px flex-1 bg-ink/5" />
-            </div>
-            <div className="flex items-baseline gap-4">
-              <span className="text-7xl font-serif font-extralight tracking-tighter">{report.balanceScore}</span>
-              <span className="text-xs uppercase tracking-widest text-ink-muted">/ 100</span>
-            </div>
-          </div>
+      <PsychInsight isAiLoading={isAiLoading} displayContent={displayContent} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div className="space-y-3">
-              <span className="text-[12px] uppercase tracking-[0.4em] text-ink-muted block">{t('report_dominant')}</span>
-              <h3 className="text-2xl font-serif italic tracking-widest">{translateElement(report.dominantElement)}</h3>
-              <p className="text-[15px] text-ink-muted leading-relaxed font-light">
-                {t('report_dominant_desc').replace('{element}', translateElement(report.dominantElement))}
-              </p>
-            </div>
-            <div className="space-y-3">
-              <span className="text-[12px] uppercase tracking-[0.4em] text-ink-muted block">{t('report_weak')}</span>
-              <h3 className="text-2xl font-serif italic tracking-widest">{translateElement(report.weakElement)}</h3>
-              <p className="text-[15px] text-ink-muted leading-relaxed font-light">
-                {t('report_weak_desc').replace('{element}', translateElement(report.weakElement))}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Deep Insight: Editorial Columns */}
-      <section className="relative mb-20 md:mb-32">
-        <div className="flex items-center gap-8 mb-12">
-          <h2 className="text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('report_psych_insight')}</h2>
-          <div className="h-px w-full bg-ink/5" />
-        </div>
-        
-        <div className="relative">
-          <div className={`grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20 transition-all duration-1000 ${isAiLoading ? 'opacity-50' : 'opacity-100'}`}>
-            <div className="md:col-span-8">
-              {isAiLoading ? (
-                <WeavingPlaceholder />
-              ) : (
-                <>
-                  <p className="text-[28px] md:text-[35px] font-serif leading-[1.4] font-extralight text-ink tracking-tight mb-10">
-                    {displayContent.psychologicalInsight}
-                  </p>
-                  <div className="w-16 h-px bg-ink/20 mb-10" />
-                  <div className="columns-1 md:columns-2 gap-10 text-[16px] text-ink-muted leading-[2] font-light tracking-wide">
-                    {displayContent.cardInterpretation}
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="md:col-span-4 space-y-10">
-              <div className="bg-ink/5 p-8 md:p-10 rounded-[2.5rem] space-y-6">
-                <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block border-b border-ink/10 pb-3">{t('report_five_element')}</span>
-                {isAiLoading ? (
-                  <div className="space-y-2 animate-pulse">
-                    <div className="h-4 bg-ink/5 rounded w-full" />
-                    <div className="h-4 bg-ink/5 rounded w-5/6" />
-                  </div>
-                ) : (
-                  <p className="text-[15px] leading-[2] font-light text-ink tracking-wider italic">
-                    {displayContent.fiveElementAnalysis}
-                  </p>
-                )}
-              </div>
-              
-              <div className="p-8 md:p-10 space-y-6 border border-ink/5 rounded-[2.5rem]">
-                <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block border-b border-ink/10 pb-3">{t('report_action')}</span>
-                <div className="flex items-start gap-4">
-                  <RefreshCw size={14} className="text-ink-muted mt-1" />
-                  {isAiLoading ? (
-                    <div className="h-4 bg-ink/5 rounded w-full animate-pulse" />
-                  ) : (
-                    <p className="text-sm leading-[1.8] font-light text-ink-muted">
-                      {displayContent.actionSuggestion}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Card Collage: Visual Narrative */}
-      <section className="mb-20 md:mb-32">
-        <div className="flex items-center gap-8 mb-16">
-          <div className="h-px w-full bg-ink/5" />
-          <h2 className="text-[12px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('report_card_msg')}</h2>
-          <div className="h-px w-full bg-ink/5" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 md:gap-16">
-          {[0, 1, 2].map((i) => {
-            const interp = displayContent.pairInterpretations?.[i];
-            const pair = (report.pairs && report.pairs.length > i) ? report.pairs[i] : selectedCards.pairs?.[i];
-            
-            if (!pair) return null;
-            
-            return (
-              <motion.div 
-                key={i} 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.2 }}
-                className="space-y-10"
-              >
-                <div className="relative h-72 flex items-center justify-center">
-                  {/* Image Card (Back) */}
-                  <motion.div 
-                    whileHover={{ scale: 1.05, rotate: -10 }}
-                    className="absolute w-32 h-48 rounded-xl overflow-hidden shadow-2xl border-4 border-white transform -rotate-8 -translate-x-14 z-10"
-                  >
-                    <img src={pair.image.imageUrl} alt="" className="w-full h-full object-cover" />
-                  </motion.div>
-                  {/* Word Card (Front) */}
-                  <motion.div 
-                    whileHover={{ scale: 1.05, rotate: 10 }}
-                    className="absolute w-32 h-48 rounded-xl overflow-hidden shadow-2xl border-4 border-white transform rotate-8 translate-x-14 z-20"
-                  >
-                    <img src={pair.word.imageUrl} alt="" className="w-full h-full object-cover" />
-                  </motion.div>
-                  <div className="absolute inset-0 bg-ink/[0.02] rounded-[3rem] -z-10" />
-                </div>
-                
-                <div className="space-y-4 text-left px-4">
-                  <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted">Resonance {i + 1}</span>
-                  <p className="text-[15px] text-ink leading-[1.8] font-light italic">
-                    "{pair.association}"
-                  </p>
-                  <div className="h-px bg-ink/10 w-6 mx-0" />
-                  {isAiLoading ? (
-                    <div className="space-y-2 animate-pulse">
-                      <div className="h-4 bg-ink/5 rounded w-full" />
-                      <div className="h-4 bg-ink/5 rounded w-2/3" />
-                    </div>
-                  ) : (
-                    <p className="text-[15px] text-ink-muted leading-[1.8] font-light">
-                      {interp?.text || "..."}
-                    </p>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
+      <CardCollage 
+        report={report} 
+        displayContent={displayContent} 
+        selectedCards={selectedCards} 
+        isAiLoading={isAiLoading} 
+      />
 
       {/* Final Reflection: Simple & Bold */}
       <section className="text-left md:text-center py-24 md:py-32 border-t border-ink/5">

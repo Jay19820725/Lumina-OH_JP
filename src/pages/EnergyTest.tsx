@@ -1,17 +1,17 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useTest } from '../store/TestContext';
 import { Button } from '../components/ui/Button';
-import { Sparkles, ArrowRight, Check, Maximize2, PenLine } from 'lucide-react';
+import { Sparkles, ArrowRight, Maximize2 } from 'lucide-react';
 import { ShuffleAnimation } from '../components/ShuffleAnimation';
 import { EunieCard } from '../components/EunieCard';
 import { CardZoomModal } from '../components/CardZoomModal';
-import { ImageCard, WordCard, CardPair } from '../core/types';
 import { useLanguage } from '../i18n/LanguageContext';
-
 import { preloadDecks } from '../services/cardEngine';
- 
- type DrawStage = 'idle' | 'shuffling' | 'drawing_images' | 'drawing_words' | 'pairing' | 'associating' | 'revealed';
+import { PairingStage } from '../components/test/PairingStage';
+import { AssociationStage } from '../components/test/AssociationStage';
+import { DynamicSubtitle } from '../components/test/DynamicSubtitle';
+import { useEnergyTestState } from '../hooks/useEnergyTestState';
 
 // Narrative animation variants
 const containerVariants = {
@@ -37,583 +37,35 @@ const itemVariants = {
   }
 };
 
-const DynamicSubtitle: React.FC<{ stage: DrawStage }> = ({ stage }) => {
-  const { t } = useLanguage();
-  
-  const getKeys = (): [string, string] => {
-    switch (stage) {
-      case 'drawing_images': return ['test_desc_images_1', 'test_desc_images_2'];
-      case 'drawing_words': return ['test_desc_words_1', 'test_desc_words_2'];
-      case 'pairing': return ['test_desc_pairing_1', 'test_desc_pairing_2'];
-      case 'associating': return ['test_desc_associating_1', 'test_desc_associating_2'];
-      case 'revealed': return ['test_desc_revealed_1', 'test_desc_revealed_2'];
-      default: return ['test_desc_ritual_1', 'test_desc_ritual_2'];
-    }
-  };
-
-  const [key1, key2] = getKeys();
-
-  return (
-    <div className="flex flex-col gap-1 md:gap-2">
-      <motion.span
-        key={`${stage}-1`}
-        initial={{ opacity: 0, filter: 'blur(8px)' }}
-        animate={{ opacity: 0.8, filter: 'blur(0px)' }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
-        className="text-[18px] md:text-[20px] font-serif tracking-[0.2em] text-ink leading-relaxed"
-      >
-        {t(key1 as any)}
-      </motion.span>
-      <motion.span
-        key={`${stage}-2`}
-        initial={{ opacity: 0, filter: 'blur(8px)' }}
-        animate={{ opacity: 0.5, filter: 'blur(0px)' }}
-        transition={{ duration: 1.5, delay: 1.2, ease: "easeOut" }}
-        className="text-[13px] md:text-[16px] tracking-[0.15em] text-[#468565] md:text-[#509673] font-light leading-relaxed"
-      >
-        {t(key2 as any)}
-      </motion.span>
-    </div>
-  );
-};
-
-interface PairingStageProps {
-  images: ImageCard[];
-  words: WordCard[];
-  onComplete: (pairs: CardPair[]) => void;
-  onZoom: (card: ImageCard | WordCard) => void;
-}
-
-const PairingStage: React.FC<PairingStageProps> = ({ images, words, onComplete, onZoom }) => {
-  const { t } = useLanguage();
-  const [pairs, setPairs] = useState<{ imageId: string; wordId: string }[]>([]);
-  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-  const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
-
-  const handleCardClick = (cardId: string, type: 'image' | 'word') => {
-    if (type === 'image') {
-      if (pairs.some(p => p.imageId === cardId)) return;
-      setSelectedImageId(prev => prev === cardId ? null : cardId);
-    } else {
-      if (pairs.some(p => p.wordId === cardId)) return;
-      setSelectedWordId(prev => prev === cardId ? null : cardId);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedImageId && selectedWordId) {
-      const newPair = { imageId: selectedImageId, wordId: selectedWordId };
-      setPairs(prev => [...prev, newPair]);
-      setSelectedImageId(null);
-      setSelectedWordId(null);
-    }
-  }, [selectedImageId, selectedWordId]);
-
-  const handleUnpair = (imageId: string) => {
-    setPairs(prev => prev.filter(p => p.imageId !== imageId));
-  };
-
-  const isAllPaired = pairs.length === images.length && images.length > 0;
-
-  const handleFinish = () => {
-    const finalPairs: CardPair[] = pairs.map(p => ({
-      image: images.find(img => img.id === p.imageId)!,
-      word: words.find(w => w.id === p.wordId)!
-    }));
-    onComplete(finalPairs);
-  };
-
-  return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="w-full max-w-7xl flex flex-col items-center gap-10 md:gap-16 px-4"
-    >
-      <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-32 items-start">
-        {/* Images Section */}
-        <motion.div variants={itemVariants} className="space-y-4 md:space-y-6">
-          <div className="flex items-center gap-6">
-            <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('test_pairing_images')}</span>
-            <div className="h-px flex-1 bg-ink/5" />
-          </div>
-          <div className="grid grid-cols-3 gap-4 md:gap-6">
-            {images.map((card) => {
-              const isPaired = pairs.some(p => p.imageId === card.id);
-              const isSelected = selectedImageId === card.id;
-              return (
-                <motion.div
-                  key={card.id}
-                  onClick={() => handleCardClick(card.id, 'image')}
-                  className={`relative aspect-[384/688] cursor-pointer transition-all duration-700 group ${
-                    isPaired ? 'opacity-20 scale-90 pointer-events-none' : ''
-                  }`}
-                  animate={{
-                    scale: isSelected ? 1.08 : 1,
-                    y: isSelected ? -12 : 0,
-                  }}
-                  whileHover={{ scale: isPaired ? 0.9 : 1.05 }}
-                >
-                  <div className={`w-full h-full rounded-3xl overflow-hidden bg-white shadow-2xl border-2 transition-all duration-500 ${
-                    isSelected ? 'border-emerald-400/50 shadow-emerald-900/10' : 'border-white/20'
-                  }`}>
-                    <img src={card.imageUrl} alt="" className="w-full h-full object-cover" />
-                    {!isPaired && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onZoom(card);
-                        }}
-                        className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white/40 backdrop-blur-md border border-white/40 flex items-center justify-center text-ink/40 hover:text-ink hover:bg-white/60 transition-all opacity-0 group-hover:opacity-100 z-10"
-                      >
-                        <Maximize2 size={14} />
-                      </button>
-                    )}
-                  </div>
-                  {isSelected && (
-                    <motion.div 
-                      layoutId="glow-img"
-                      className="absolute inset-0 bg-emerald-400/10 blur-2xl -z-10"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                    />
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Energy Bridge Hint - Mobile: Vertical spacer */}
-        <div className="lg:hidden flex items-center gap-4 w-full py-4">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-ink/10 to-ink/20" />
-          <motion.div 
-            key={selectedImageId || selectedWordId || 'idle-mobile'}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-[10px] tracking-[0.3em] text-[#468565] uppercase whitespace-nowrap font-light"
-          >
-            {selectedImageId && !selectedWordId ? t('test_pairing_hint_selecting_word') :
-             selectedWordId && !selectedImageId ? t('test_pairing_hint_selecting_image') :
-             t('test_pairing_hint_idle')}
-          </motion.div>
-          <div className="h-px flex-1 bg-gradient-to-l from-transparent via-ink/10 to-ink/20" />
-        </div>
-
-        {/* Words Section */}
-        <motion.div variants={itemVariants} className="space-y-4 md:space-y-6">
-          <div className="flex items-center gap-6">
-            <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('test_pairing_words')}</span>
-            <div className="h-px flex-1 bg-ink/5" />
-          </div>
-          <div className="grid grid-cols-3 gap-4 md:gap-6">
-            {words.map((card) => {
-              const isPaired = pairs.some(p => p.wordId === card.id);
-              const isSelected = selectedWordId === card.id;
-              return (
-                <motion.div
-                  key={card.id}
-                  onClick={() => handleCardClick(card.id, 'word')}
-                  className={`relative aspect-[384/688] cursor-pointer transition-all duration-700 group ${
-                    isPaired ? 'opacity-20 scale-90 pointer-events-none' : ''
-                  }`}
-                  animate={{
-                    scale: isSelected ? 1.08 : 1,
-                    y: isSelected ? -12 : 0,
-                  }}
-                  whileHover={{ scale: isPaired ? 0.9 : 1.05 }}
-                >
-                  <div className={`w-full h-full rounded-3xl overflow-hidden bg-white shadow-2xl border-2 transition-all duration-500 ${
-                    isSelected ? 'border-emerald-400/50 shadow-emerald-900/10' : 'border-white/20'
-                  }`}>
-                    <img src={card.imageUrl} alt="" className="w-full h-full object-cover" />
-                    {!isPaired && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onZoom(card);
-                        }}
-                        className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white/40 backdrop-blur-md border border-white/40 flex items-center justify-center text-ink/40 hover:text-ink hover:bg-white/60 transition-all opacity-0 group-hover:opacity-100 z-10"
-                      >
-                        <Maximize2 size={14} />
-                      </button>
-                    )}
-                  </div>
-                  {isSelected && (
-                    <motion.div 
-                      layoutId="glow-word"
-                      className="absolute inset-0 bg-emerald-400/10 blur-2xl -z-10"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                    />
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Desktop Bridge Hint */}
-      <div className="hidden lg:flex items-center gap-8 w-full max-w-2xl my-4">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-ink/10 to-ink/20" />
-        <motion.div 
-          key={selectedImageId || selectedWordId || 'idle-desktop'}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-xs tracking-[0.4em] text-[#509673] uppercase whitespace-nowrap font-light"
-        >
-          {selectedImageId && !selectedWordId ? t('test_pairing_hint_selecting_word') :
-           selectedWordId && !selectedImageId ? t('test_pairing_hint_selecting_image') :
-           t('test_pairing_hint_idle')}
-        </motion.div>
-        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-ink/10 to-ink/20" />
-      </div>
-
-      {/* Connected Pairs Section */}
-      <motion.div variants={itemVariants} className="w-full space-y-12">
-        <div className="flex items-center justify-center gap-6">
-          <div className="h-px flex-1 bg-ink/5" />
-          <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('test_pairing_connected')}</span>
-          <div className="h-px flex-1 bg-ink/5" />
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-8 md:gap-12 min-h-[160px]">
-          <AnimatePresence mode="popLayout">
-            {pairs.map((pair) => (
-              <motion.div
-                key={pair.imageId}
-                layout
-                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                className="group relative flex items-center bg-white/40 backdrop-blur-xl p-3 rounded-[2rem] border border-white/40 shadow-xl"
-              >
-                <div className="flex -space-x-4">
-                  <div className="w-16 h-28 md:w-20 md:h-32 rounded-2xl overflow-hidden shadow-lg border-2 border-white transform -rotate-3">
-                    <img src={images.find(img => img.id === pair.imageId)?.imageUrl} alt="" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="w-16 h-28 md:w-20 md:h-32 rounded-2xl overflow-hidden shadow-lg border-2 border-white transform rotate-3">
-                    <img src={words.find(w => w.id === pair.wordId)?.imageUrl} alt="" className="w-full h-full object-cover" />
-                  </div>
-                </div>
-                <button 
-                  onClick={() => handleUnpair(pair.imageId)}
-                  className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-rose-50 text-rose-400"
-                >
-                  <Check size={14} className="hidden group-hover:block" />
-                  <span className="group-hover:hidden">×</span>
-                </button>
-              </motion.div>
-            ))}
-            {pairs.length === 0 && (
-              <div className="w-full flex items-center justify-center py-12">
-                <span className="text-xs tracking-[0.4em] text-ink-muted opacity-30 italic">
-                  {t('searching_resonance')}
-                </span>
-              </div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
-
-      <AnimatePresence>
-        {isAllPaired && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="mt-8 md:mt-10 mb-8"
-          >
-            <Button onClick={handleFinish} className="h-20 px-16 gap-4 text-lg shadow-2xl shadow-emerald-900/20 bg-emerald-500 hover:bg-emerald-600">
-              {t('test_pairing_confirm')} <ArrowRight size={20} />
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-};
-
-const AssociationStage: React.FC<{ 
-  pairs: CardPair[]; 
-  onComplete: (associations: { pair_id: string; text: string }[]) => void;
-  onZoom: (card: ImageCard | WordCard) => void;
-}> = ({ pairs, onComplete, onZoom }) => {
-  const { t } = useLanguage();
-  const [modes, setModes] = useState<{ [key: string]: 'guided' | 'free' }>(
-    pairs.reduce((acc, _, i) => ({ ...acc, [i]: 'guided' }), {})
-  );
-  const [associations, setAssociations] = useState<{ [key: string]: string }>(
-    pairs.reduce((acc, _, i) => ({ ...acc, [i]: '' }), {})
-  );
-  const [guidedValues, setGuidedValues] = useState<{ [key: string]: [string, string, string] }>(
-    pairs.reduce((acc, _, i) => ({ ...acc, [i]: ['', '', ''] }), {})
-  );
-
-  const handleTextChange = (index: number, text: string) => {
-    if (text.length <= 200) {
-      setAssociations(prev => ({ ...prev, [index]: text }));
-    }
-  };
-
-  const handleGuidedChange = (index: number, partIndex: number, value: string) => {
-    if (value.length <= 50) {
-      setGuidedValues(prev => {
-        const newVal = [...prev[index]] as [string, string, string];
-        newVal[partIndex] = value;
-        return { ...prev, [index]: newVal };
-      });
-    }
-  };
-
-  const isComplete = Object.keys(modes).every((key) => {
-    const i = parseInt(key);
-    if (modes[i] === 'free') {
-      return associations[i].trim().length > 0;
-    } else {
-      return guidedValues[i].every(v => v.trim().length > 0);
-    }
-  });
-
-  const handleFinish = () => {
-    const results = pairs.map((_, i) => {
-      let finalPath = associations[i];
-      if (modes[i] === 'guided') {
-        const v = guidedValues[i];
-        finalPath = `${t('test_associating_guided_1')} ${v[0]} ${t('test_associating_guided_2')} ${v[1]} ${t('test_associating_guided_3')} ${v[2]}`;
-      }
-      return {
-        pair_id: i.toString(),
-        text: finalPath
-      };
-    });
-    onComplete(results);
-  };
-
-  return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="w-full max-w-4xl flex flex-col items-center gap-12 md:gap-10 px-4"
-    >
-      <div className="space-y-8 md:space-y-12 w-full">
-        {pairs.map((pair, i) => (
-          <motion.div 
-            key={i}
-            variants={itemVariants}
-            className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 md:gap-8 items-start bg-white/50 backdrop-blur-sm p-6 md:p-8 rounded-3xl border border-white/20"
-          >
-            <div className="flex gap-2 justify-center sticky top-0">
-              <div 
-                className="w-16 h-24 md:w-20 md:h-32 rounded-lg overflow-hidden shadow-md cursor-zoom-in relative group"
-                onClick={() => onZoom(pair.image)}
-              >
-                <img src={pair.image.imageUrl} alt="" className="w-full h-full object-cover" draggable="false" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                  <Maximize2 size={14} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </div>
-              <div 
-                className="w-16 h-24 md:w-20 md:h-32 rounded-lg overflow-hidden shadow-md cursor-zoom-in relative group"
-                onClick={() => onZoom(pair.word)}
-              >
-                <img src={pair.word.imageUrl} alt="" className="w-full h-full object-cover" draggable="false" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                  <Maximize2 size={14} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-ink-muted">Association {i + 1}</span>
-                <div className="flex bg-ink/5 rounded-full p-1 self-start md:self-auto">
-                  <button
-                    onClick={() => setModes(prev => ({ ...prev, [i]: 'guided' }))}
-                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] transition-all ${modes[i] === 'guided' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}
-                  >
-                    <Sparkles size={10} /> {t('test_associating_mode_guided')}
-                  </button>
-                  <button
-                    onClick={() => setModes(prev => ({ ...prev, [i]: 'free' }))}
-                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] transition-all ${modes[i] === 'free' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}
-                  >
-                    <PenLine size={10} /> {t('test_associating_mode_free')}
-                  </button>
-                </div>
-              </div>
-
-              <AnimatePresence mode="wait">
-                {modes[i] === 'guided' ? (
-                  <motion.div
-                    key="guided"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="space-y-4"
-                  >
-                    <div className="text-left text-base md:text-lg text-ink/70 font-light leading-relaxed">
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-6 md:gap-y-8">
-                        <span className="whitespace-nowrap">{t('test_associating_guided_1')}</span>
-                        <input
-                          type="text"
-                          value={guidedValues[i][0]}
-                          onChange={(e) => handleGuidedChange(i, 0, e.target.value)}
-                          placeholder={t('test_associating_guided_placeholder_1')}
-                          className="w-full md:w-auto px-6 py-2.5 bg-emerald-50/50 hover:bg-emerald-50/80 rounded-full border border-emerald-100/20 focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-left md:min-w-[180px]"
-                        />
-                        <span className="whitespace-nowrap">{t('test_associating_guided_2')}</span>
-                        <input
-                          type="text"
-                          value={guidedValues[i][1]}
-                          onChange={(e) => handleGuidedChange(i, 1, e.target.value)}
-                          placeholder={t('test_associating_guided_placeholder_2')}
-                          className="w-full md:w-auto px-6 py-2.5 bg-emerald-50/50 hover:bg-emerald-50/80 rounded-full border border-emerald-100/20 focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-left md:min-w-[180px]"
-                        />
-                        <span className="whitespace-nowrap">{t('test_associating_guided_3')}</span>
-                        <input
-                          type="text"
-                          value={guidedValues[i][2]}
-                          onChange={(e) => handleGuidedChange(i, 2, e.target.value)}
-                          placeholder={t('test_associating_guided_placeholder_3')}
-                          className="w-full md:w-auto px-6 py-2.5 bg-emerald-50/50 hover:bg-emerald-50/80 rounded-full border border-emerald-100/20 focus:bg-white focus:border-emerald-400/30 focus:ring-4 focus:ring-emerald-400/5 outline-none transition-all text-ink placeholder:text-ink/20 text-left md:min-w-[180px]"
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="free"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="relative"
-                  >
-                    <textarea
-                      value={associations[i]}
-                      onChange={(e) => handleTextChange(i, e.target.value)}
-                      placeholder={t('test_associating_placeholder')}
-                      className="w-full h-32 md:h-40 bg-white/50 border border-white/30 rounded-2xl p-4 pb-10 text-base focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all resize-none"
-                    />
-                    <div className="absolute bottom-4 right-4">
-                      <span className={`text-[10px] ${associations[i].length >= 180 ? 'text-rose-400' : 'text-ink-muted'}`}>
-                        {associations[i].length} / 200
-                      </span>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isComplete ? 1 : 0.5 }}
-      >
-        <Button 
-          onClick={handleFinish} 
-          disabled={!isComplete}
-          className="h-16 px-12 gap-3"
-        >
-          {t('test_associating_view_result')} <ArrowRight size={18} />
-        </Button>
-      </motion.div>
-    </motion.div>
-  );
-};
-
 export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
-  const { selectedCards, startDraw, setPairs, setAssociations, generateReport, isDrawing, setSelectedCards } = useTest();
   const { t } = useLanguage();
-  const [drawStage, setDrawStage] = useState<DrawStage>('idle');
-  const [flippedImages, setFlippedImages] = useState<number[]>([]);
-  const [flippedWords, setFlippedWords] = useState<number[]>([]);
-  const [zoomedCard, setZoomedCard] = useState<ImageCard | WordCard | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [loadingTime, setLoadingTime] = useState(0);
-
-  // Loading timer for progressive messages
-  useEffect(() => {
-    let interval: any;
-    if (isGenerating) {
-      setLoadingTime(0);
-      interval = setInterval(() => {
-        setLoadingTime(prev => prev + 1);
-      }, 1000);
-    } else {
-      setLoadingTime(0);
-    }
-    return () => clearInterval(interval);
-  }, [isGenerating]);
-
-  // Automatic scroll to top on stage change
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [drawStage]);
+  const {
+    drawStage,
+    setDrawStage,
+    flippedImages,
+    flippedWords,
+    zoomedCard,
+    setZoomedCard,
+    isGenerating,
+    loadingTime,
+    isDrawing,
+    selectedCards,
+    handleStartShuffle,
+    handleShuffleComplete,
+    handleFlipImage,
+    handleFlipWord,
+    handleContinueToWords,
+    handleContinueToPairing,
+    handlePairingComplete,
+    handleAssociationComplete,
+    handleComplete,
+    allImagesFlipped,
+    allWordsFlipped,
+  } = useEnergyTestState(onComplete);
 
   useEffect(() => {
     preloadDecks();
   }, []);
-
-  const handleStartShuffle = () => {
-    setDrawStage('shuffling');
-  };
-
-  const handleShuffleComplete = useCallback(async () => {
-    await startDraw();
-    setDrawStage('drawing_images');
-  }, [startDraw]);
-
-  const handleFlipImage = (index: number) => {
-    if (flippedImages.includes(index)) {
-      setFlippedImages(prev => prev.filter(i => i !== index));
-    } else if (flippedImages.length < 3) {
-      setFlippedImages(prev => [...prev, index]);
-    }
-  };
-
-  const handleFlipWord = (index: number) => {
-    if (flippedWords.includes(index)) {
-      setFlippedWords(prev => prev.filter(i => i !== index));
-    } else if (flippedWords.length < 3) {
-      setFlippedWords(prev => [...prev, index]);
-    }
-  };
-
-  const handleContinueToWords = () => {
-    const finalImages = selectedCards.images.filter((_, i) => flippedImages.includes(i));
-    setSelectedCards(prev => ({ ...prev, images: finalImages }));
-    setDrawStage('drawing_words');
-  };
-
-  const handleContinueToPairing = () => {
-    const finalWords = selectedCards.words.filter((_, i) => flippedWords.includes(i));
-    setSelectedCards(prev => ({ ...prev, words: finalWords }));
-    setDrawStage('pairing');
-  };
-
-  const handlePairingComplete = (pairs: CardPair[]) => {
-    setPairs(pairs);
-    setDrawStage('associating');
-  };
-
-  const handleAssociationComplete = (associations: { pair_id: string; text: string }[]) => {
-    setAssociations(associations);
-    setDrawStage('revealed');
-  };
-
-  const handleComplete = async () => {
-    setIsGenerating(true);
-    await generateReport();
-    onComplete();
-  };
-
-  const allImagesFlipped = flippedImages.length === 3;
-  const allWordsFlipped = flippedWords.length === 3;
 
   return (
     <div className="ma-container pt-8 md:pt-16 pb-40 md:pb-80 min-h-screen flex flex-col items-center">
@@ -872,7 +324,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                       className="group bg-white/20 backdrop-blur-3xl border-white/30 text-ink hover:bg-white/40 h-16 md:h-24 px-8 md:px-16 text-lg md:text-xl rounded-2xl md:rounded-3xl shadow-2xl w-full md:w-auto"
                     >
                       {t('test_continue_words')}
-                      <ArrowRight className="ml-2 md:ml-4 group-hover:translate-x-1 transition-transform" size={20} md:size={24} />
+                      <ArrowRight className="ml-2 md:ml-4 group-hover:translate-x-1 transition-transform" size={20} />
                     </Button>
                   </motion.div>
                 </motion.div>
@@ -911,7 +363,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                       className="group bg-white/20 backdrop-blur-3xl border-white/30 text-ink hover:bg-white/40 h-16 md:h-24 px-8 md:px-16 text-lg md:text-xl rounded-2xl md:rounded-3xl shadow-2xl w-full md:w-auto"
                     >
                       {t('test_continue_pairing')}
-                      <ArrowRight className="ml-2 md:ml-4 group-hover:translate-x-1 transition-transform" size={20} md:size={24} />
+                      <ArrowRight className="ml-2 md:ml-4 group-hover:translate-x-1 transition-transform" size={20} />
                     </Button>
                   </motion.div>
                 </motion.div>
@@ -1007,8 +459,6 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                 <button 
                   onClick={() => {
                     setDrawStage('idle');
-                    setFlippedImages([]);
-                    setFlippedWords([]);
                   }}
                   className="text-[10px] uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity"
                 >
