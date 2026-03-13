@@ -84,7 +84,8 @@ export const AdminDashboard: React.FC = () => {
   const { data: sessions, isLoading: sessionsLoading } = useAdminSessions();
   const { data: cards, isLoading: cardsLoading } = useAdminCards();
   const { data: subscriptions, isLoading: subscriptionsLoading } = useAdminSubscriptions();
-  const { data: prompts, isLoading: promptsLoading } = useAdminPrompts();
+  const [promptCategory, setPromptCategory] = useState<string>('');
+  const { data: prompts, isLoading: promptsLoading } = useAdminPrompts(promptCategory);
   const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics();
   const { data: seoSettings, isLoading: seoLoading, isError: seoError } = useAdminSettings('seo');
   const { data: fontSettings, isLoading: fontsLoading, isError: fontsError } = useAdminSettings('fonts');
@@ -310,8 +311,9 @@ export const AdminDashboard: React.FC = () => {
     </GlassCard>
   );
 
-  const renderCards = () => (
-    <div className="space-y-8">
+  const renderCards = () => {
+    return (
+      <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex bg-ink/5 p-1 rounded-2xl w-full md:w-auto">
           <button 
@@ -466,205 +468,38 @@ export const AdminDashboard: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Card Edit Modal via Portal */}
-      {editingCard && createPortal(
-        <AnimatePresence>
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setEditingCard(null)}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-md"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20"
-            >
-              <div className="p-8 border-b border-ink/5 flex justify-between items-center bg-ink/[0.02]">
-                <div className="flex items-center gap-4">
-                  <div className={`p-2.5 rounded-2xl ${editingCard.type === 'image' ? 'bg-wood/10 text-wood' : 'bg-fire/10 text-fire'}`}>
-                    {editingCard.type === 'image' ? <ImageIcon size={20} /> : <TypeIcon size={20} />}
-                  </div>
-                  <div>
-                    <h3 className="text-xs uppercase tracking-[0.3em] font-semibold text-ink">
-                      {editingCard.data.id ? '編輯' : '新增'} {editingCard.type === 'image' ? '圖像' : '文字'}卡
-                    </h3>
-                    <p className="text-[9px] text-ink-muted uppercase tracking-widest mt-1">
-                      {editingCard.data.id || 'New Card'}
-                    </p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setEditingCard(null)} 
-                  className="p-3 hover:bg-ink/5 rounded-full transition-all hover:rotate-90 duration-300"
-                >
-                  <X size={20} />
-                </button>
-              </div>
+      </div>
+    );
+  };
 
-              <div className="p-10 max-h-[75vh] overflow-y-auto">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
-                  {/* Left Column: Visual Preview */}
-                  <div className="md:col-span-5 space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">卡片預覽</label>
-                    <div className="aspect-[3/4] rounded-[2rem] overflow-hidden bg-ink/5 border border-ink/5 shadow-inner relative group">
-                      {editingCard.data.imageUrl ? (
-                        <>
-                          <img src={editingCard.data.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </>
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-ink/10 gap-4">
-                          <ImageIcon size={64} strokeWidth={1} />
-                          <span className="text-[10px] uppercase tracking-widest">等待輸入網址...</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right Column: Data Entry */}
-                  <div className="md:col-span-7 space-y-8">
-                    <div className="space-y-6">
-                      {editingCard.type === 'word' && (
-                        <div className="space-y-2">
-                          <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字文本</label>
-                          <input 
-                            type="text" 
-                            value={editingCard.data.text}
-                            onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, text: e.target.value } })}
-                            className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
-                            placeholder="輸入關鍵字..."
-                          />
-                        </div>
-                      )}
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">圖片 URL</label>
-                        <input 
-                          type="text" 
-                          value={editingCard.data.imageUrl}
-                          onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, imageUrl: e.target.value } })}
-                          className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
-                          placeholder="https://..."
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-6 pt-4 border-t border-ink/5">
-                      <div className="flex justify-between items-center">
-                        <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">五行能量數值 (%)</label>
-                        <div className="flex gap-2">
-                          {Object.values(FiveElement).map(el => (
-                            <div key={el} className={`w-2 h-2 rounded-full ${
-                              el === 'wood' ? 'bg-wood' : 
-                              el === 'fire' ? 'bg-fire' : 
-                              el === 'earth' ? 'bg-earth' : 
-                              el === 'metal' ? 'bg-metal' : 'bg-water'
-                            }`} />
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 gap-5">
-                        {Object.values(FiveElement).map((element) => (
-                          <div key={element} className="space-y-3">
-                            <div className="flex justify-between text-[10px] uppercase tracking-widest">
-                              <span className="text-ink font-medium">{element}</span>
-                              <span className="font-mono text-ink-muted">{editingCard.data.elements[element]}%</span>
-                            </div>
-                            <div className="relative flex items-center">
-                              <input 
-                                type="range" 
-                                min="0" 
-                                max="100" 
-                                value={editingCard.data.elements[element]}
-                                onChange={(e) => setEditingCard({ 
-                                  ...editingCard, 
-                                  data: { 
-                                    ...editingCard.data, 
-                                    elements: { ...editingCard.data.elements, [element]: parseInt(e.target.value) } 
-                                  } 
-                                })}
-                                className="w-full h-1.5 bg-ink/5 rounded-full appearance-none cursor-pointer accent-ink"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-8 bg-ink/[0.02] border-t border-ink/5 flex justify-end gap-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setEditingCard(null)}
-                  className="px-8 h-12 rounded-2xl text-[10px] uppercase tracking-widest"
-                >
-                  取消
-                </Button>
-                <Button 
-                  onClick={handleSaveCard} 
-                  disabled={saveCardMutation.isPending} 
-                  className="gap-3 px-10 h-12 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-wood/10"
-                >
-                  {saveCardMutation.isPending ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <><Save size={16} /> 儲存卡片變更</>
-                  )}
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </AnimatePresence>,
-        document.body
-      )}
-    </div>
-  );
-
-  const renderPrompts = () => (
-    <div className="space-y-8">
+  const renderPrompts = () => {
+    return (
+      <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div className="flex gap-4">
           <select 
             className="bg-white/40 border border-ink/5 rounded-xl px-4 py-2 text-xs focus:outline-none"
-            onChange={(e) => {
-              // Filter logic can be added here if we want client-side filtering
-              // or we can update the useAdminPrompts hook to accept filters
-            }}
+            value={promptCategory}
+            onChange={(e) => setPromptCategory(e.target.value)}
           >
             <option value="">所有分類</option>
-            <option value="analysis">能量分析 (Core)</option>
-            <option value="daily">每日指引 (Daily)</option>
-            <option value="persona">人格設定 (Persona)</option>
-          </select>
-          <select 
-            className="bg-white/40 border border-ink/5 rounded-xl px-4 py-2 text-xs focus:outline-none"
-          >
-            <option value="">所有語言</option>
-            <option value="dual">一鍵雙語 (Dual)</option>
-            <option value="zh-TW">繁體中文</option>
-            <option value="ja-JP">日文</option>
+            <option value="core">核心提示 (Core)</option>
+            <option value="scenario">情境模組 (Scenario)</option>
+            <option value="format">格式規範 (Format)</option>
           </select>
         </div>
         <Button 
           onClick={() => setEditingPrompt({ 
-            prompt_name: '', 
-            prompt_content: '', 
+            module_name: '', 
+            content_zh: '', 
+            content_ja: '',
             version: '1.0.0', 
             status: 'draft',
-            category: 'analysis',
-            lang: 'dual',
-            style_tags: ['gentle'],
-            is_default: false
+            category: 'core'
           })}
           className="gap-2 h-10 px-4 text-xs"
         >
-          <Plus size={14} /> 新增 Prompt
+          <Plus size={14} /> 新增模組
         </Button>
       </div>
 
@@ -678,18 +513,16 @@ export const AdminDashboard: React.FC = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-serif">{prompt.prompt_name}</h4>
-                    {prompt.is_default && (
-                      <span className="text-[8px] bg-wood text-white px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Default</span>
-                    )}
+                    <h4 className="text-sm font-serif">{prompt.module_name}</h4>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[9px] uppercase tracking-widest bg-ink/5 px-1.5 py-0.5 rounded text-ink-muted">v{prompt.version}</span>
-                    <span className="text-[9px] uppercase tracking-widest bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">{prompt.category}</span>
-                    <span className="text-[9px] uppercase tracking-widest bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded">{prompt.lang}</span>
-                    {prompt.style_tags?.map(tag => (
-                      <span key={tag} className="text-[9px] uppercase tracking-widest bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded">#{tag}</span>
-                    ))}
+                    <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
+                      prompt.category === 'core' ? 'bg-blue-50 text-blue-600' : 
+                      prompt.category === 'scenario' ? 'bg-purple-50 text-purple-600' : 'bg-amber-50 text-amber-600'
+                    }`}>
+                      {prompt.category}
+                    </span>
                     <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
                       prompt.status === 'active' ? 'bg-wood/10 text-wood' : 
                       prompt.status === 'draft' ? 'bg-amber-100 text-amber-700' : 'bg-ink/5 text-ink-muted'
@@ -724,11 +557,22 @@ export const AdminDashboard: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="bg-ink/[0.02] rounded-xl p-4 border border-ink/5">
-              <p className="text-xs text-ink-muted line-clamp-3 font-mono leading-relaxed">
-                {prompt.prompt_content}
-              </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-ink/[0.02] rounded-xl p-4 border border-ink/5">
+                <div className="text-[8px] uppercase tracking-widest text-ink-muted mb-2">中文內容 (ZH)</div>
+                <p className="text-xs text-ink-muted line-clamp-3 font-mono leading-relaxed">
+                  {prompt.content_zh}
+                </p>
+              </div>
+              <div className="bg-ink/[0.02] rounded-xl p-4 border border-ink/5">
+                <div className="text-[8px] uppercase tracking-widest text-ink-muted mb-2">日文內容 (JA)</div>
+                <p className="text-xs text-ink-muted line-clamp-3 font-mono leading-relaxed">
+                  {prompt.content_ja}
+                </p>
+              </div>
             </div>
+
             <div className="mt-4 flex justify-between items-center text-[9px] text-ink-muted uppercase tracking-widest">
               <span>最後更新: {formatDate(prompt.updated_at)}</span>
               <span className="opacity-0 group-hover:opacity-100 transition-opacity">ID: {prompt.id}</span>
@@ -752,28 +596,40 @@ export const AdminDashboard: React.FC = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden"
             >
               <div className="p-6 border-b border-ink/5 flex justify-between items-center bg-ink/[0.02]">
                 <h3 className="text-xs uppercase tracking-[0.3em] font-medium">
-                  {editingPrompt.id ? '編輯' : '新增'} AI Prompt
+                  {editingPrompt.id ? '編輯' : '新增'} AI Prompt 模組
                 </h3>
                 <button onClick={() => setEditingPrompt(null)} className="p-2 hover:bg-ink/5 rounded-full transition-colors">
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
-                <div className="grid grid-cols-2 gap-6">
+              <div className="p-8 space-y-6 max-h-[80vh] overflow-y-auto">
+                <div className="grid grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">Prompt 名稱</label>
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">模組名稱 (Unique ID)</label>
                     <input 
                       type="text" 
-                      value={editingPrompt.prompt_name}
-                      onChange={(e) => setEditingPrompt({ ...editingPrompt, prompt_name: e.target.value })}
+                      value={editingPrompt.module_name}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, module_name: e.target.value })}
                       className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
-                      placeholder="例如：卡片分析主提示詞"
+                      placeholder="例如：persona_core"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">分類</label>
+                    <select 
+                      value={editingPrompt.category}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, category: e.target.value as any })}
+                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                    >
+                      <option value="core">核心提示 (Core)</option>
+                      <option value="scenario">情境模組 (Scenario)</option>
+                      <option value="format">格式規範 (Format)</option>
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-ink-muted">版本號</label>
@@ -787,87 +643,26 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest text-ink-muted">Prompt 內容</label>
-                  <textarea 
-                    value={editingPrompt.prompt_content}
-                    onChange={(e) => setEditingPrompt({ ...editingPrompt, prompt_content: e.target.value })}
-                    className="w-full h-64 px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm font-mono focus:outline-none focus:border-wood/30 resize-none leading-relaxed"
-                    placeholder="請輸入 AI 提示詞內容..."
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">分類</label>
-                    <select 
-                      value={editingPrompt.category}
-                      onChange={(e) => setEditingPrompt({ ...editingPrompt, category: e.target.value as any })}
-                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
-                    >
-                      <option value="analysis">能量分析 (Core)</option>
-                      <option value="daily">每日指引 (Daily)</option>
-                      <option value="persona">人格設定 (Persona)</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">語言</label>
-                    <select 
-                      value={editingPrompt.lang}
-                      onChange={(e) => setEditingPrompt({ ...editingPrompt, lang: e.target.value as any })}
-                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
-                    >
-                      <option value="dual">一鍵雙語 (Dual)</option>
-                      <option value="zh-TW">繁體中文</option>
-                      <option value="ja-JP">日文</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-[10px] uppercase tracking-widest text-ink-muted">AI 風格標籤</label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { id: 'gentle', label: '溫柔傾聽' },
-                      { id: 'ethereal', label: '韓式空靈' },
-                      { id: 'poetic', label: '富有詩意' },
-                      { id: 'professional', label: '專業條理' },
-                      { id: 'healing', label: '療癒能量' },
-                      { id: 'custom', label: '自定義' }
-                    ].map(style => (
-                      <button
-                        key={style.id}
-                        onClick={() => {
-                          const currentTags = editingPrompt.style_tags || [];
-                          const newTags = currentTags.includes(style.id as any)
-                            ? currentTags.filter(t => t !== style.id)
-                            : [...currentTags, style.id as any];
-                          setEditingPrompt({ ...editingPrompt, style_tags: newTags });
-                        }}
-                        className={`px-4 py-2 rounded-full text-[10px] uppercase tracking-widest transition-all ${
-                          editingPrompt.style_tags?.includes(style.id as any)
-                            ? 'bg-wood text-white shadow-md'
-                            : 'bg-ink/5 text-ink-muted hover:bg-ink/10'
-                        }`}
-                      >
-                        {style.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {editingPrompt.style_tags?.includes('custom') && (
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">自定義風格指令</label>
-                    <input 
-                      type="text" 
-                      value={editingPrompt.custom_style_instruction || ''}
-                      onChange={(e) => setEditingPrompt({ ...editingPrompt, custom_style_instruction: e.target.value })}
-                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
-                      placeholder="例如：語氣幽默、多使用表情符號..."
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">中文內容 (ZH-TW)</label>
+                    <textarea 
+                      value={editingPrompt.content_zh}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, content_zh: e.target.value })}
+                      className="w-full h-96 px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm font-mono focus:outline-none focus:border-wood/30 resize-none leading-relaxed"
+                      placeholder="請輸入中文提示詞內容..."
                     />
                   </div>
-                )}
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">日文內容 (JA-JP)</label>
+                    <textarea 
+                      value={editingPrompt.content_ja}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, content_ja: e.target.value })}
+                      className="w-full h-96 px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm font-mono focus:outline-none focus:border-wood/30 resize-none leading-relaxed"
+                      placeholder="請輸入日文提示詞內容..."
+                    />
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -882,31 +677,22 @@ export const AdminDashboard: React.FC = () => {
                       <option value="archived">封存 (Archived)</option>
                     </select>
                   </div>
-                  <div className="flex items-center gap-3 pt-6">
-                    <input 
-                      type="checkbox" 
-                      id="is_default"
-                      checked={editingPrompt.is_default}
-                      onChange={(e) => setEditingPrompt({ ...editingPrompt, is_default: e.target.checked })}
-                      className="w-4 h-4 rounded border-ink/10 text-wood focus:ring-wood"
-                    />
-                    <label htmlFor="is_default" className="text-[10px] uppercase tracking-widest text-ink-muted cursor-pointer">設為該分類預設</label>
-                  </div>
                 </div>
               </div>
 
               <div className="p-6 bg-ink/[0.02] border-t border-ink/5 flex justify-end gap-4">
                 <Button variant="outline" onClick={() => setEditingPrompt(null)}>取消</Button>
                 <Button onClick={handleSavePrompt} disabled={savePromptMutation.isPending} className="gap-2 px-8">
-                  {savePromptMutation.isPending ? '儲存中...' : <><Save size={16} /> 儲存 Prompt</>}
+                  {savePromptMutation.isPending ? '儲存中...' : <><Save size={16} /> 儲存模組</>}
                 </Button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-    </div>
-  );
+      </div>
+    );
+  };
 
   const renderAnalytics = () => {
     if (!analytics) return null;
@@ -1467,6 +1253,267 @@ export const AdminDashboard: React.FC = () => {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Modals via Portal */}
+      {editingCard && createPortal(
+        <AnimatePresence>
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingCard(null)}
+              className="absolute inset-0 bg-ink/60 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20"
+            >
+              <div className="p-8 border-b border-ink/5 flex justify-between items-center bg-ink/[0.02]">
+                <div className="flex items-center gap-4">
+                  <div className={`p-2.5 rounded-2xl ${editingCard.type === 'image' ? 'bg-wood/10 text-wood' : 'bg-fire/10 text-fire'}`}>
+                    {editingCard.type === 'image' ? <ImageIcon size={20} /> : <TypeIcon size={20} />}
+                  </div>
+                  <div>
+                    <h3 className="text-xs uppercase tracking-[0.3em] font-semibold text-ink">
+                      {editingCard.data.id ? '編輯' : '新增'} {editingCard.type === 'image' ? '圖像' : '文字'}卡
+                    </h3>
+                    <p className="text-[9px] text-ink-muted uppercase tracking-widest mt-1">
+                      {editingCard.data.id || 'New Card'}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setEditingCard(null)} 
+                  className="p-3 hover:bg-ink/5 rounded-full transition-all hover:rotate-90 duration-300"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-10 max-h-[75vh] overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+                  {/* Left Column: Visual Preview */}
+                  <div className="md:col-span-5 space-y-4">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">卡片預覽</label>
+                    <div className="aspect-[3/4] rounded-[2rem] overflow-hidden bg-ink/5 border border-ink/5 shadow-inner relative group">
+                      {editingCard.data.imageUrl ? (
+                        <>
+                          <img src={editingCard.data.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-ink/10 gap-4">
+                          <ImageIcon size={64} strokeWidth={1} />
+                          <span className="text-[10px] uppercase tracking-widest">等待輸入網址...</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Data Entry */}
+                  <div className="md:col-span-7 space-y-8">
+                    <div className="space-y-6">
+                      {editingCard.type === 'word' && (
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字文本</label>
+                          <input 
+                            type="text" 
+                            value={editingCard.data.text}
+                            onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, text: e.target.value } })}
+                            className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                            placeholder="輸入關鍵字..."
+                          />
+                        </div>
+                      )}
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">圖片 URL</label>
+                        <input 
+                          type="text" 
+                          value={editingCard.data.imageUrl}
+                          onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, imageUrl: e.target.value } })}
+                          className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-6 pt-4 border-t border-ink/5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">五行能量數值 (%)</label>
+                        <div className="flex gap-2">
+                          {Object.values(FiveElement).map(el => (
+                            <div key={el} className={`w-2 h-2 rounded-full ${
+                              el === 'wood' ? 'bg-wood' : 
+                              el === 'fire' ? 'bg-fire' : 
+                              el === 'earth' ? 'bg-earth' : 
+                              el === 'metal' ? 'bg-metal' : 'bg-water'
+                            }`} />
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-5">
+                        {Object.values(FiveElement).map((element) => (
+                          <div key={element} className="space-y-3">
+                            <div className="flex justify-between text-[10px] uppercase tracking-widest">
+                              <span className="text-ink font-medium">{element}</span>
+                              <span className="font-mono text-ink-muted">{editingCard.data.elements[element]}%</span>
+                            </div>
+                            <div className="relative flex items-center">
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="100" 
+                                value={editingCard.data.elements[element]}
+                                onChange={(e) => setEditingCard({ 
+                                  ...editingCard, 
+                                  data: { 
+                                    ...editingCard.data, 
+                                    elements: { ...editingCard.data.elements, [element]: parseInt(e.target.value) } 
+                                  } 
+                                })}
+                                className="w-full h-1.5 bg-ink/5 rounded-full appearance-none cursor-pointer accent-ink"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 bg-ink/[0.02] border-t border-ink/5 flex justify-end gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setEditingCard(null)}
+                  className="px-8 h-12 rounded-2xl text-[10px] uppercase tracking-widest"
+                >
+                  取消
+                </Button>
+                <Button 
+                  onClick={handleSaveCard} 
+                  disabled={saveCardMutation.isPending} 
+                >
+                  {saveCardMutation.isPending ? '儲存中...' : '儲存卡片'}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </AnimatePresence>
+      , document.body)}
+
+      {editingPrompt && createPortal(
+        <AnimatePresence>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingPrompt(null)}
+              className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-ink/5 flex justify-between items-center bg-ink/[0.02]">
+                <h3 className="text-xs uppercase tracking-[0.3em] font-medium">
+                  {editingPrompt.id ? '編輯' : '新增'} AI Prompt 模組
+                </h3>
+                <button onClick={() => setEditingPrompt(null)} className="p-2 hover:bg-ink/5 rounded-full transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-6 max-h-[80vh] overflow-y-auto">
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">模組名稱 (Unique ID)</label>
+                    <input 
+                      type="text" 
+                      value={editingPrompt.module_name}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, module_name: e.target.value })}
+                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                      placeholder="例如：persona_core"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">分類</label>
+                    <select 
+                      value={editingPrompt.category}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, category: e.target.value as any })}
+                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                    >
+                      <option value="core">核心提示 (Core)</option>
+                      <option value="scenario">情境模組 (Scenario)</option>
+                      <option value="format">格式規範 (Format)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">版本號</label>
+                    <input 
+                      type="text" 
+                      value={editingPrompt.version}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, version: e.target.value })}
+                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                      placeholder="v1.0.0"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">中文內容 (ZH-TW)</label>
+                    <textarea 
+                      value={editingPrompt.content_zh}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, content_zh: e.target.value })}
+                      className="w-full h-96 px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm font-mono focus:outline-none focus:border-wood/30 resize-none leading-relaxed"
+                      placeholder="請輸入中文提示詞內容..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">日文內容 (JA-JP)</label>
+                    <textarea 
+                      value={editingPrompt.content_ja}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, content_ja: e.target.value })}
+                      className="w-full h-96 px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm font-mono focus:outline-none focus:border-wood/30 resize-none leading-relaxed"
+                      placeholder="請輸入日文提示詞內容..."
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted">狀態</label>
+                    <select 
+                      value={editingPrompt.status}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, status: e.target.value as any })}
+                      className="w-full px-4 py-3 bg-ink/[0.02] border border-ink/5 rounded-xl text-sm focus:outline-none focus:border-wood/30"
+                    >
+                      <option value="draft">草稿 (Draft)</option>
+                      <option value="active">啟用 (Active)</option>
+                      <option value="archived">封存 (Archived)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 bg-ink/[0.02] border-t border-ink/5 flex justify-end gap-4">
+                <Button variant="outline" onClick={() => setEditingPrompt(null)}>取消</Button>
+                <Button onClick={handleSavePrompt} disabled={savePromptMutation.isPending} className="gap-2 px-8">
+                  {savePromptMutation.isPending ? '儲存中...' : <><Save size={16} /> 儲存模組</>}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </AnimatePresence>
+      , document.body)}
     </div>
   );
 };

@@ -43,10 +43,10 @@ export const useAdminSubscriptions = () => {
   });
 };
 
-export const useAdminPrompts = () => {
+export const useAdminPrompts = (category?: string) => {
   return useQuery({
-    queryKey: ['admin', 'prompts'],
-    queryFn: () => adminService.getAllPrompts(),
+    queryKey: ['admin', 'prompts', category],
+    queryFn: () => adminService.getAllPrompts(category),
   });
 };
 

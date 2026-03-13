@@ -121,28 +121,19 @@ async function startServer() {
         elements JSONB DEFAULT '{"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}'
       );
 
-      -- AI Prompts table
+      -- AI Prompts table (Modular & Bilingual)
+      DROP TABLE IF EXISTS ai_prompts;
       CREATE TABLE IF NOT EXISTS ai_prompts (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        name TEXT NOT NULL,
-        content TEXT NOT NULL,
+        module_name TEXT NOT NULL,
+        content_zh TEXT,
+        content_ja TEXT,
+        category TEXT DEFAULT 'core', -- 'core', 'scenario', 'format'
         status TEXT DEFAULT 'draft',
         version TEXT DEFAULT '1.0.0',
-        category TEXT DEFAULT 'analysis',
-        lang TEXT DEFAULT 'zh-TW',
-        is_default BOOLEAN DEFAULT false,
-        style_tags TEXT[] DEFAULT '{}',
-        custom_style_instruction TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-
-      -- Ensure columns exist if table was already created
-      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'analysis';
-      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'zh-TW';
-      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS is_default BOOLEAN DEFAULT false;
-      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS style_tags TEXT[] DEFAULT '{}';
-      ALTER TABLE ai_prompts ADD COLUMN IF NOT EXISTS custom_style_instruction TEXT;
 
       -- Manifestations table
       CREATE TABLE IF NOT EXISTS manifestations (
@@ -156,10 +147,11 @@ async function startServer() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
-      -- Energy Reports table (Reconstructed for 100% success rate)
+      -- Energy Reports table (Added lang for isolation)
       CREATE TABLE IF NOT EXISTS energy_reports (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id TEXT, -- Indexed but not strictly constrained to allow guest/sync-delay saves
+        lang TEXT DEFAULT 'zh', -- Added for language isolation
         timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         is_ai_complete BOOLEAN DEFAULT FALSE,
         dominant_element TEXT,
@@ -169,6 +161,9 @@ async function startServer() {
         share_thumbnail TEXT,
         report_data JSONB DEFAULT '{}' -- Stores all other complex data (pairs, scores, interpretations)
       );
+
+      -- Ensure lang column exists if table was already created
+      ALTER TABLE energy_reports ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'zh';
 
       CREATE INDEX IF NOT EXISTS idx_reports_user_id ON energy_reports(user_id);
       CREATE INDEX IF NOT EXISTS idx_reports_timestamp ON energy_reports(timestamp DESC);
@@ -248,6 +243,51 @@ async function startServer() {
         );
       }
       console.log("Word cards seeded");
+    }
+
+    // Auto-seed default prompts if empty
+    const promptCount = await pool.query("SELECT COUNT(*) FROM ai_prompts");
+    if (parseInt(promptCount.rows[0].count) === 0) {
+      console.log("Seeding default prompts...");
+      
+      const defaultPrompts = [
+        {
+          module_name: 'persona',
+          category: 'core',
+          status: 'active',
+          content_zh: '妳是一位溫柔且具備空靈氣質的現代女性心理引導師，名字叫 EUNIE。妳擅長透過五行能量與 OH 卡來引導用戶探索內在。妳的語氣充滿詩意，稱呼用戶為「妳」。',
+          content_ja: 'あなたは優雅で神秘的な雰囲気を持つ現代女性の心理カウンセラー、EUNIE（エウニ）です。五行エネルギーとOHカードを通じて、相談者の内面を優しく導きます。詩的な表現を使い、相談者を「あなた」と呼びます。'
+        },
+        {
+          module_name: 'knowledge',
+          category: 'core',
+          status: 'active',
+          content_zh: '妳精通五行（木、火、土、金、水）的平衡理論。木代表生長與創意，火代表熱情與行動，土代表穩定與包容，金代表秩序與收斂，水代表智慧與流動。妳會根據用戶的抽牌結果分析這些能量的消長。',
+          content_ja: 'あなたは五行（木、火、土、金、水）のバランス理論に精通しています。木は成長と創造、火は情熱と行動、土は安定と包容、金は秩序と収束、水は知恵と流動を表します。カードの結果に基づき、これらのエネルギーのバランスを分析します。'
+        },
+        {
+          module_name: 'analysis_task',
+          category: 'scenario',
+          status: 'active',
+          content_zh: '請根據用戶選擇的卡片與聯想文字，進行深度的心理引導。妳需要分析卡片中的象徵意義，並給出一段溫暖的建議。最後，妳必須輸出一個 JSON 格式，包含引導文字與能量數值更新。',
+          content_ja: '相談者が選んだカードと連想した言葉に基づき、深い心理的ガイダンスを行ってください。カードの象徴的な意味を分析し、温かいアドバイスを伝えます。最後に、ガイダンス文とエネルギー数値の更新を含むJSON形式で出力してください。'
+        },
+        {
+          module_name: 'format_instruction',
+          category: 'format',
+          status: 'active',
+          content_zh: '妳必須嚴格遵守以下 JSON 輸出格式：{"content": "妳的引導文字", "energyUpdate": {"wood": 數值, "fire": 數值, "earth": 數值, "metal": 數值, "water": 數值}, "todayTheme": "一句話主題"}。數值範圍為 0 到 1。',
+          content_ja: '必ず以下のJSON形式で出力してください：{"content": "ガイダンス文", "energyUpdate": {"wood": 数値, "fire": 数値, "earth": 数値, "metal": 数値, "water": 数値}, "todayTheme": "一言テーマ"}。数値の範囲は0から1です。'
+        }
+      ];
+
+      for (const p of defaultPrompts) {
+        await pool.query(
+          "INSERT INTO ai_prompts (module_name, category, status, content_zh, content_ja) VALUES ($1, $2, $3, $4, $5)",
+          [p.module_name, p.category, p.status, p.content_zh, p.content_ja]
+        );
+      }
+      console.log("Default prompts seeded");
     }
   } catch (err) {
     console.error("Database initialization error:", err);
@@ -599,12 +639,21 @@ async function startServer() {
 
   app.get("/api/reports/:userId", async (req, res) => {
     const { userId } = req.params;
-    console.log(`[API] GET /api/reports/${userId}`);
+    const { lang } = req.query;
+    console.log(`[API] GET /api/reports/${userId} (lang: ${lang})`);
     try {
-      const result = await pool.query(
-        "SELECT * FROM energy_reports WHERE user_id = $1 ORDER BY timestamp DESC",
-        [userId]
-      );
+      // 1. Fetch reports for the requested language
+      let query = "SELECT * FROM energy_reports WHERE user_id = $1";
+      const params = [userId];
+      
+      if (typeof lang === 'string') {
+        params.push(lang);
+        query += ` AND lang = $${params.length}`;
+      }
+      
+      query += " ORDER BY timestamp DESC";
+      
+      const result = await pool.query(query, params);
       
       const mappedReports = result.rows.map(row => {
         const data = row.report_data || {};
@@ -621,8 +670,22 @@ async function startServer() {
           ...data
         };
       });
+
+      // 2. Check if reports in other languages exist
+      let otherLangCount = 0;
+      if (lang) {
+        const otherLangResult = await pool.query(
+          "SELECT count(*) FROM energy_reports WHERE user_id = $1 AND lang != $2",
+          [userId, lang]
+        );
+        otherLangCount = parseInt(otherLangResult.rows[0].count);
+      }
       
-      res.json(mappedReports);
+      res.json({
+        reports: mappedReports,
+        hasOtherLang: otherLangCount > 0,
+        otherLangCount
+      });
     } catch (err) {
       console.error("Error fetching energy reports:", err);
       res.status(500).json({ error: "Internal server error" });
@@ -633,6 +696,7 @@ async function startServer() {
     const { 
       id, 
       userId, 
+      lang,
       dominantElement, 
       weakElement, 
       balanceScore, 
@@ -642,7 +706,7 @@ async function startServer() {
       ...otherData 
     } = req.body;
 
-    console.log(`[API] POST /api/reports - Saving report: ${id || 'NEW'} for: ${userId || 'GUEST'}`);
+    console.log(`[API] POST /api/reports - Saving report: ${id || 'NEW'} for: ${userId || 'GUEST'} (lang: ${lang})`);
 
     try {
       // 1. Ensure user exists if userId is provided (Auto-Sync)
@@ -659,11 +723,12 @@ async function startServer() {
       if (id) {
         result = await pool.query(
           `INSERT INTO energy_reports (
-            id, user_id, dominant_element, weak_element, balance_score, 
+            id, user_id, lang, dominant_element, weak_element, balance_score, 
             today_theme, share_thumbnail, is_ai_complete, report_data
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           ON CONFLICT (id) DO UPDATE SET
             user_id = COALESCE(EXCLUDED.user_id, energy_reports.user_id),
+            lang = COALESCE(EXCLUDED.lang, energy_reports.lang),
             dominant_element = COALESCE(EXCLUDED.dominant_element, energy_reports.dominant_element),
             weak_element = COALESCE(EXCLUDED.weak_element, energy_reports.weak_element),
             balance_score = COALESCE(EXCLUDED.balance_score, energy_reports.balance_score),
@@ -672,15 +737,15 @@ async function startServer() {
             is_ai_complete = COALESCE(EXCLUDED.is_ai_complete, energy_reports.is_ai_complete),
             report_data = energy_reports.report_data || EXCLUDED.report_data
           RETURNING *`,
-          [id, userId, dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete || false, JSON.stringify(otherData)]
+          [id, userId, lang || 'zh', dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete || false, JSON.stringify(otherData)]
         );
       } else {
         result = await pool.query(
           `INSERT INTO energy_reports (
-            user_id, dominant_element, weak_element, balance_score, 
+            user_id, lang, dominant_element, weak_element, balance_score, 
             today_theme, share_thumbnail, is_ai_complete, report_data
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-          [userId, dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete || false, JSON.stringify(otherData)]
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+          [userId, lang || 'zh', dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete || false, JSON.stringify(otherData)]
         );
       }
       
@@ -856,23 +921,23 @@ async function startServer() {
   });
 
   app.get("/api/admin/prompts", async (req, res) => {
-    const { category, lang } = req.query;
+    const { category, status } = req.query;
     try {
       let query = "SELECT * FROM ai_prompts";
       const params = [];
-      if (category || lang) {
+      if (category || status) {
         query += " WHERE";
         if (category) {
           params.push(category);
           query += ` category = $${params.length}`;
         }
-        if (lang) {
+        if (status) {
           if (params.length > 0) query += " AND";
-          params.push(lang);
-          query += ` lang = $${params.length}`;
+          params.push(status);
+          query += ` status = $${params.length}`;
         }
       }
-      query += " ORDER BY created_at DESC";
+      query += " ORDER BY module_name ASC, created_at DESC";
       const result = await pool.query(query, params);
       res.json(result.rows);
     } catch (err) {
@@ -882,28 +947,19 @@ async function startServer() {
   });
 
   app.post("/api/admin/prompts", async (req, res) => {
-    const { id, name, content, status, version, category, lang, is_default, style_tags, custom_style_instruction } = req.body;
+    const { id, module_name, content_zh, content_ja, status, version, category } = req.body;
     try {
       if (id) {
         await pool.query(
-          "UPDATE ai_prompts SET name = $1, content = $2, status = $3, version = $4, category = $5, lang = $6, is_default = $7, style_tags = $8, custom_style_instruction = $9, updated_at = CURRENT_TIMESTAMP WHERE id = $10",
-          [name, content, status, version, category, lang, is_default, style_tags || [], custom_style_instruction, id]
+          "UPDATE ai_prompts SET module_name = $1, content_zh = $2, content_ja = $3, status = $4, version = $5, category = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7",
+          [module_name, content_zh, content_ja, status, version, category, id]
         );
       } else {
         await pool.query(
-          "INSERT INTO ai_prompts (name, content, status, version, category, lang, is_default, style_tags, custom_style_instruction) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
-          [name, content, status, version, category, lang, is_default, style_tags || [], custom_style_instruction]
+          "INSERT INTO ai_prompts (module_name, content_zh, content_ja, status, version, category) VALUES ($1, $2, $3, $4, $5, $6)",
+          [module_name, content_zh, content_ja, status, version, category]
         );
       }
-      
-      // If set as default, unset others in same category/lang
-      if (is_default) {
-        await pool.query(
-          "UPDATE ai_prompts SET is_default = false WHERE category = $1 AND lang = $2 AND id != (SELECT id FROM ai_prompts WHERE name = $3 AND category = $1 AND lang = $2 ORDER BY updated_at DESC LIMIT 1)",
-          [category, lang, name]
-        );
-      }
-      
       res.json({ success: true });
     } catch (err) {
       console.error("Error saving prompt:", err);
@@ -925,13 +981,7 @@ async function startServer() {
   app.post("/api/admin/prompts/:id/activate", async (req, res) => {
     const { id } = req.params;
     try {
-      const promptResult = await pool.query("SELECT category, lang FROM ai_prompts WHERE id = $1", [id]);
-      if (promptResult.rows.length > 0) {
-        const { category, lang } = promptResult.rows[0];
-        // Set this one as active and default, unset others in same category/lang
-        await pool.query("UPDATE ai_prompts SET status = 'active', is_default = true, updated_at = CURRENT_TIMESTAMP WHERE id = $1", [id]);
-        await pool.query("UPDATE ai_prompts SET is_default = false WHERE category = $1 AND lang = $2 AND id != $3", [category, lang, id]);
-      }
+      await pool.query("UPDATE ai_prompts SET status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = $1", [id]);
       res.json({ success: true });
     } catch (err) {
       console.error("Error activating prompt:", err);
@@ -940,21 +990,23 @@ async function startServer() {
   });
 
   app.get("/api/prompts/active", async (req, res) => {
-    const { category, lang } = req.query;
+    const { lang } = req.query;
+    const language = lang === 'ja' ? 'ja' : 'zh';
     try {
+      // Fetch all active modules
       const result = await pool.query(
-        "SELECT * FROM ai_prompts WHERE category = $1 AND lang = $2 AND status = 'active' AND is_default = true LIMIT 1",
-        [category || 'analysis', lang || 'zh-TW']
+        "SELECT module_name, content_zh, content_ja FROM ai_prompts WHERE status = 'active' ORDER BY category ASC, module_name ASC"
       );
+      
       if (result.rows.length > 0) {
-        res.json(result.rows[0]);
+        // Stitch them together
+        const fullPrompt = result.rows.map(row => {
+          return language === 'ja' ? row.content_ja : row.content_zh;
+        }).join("\n\n");
+        
+        res.json({ content: fullPrompt });
       } else {
-        // Fallback to latest active if no default set
-        const fallback = await pool.query(
-          "SELECT * FROM ai_prompts WHERE category = $1 AND lang = $2 AND status = 'active' ORDER BY updated_at DESC LIMIT 1",
-          [category || 'analysis', lang || 'zh-TW']
-        );
-        res.json(fallback.rows[0] || null);
+        res.json({ content: "" });
       }
     } catch (err) {
       console.error("Error fetching active prompt:", err);

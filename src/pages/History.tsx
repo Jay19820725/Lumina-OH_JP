@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { GlassCard } from '../components/ui/GlassCard';
-import { Calendar, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronRight, Info } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { AnalysisReport } from '../core/types';
 import { useTest } from '../store/TestContext';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface HistoryProps {
   onNavigate: (page: string) => void;
@@ -12,8 +13,10 @@ interface HistoryProps {
 
 export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
   const [reports, setReports] = useState<AnalysisReport[]>([]);
+  const [hasOtherLang, setHasOtherLang] = useState(false);
   const [loading, setLoading] = useState(true);
   const { setReport } = useTest();
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -24,10 +27,11 @@ export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
       }
 
       try {
-        const response = await fetch(`/api/reports/${user.uid}`);
+        const response = await fetch(`/api/reports/${user.uid}?lang=${language}`);
         if (!response.ok) throw new Error('Failed to fetch history');
         const data = await response.json();
-        setReports(data);
+        setReports(data.reports || []);
+        setHasOtherLang(data.hasOtherLang || false);
       } catch (error) {
         console.error("Error fetching history:", error);
       } finally {
@@ -36,7 +40,7 @@ export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
     };
 
     fetchHistory();
-  }, []);
+  }, [language]);
 
   const handleViewReport = (report: AnalysisReport) => {
     setReport(report);
@@ -72,6 +76,17 @@ export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
           <div className="w-12 h-px bg-ink/10 mx-auto" />
           <p className="text-sm md:text-lg text-ink-muted font-light tracking-widest leading-relaxed">あなたのエネルギーの変遷を辿ります。</p>
         </header>
+
+        {hasOtherLang && (
+          <div className="mb-8 p-4 bg-ink/5 border border-ink/10 rounded-2xl flex items-center gap-4 text-ink-muted">
+            <Info size={18} className="shrink-0" />
+            <p className="text-xs tracking-widest leading-relaxed">
+              {language === 'zh' 
+                ? '妳還有其他語言的診斷記錄，切換語系即可查看。' 
+                : '他の言語での診断記録もあります。言語を切り替えると表示されます。'}
+            </p>
+          </div>
+        )}
 
         {!auth.currentUser ? (
           <div className="text-center py-20 opacity-40">

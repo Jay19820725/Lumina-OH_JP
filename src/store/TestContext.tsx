@@ -176,6 +176,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 body: JSON.stringify({
                   id: data.id,
                   userId: userId,
+                  lang: language, // Added language tag
                   dominantElement: data.dominantElement,
                   weakElement: data.weakElement,
                   balanceScore: data.balanceScore,

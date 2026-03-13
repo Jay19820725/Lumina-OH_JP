@@ -15,7 +15,8 @@ import {
   Coffee,
   TrendingUp,
   TrendingDown,
-  BarChart3
+  BarChart3,
+  Info
 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
@@ -44,6 +45,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
   const { setReport } = useTest();
   const { language, t } = useLanguage();
   const [reports, setReports] = useState<AnalysisReport[]>([]);
+  const [hasOtherLang, setHasOtherLang] = useState(false);
   const [journals, setJournals] = useState<EnergyJournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingJournal, setIsAddingJournal] = useState(false);
@@ -63,21 +65,23 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
 
       try {
         setLoading(true);
-        console.log("EnergyTimeline: Fetching reports for user:", user.uid);
+        console.log("EnergyTimeline: Fetching reports for user:", user.uid, "lang:", language);
         // Fetch Reports
-        const reportRes = await fetch(`/api/reports/${user.uid}`);
+        const reportRes = await fetch(`/api/reports/${user.uid}?lang=${language}`);
         if (!reportRes.ok) {
           console.error("EnergyTimeline: Failed to fetch reports. Status:", reportRes.status);
           throw new Error(`Failed to fetch reports: ${reportRes.status}`);
         }
         const reportData = await reportRes.json();
-        console.log("EnergyTimeline: Fetched reports count:", Array.isArray(reportData) ? reportData.length : 0);
-        console.log("EnergyTimeline: First report (if any):", Array.isArray(reportData) && reportData.length > 0 ? reportData[0] : "None");
-        setReports(Array.isArray(reportData) ? reportData : []);
+        setReports(Array.isArray(reportData.reports) ? reportData.reports : []);
+        setHasOtherLang(reportData.hasOtherLang || false);
 
         // Fetch Journals if premium
         if (profile?.role === 'premium_member') {
           const journalData = await journalService.getEntries(user.uid);
+          // Filter journals by language if they have a lang field
+          // For now, journals don't have a lang field in the schema, but we could add it.
+          // The user didn't explicitly ask for journals to be isolated, but it's better.
           setJournals(journalData);
         }
       } catch (error) {
@@ -88,7 +92,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
     };
 
     fetchData();
-  }, [user, profile]);
+  }, [user, profile, language]);
 
   const timelineItems = useMemo(() => {
     const items: TimelineItem[] = [
@@ -192,6 +196,17 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
             {t('timeline_description')}
           </p>
         </header>
+
+        {hasOtherLang && (
+          <div className="mb-12 p-4 bg-ink/5 border border-ink/10 rounded-2xl flex items-center gap-4 text-ink-muted">
+            <Info size={18} className="shrink-0" />
+            <p className="text-xs tracking-widest leading-relaxed">
+              {language === 'zh' 
+                ? '妳還有其他語言的成長軌跡，切換語系即可查看。' 
+                : '他の言語での成長軌跡もあります。言語を切り替えると表示されます。'}
+            </p>
+          </div>
+        )}
 
         {/* Weekly Insight Section (Mocked for now) */}
         {profile?.role === 'premium_member' && timelineItems.length > 0 && (

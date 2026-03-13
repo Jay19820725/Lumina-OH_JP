@@ -122,8 +122,9 @@ export const adminService = {
   /**
    * AI Prompt Management
    */
-  async getAllPrompts(): Promise<AIPrompt[]> {
-    const response = await fetch('/api/admin/prompts');
+  async getAllPrompts(category?: string): Promise<AIPrompt[]> {
+    const url = category ? `/api/admin/prompts?category=${category}` : '/api/admin/prompts';
+    const response = await fetch(url);
     if (!response.ok) return [];
     const prompts = await response.json();
     return prompts.map((p: any) => ({

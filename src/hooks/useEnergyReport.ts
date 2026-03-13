@@ -19,18 +19,13 @@ export const useEnergyReport = (onReset: () => void) => {
   // Determine which content to show based on current language
   const displayContent = useMemo(() => {
     if (!report) return null;
-    if (!report.multilingualContent) return report;
     
-    const langKey = currentLangCode === 'ja' ? 'ja-JP' : 'zh-TW';
-    const langContent = report.multilingualContent[langKey];
-    
-    if (!langContent) return report;
-    
-    return {
-      ...report,
-      ...langContent
-    };
-  }, [report?.id, report?.isAiComplete, currentLangCode]);
+    // If the report has a language tag and it doesn't match current language,
+    // we might want to show a hint, but for now we just return the report.
+    // The user requested to "completely hide reports in other languages" in the timeline,
+    // but for a direct view (like shared link), we show it.
+    return report;
+  }, [report?.id, report?.isAiComplete]);
 
   // Mark report as seen when fully loaded
   useEffect(() => {

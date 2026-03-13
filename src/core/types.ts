@@ -183,15 +183,12 @@ export type AIPromptStyle = 'gentle' | 'ethereal' | 'poetic' | 'professional' | 
 
 export interface AIPrompt {
   id: string;
-  prompt_name: string;
-  prompt_content: string;
+  module_name: string;
+  content_zh: string;
+  content_ja: string;
   version: string;
   status: 'active' | 'draft' | 'archived';
-  category: AIPromptCategory;
-  style_tags: AIPromptStyle[];
-  custom_style_instruction?: string;
-  lang: 'dual' | 'zh-TW' | 'ja-JP';
-  is_default: boolean;
+  category: 'core' | 'scenario' | 'format';
   created_at: any;
   updated_at: any;
 }
