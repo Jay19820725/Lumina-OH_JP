@@ -36,6 +36,7 @@ export interface FiveElementValues {
 
 export interface ImageCard {
   id: string;
+  name: string;
   imageUrl: string;
   elements: FiveElementValues;
   description?: string;
@@ -47,6 +48,7 @@ export interface ImageCard {
 
 export interface WordCard {
   id: string;
+  name: string;
   text: string;
   imageUrl: string;
   elements: FiveElementValues;

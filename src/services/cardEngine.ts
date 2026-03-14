@@ -68,6 +68,7 @@ export async function drawCardImage(count: number = 3, language: string = 'zh'):
     const rawData = await fetchCardData(language, 'img');
     imageDeckCache[language] = rawData.map(item => ({
       id: item.card_id,
+      name: item.card_name,
       imageUrl: getFirebaseUrl(item.image_path),
       description: item.card_name_en || item.card_name,
       elements: item.elements
@@ -86,6 +87,7 @@ export async function drawCardWord(count: number = 3, language: string = 'zh'): 
     const rawData = await fetchCardData(language, 'word');
     wordDeckCache[language] = rawData.map(item => ({
       id: item.card_id,
+      name: item.card_name,
       text: item.card_name,
       imageUrl: getFirebaseUrl(item.image_path),
       description: item.card_name_en || item.card_name,

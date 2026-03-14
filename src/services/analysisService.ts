@@ -45,14 +45,25 @@ export const generateAIAnalysis = async (
 
   const userData = selectedCards.pairs?.map((pair, i) => `
     配對 ${i + 1}:
-    - 圖片描述: ${pair.image.description}
-    - 文字卡: ${pair.word.text}
+    - 圖片卡: [${pair.image.name}] (五行權重: ${JSON.stringify(pair.image.elements)})
+    - 文字卡: [${pair.word.name}] (五行權重: ${JSON.stringify(pair.word.elements)})
     - 用戶連想: "${pair.association}"
   `).join('\n');
 
-  const finalPrompt = promptTemplate
-    .replace('{{USER_DATA}}', userData || "")
-    .replace('{{ENERGY_DATA}}', JSON.stringify(totalScores));
+  // Ensure placeholders exist, if not, append data to the end of the prompt
+  let finalPrompt = promptTemplate;
+  
+  if (finalPrompt.includes('{{USER_DATA}}')) {
+    finalPrompt = finalPrompt.replace('{{USER_DATA}}', userData || "");
+  } else {
+    finalPrompt += `\n\n【用戶抽卡與連想資料】\n${userData}`;
+  }
+
+  if (finalPrompt.includes('{{ENERGY_DATA}}')) {
+    finalPrompt = finalPrompt.replace('{{ENERGY_DATA}}', JSON.stringify(totalScores));
+  } else {
+    finalPrompt += `\n\n【當前五行能量權重】\n${JSON.stringify(totalScores)}`;
+  }
 
   try {
     const response = await ai.models.generateContent({
