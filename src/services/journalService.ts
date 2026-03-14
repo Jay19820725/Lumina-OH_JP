@@ -48,10 +48,7 @@ export const journalService = {
       }
 
       const entries = await response.json();
-      return entries.map((entry: any) => ({
-        ...entry,
-        date: entry.date ? { toDate: () => new Date(entry.date) } : null, // Mock Firestore Timestamp for compatibility
-      })) as EnergyJournalEntry[];
+      return entries as EnergyJournalEntry[];
     } catch (error) {
       console.error("Error fetching journal entries:", error);
       throw error;

@@ -217,7 +217,7 @@ export const EnergyJournal: React.FC = () => {
                             <div className="flex flex-col items-center">
                               <Calendar size={14} className="text-ink-muted mb-1" />
                               <span className="text-[10px] uppercase tracking-widest text-ink-muted">
-                                {entry.date?.toDate ? entry.date.toDate().toLocaleDateString() : '---'}
+                                {entry.date ? new Date(entry.date).toLocaleDateString() : '---'}
                               </span>
                             </div>
                             <div className="h-8 w-px bg-ink/5" />

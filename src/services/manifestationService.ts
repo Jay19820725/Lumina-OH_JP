@@ -10,11 +10,7 @@ export const manifestationService = {
       throw new Error('Failed to fetch manifestations');
     }
     const data = await response.json();
-    return data.map((m: any) => ({
-      ...m,
-      deadline: { toDate: () => new Date(m.deadline) }, // Mock Firestore Timestamp
-      created_at: { toDate: () => new Date(m.created_at) }
-    })) as Manifestation[];
+    return data as Manifestation[];
   },
 
   /**
@@ -90,7 +86,7 @@ export const manifestationService = {
 
     const upcoming = manifestations.filter(m => {
       if (m.status !== 'active' || m.reminder_sent) return false;
-      const deadlineDate = m.deadline.toDate();
+      const deadlineDate = new Date(m.deadline);
       return deadlineDate > now && deadlineDate <= threeDaysFromNow;
     });
 

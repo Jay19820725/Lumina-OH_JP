@@ -1544,6 +1544,6 @@ const NavButton = ({ active, onClick, icon, label }: { active: boolean; onClick:
 
 const formatDate = (timestamp: any) => {
   if (!timestamp) return 'N/A';
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  const date = new Date(timestamp);
   return date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };

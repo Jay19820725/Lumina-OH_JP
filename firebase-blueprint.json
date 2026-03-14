@@ -1,0 +1,88 @@
+{
+  "entities": {
+    "SEOSettings": {
+      "title": "SEOSettings",
+      "description": "Bilingual SEO settings for the website",
+      "type": "object",
+      "properties": {
+        "zh": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "og_image": { "type": "string" }
+          },
+          "required": ["title", "description", "og_image"]
+        },
+        "ja": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "og_image": { "type": "string" }
+          },
+          "required": ["title", "description", "og_image"]
+        },
+        "google_analytics_id": { "type": "string" },
+        "search_console_id": { "type": "string" },
+        "index_enabled": { "type": "boolean" }
+      },
+      "required": ["zh", "ja", "index_enabled"]
+    },
+    "FontSettings": {
+      "title": "FontSettings",
+      "description": "Bilingual font settings for the website",
+      "type": "object",
+      "properties": {
+        "zh": {
+          "type": "object",
+          "properties": {
+            "display": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string" },
+                "family": { "type": "string" }
+              }
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string" },
+                "family": { "type": "string" }
+              }
+            }
+          }
+        },
+        "ja": {
+          "type": "object",
+          "properties": {
+            "display": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string" },
+                "family": { "type": "string" }
+              }
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string" },
+                "family": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "site_settings/seo": {
+      "schema": "SEOSettings",
+      "description": "Global SEO configuration"
+    },
+    "site_settings/fonts": {
+      "schema": "FontSettings",
+      "description": "Global font configuration"
+    }
+  }
+}

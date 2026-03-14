@@ -132,9 +132,9 @@ export interface UserProfile {
   displayName?: string;
   photoURL?: string;
   role: UserRole;
-  register_date: any; // Firestore timestamp
+  register_date: string;
   subscription_status: 'active' | 'inactive' | 'none';
-  last_login?: any;
+  last_login?: string;
   settings?: {
     daily_reminder: boolean;
     dark_mode: boolean;
@@ -145,7 +145,7 @@ export interface UserProfile {
 export interface Session {
   id: string;
   user_id: string;
-  session_time: any; // Firestore timestamp
+  session_time: string;
   image_cards: ImageCard[];
   word_cards: WordCard[];
   pairs: CardPair[];
@@ -161,21 +161,21 @@ export interface Manifestation {
   id?: string;
   user_id: string;
   wish_title: string;
-  deadline: any; // Firestore timestamp
+  deadline: string;
   deadline_option: ManifestationDeadlineOption;
   status: ManifestationStatus;
-  created_at: any;
+  created_at: string;
   reminder_sent?: boolean;
 }
 
 export interface EnergyJournalEntry {
   id?: string;
   user_id: string;
-  date: any; // Firestore timestamp
+  date: string;
   emotion_tag: EmotionTag;
   insight: string;
   intention: string;
-  created_at: any;
+  created_at: string;
 }
 
 export type AIPromptCategory = 'analysis' | 'daily' | 'persona';
@@ -189,8 +189,8 @@ export interface AIPrompt {
   version: string;
   status: 'active' | 'draft' | 'archived';
   category: 'core' | 'scenario' | 'format';
-  created_at: any;
-  updated_at: any;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SEOSettings {
@@ -216,5 +216,5 @@ export type EnergyReportData = AnalysisReport;
 export interface SiteSettings {
   key: string;
   value: any;
-  updated_at: any;
+  updated_at: string;
 }

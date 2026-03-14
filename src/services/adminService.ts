@@ -23,9 +23,7 @@ export const adminService = {
     return users.map((u: any) => ({
       ...u,
       displayName: u.display_name,
-      photoURL: u.photo_url,
-      register_date: { toDate: () => new Date(u.register_date) },
-      last_login: { toDate: () => new Date(u.last_login) }
+      photoURL: u.photo_url
     }));
   },
 
@@ -44,10 +42,7 @@ export const adminService = {
     const response = await fetch(`/api/admin/sessions?limit=${limitCount}`);
     if (!response.ok) return [];
     const sessions = await response.json();
-    return sessions.map((s: any) => ({
-      ...s,
-      session_time: { toDate: () => new Date(s.session_time) }
-    }));
+    return sessions;
   },
 
   async deleteSessionDrafts(): Promise<{ success: boolean; count: number }> {
@@ -113,9 +108,7 @@ export const adminService = {
     return users.map((u: any) => ({
       ...u,
       displayName: u.display_name,
-      photoURL: u.photo_url,
-      register_date: { toDate: () => new Date(u.register_date) },
-      last_login: { toDate: () => new Date(u.last_login) }
+      photoURL: u.photo_url
     }));
   },
 
@@ -127,11 +120,7 @@ export const adminService = {
     const response = await fetch(url);
     if (!response.ok) return [];
     const prompts = await response.json();
-    return prompts.map((p: any) => ({
-      ...p,
-      created_at: { toDate: () => new Date(p.created_at) },
-      updated_at: { toDate: () => new Date(p.updated_at) }
-    }));
+    return prompts;
   },
 
   async savePrompt(prompt: Partial<AIPrompt>): Promise<void> {

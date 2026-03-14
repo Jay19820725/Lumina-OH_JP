@@ -100,7 +100,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
       ...journals.map(j => ({ 
         type: 'journal' as const, 
         data: j, 
-        timestamp: j.date?.toDate ? j.date.toDate().getTime() : (j.created_at?.toDate ? j.created_at.toDate().getTime() : Date.now())
+        timestamp: j.date ? new Date(j.date).getTime() : (j.created_at ? new Date(j.created_at).getTime() : Date.now())
       }))
     ];
     return items.sort((a, b) => b.timestamp - a.timestamp);
