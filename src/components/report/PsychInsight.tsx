@@ -22,7 +22,7 @@ export const PsychInsight: React.FC<PsychInsightProps> = ({ isAiLoading, display
   return (
     <section className="relative mb-20 md:mb-32">
       <div className="flex items-center gap-8 mb-12">
-        <h2 className="text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('report_psych_insight')}</h2>
+        <h2 className="text-[15px] md:text-[10px] uppercase tracking-[0.8em] text-ink-muted whitespace-nowrap">{t('report_psych_insight')}</h2>
         <div className="h-px w-full bg-ink/5" />
       </div>
       
@@ -45,7 +45,7 @@ export const PsychInsight: React.FC<PsychInsightProps> = ({ isAiLoading, display
           </div>
           <div className="md:col-span-4 space-y-10">
             <div className="bg-ink/5 p-8 md:p-10 rounded-[2.5rem] space-y-6">
-              <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block border-b border-ink/10 pb-3">{t('report_five_element')}</span>
+              <span className="text-[15px] md:text-[10px] uppercase tracking-[0.4em] text-ink-muted block border-b border-ink/10 pb-3">{t('report_five_element')}</span>
               {isAiLoading ? (
                 <div className="space-y-2 animate-pulse">
                   <div className="h-4 bg-ink/5 rounded w-full" />
@@ -59,7 +59,7 @@ export const PsychInsight: React.FC<PsychInsightProps> = ({ isAiLoading, display
             </div>
             
             <div className="p-8 md:p-10 space-y-6 border border-ink/5 rounded-[2.5rem]">
-              <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block border-b border-ink/10 pb-3">{t('report_action')}</span>
+              <span className="text-[15px] md:text-[10px] uppercase tracking-[0.4em] text-ink-muted block border-b border-ink/10 pb-3">{t('report_action')}</span>
               <div className="flex items-start gap-4">
                 <RefreshCw size={14} className="text-ink-muted mt-1" />
                 {isAiLoading ? (

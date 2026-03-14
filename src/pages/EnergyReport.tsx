@@ -101,7 +101,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
           <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> {t('report_back')}
         </button>
         <div className="text-right">
-          <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block">{t('report_created_at')}</span>
+          <span className="text-[15px] md:text-[10px] uppercase tracking-[0.4em] text-ink-muted block">{t('report_created_at')}</span>
           <span className="text-[10px] font-medium tracking-widest">{new Date(report.timestamp).toLocaleDateString()}</span>
         </div>
       </motion.div>
@@ -158,7 +158,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
           viewport={{ once: true }}
           className="max-w-5xl mx-auto space-y-10 flex flex-col items-center"
         >
-          <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted block">{t('report_reflection')}</span>
+          <span className="text-[15px] md:text-[10px] uppercase tracking-[0.8em] text-ink-muted block">{t('report_reflection')}</span>
           {isAiLoading ? (
             <div className="h-12 bg-ink/5 rounded-xl w-full max-w-2xl animate-pulse" />
           ) : (
@@ -174,7 +174,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
       <footer className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-start">
         <div className="space-y-12">
           <div className="space-y-6">
-            <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted">{t('report_share_settings')}</h3>
+            <h3 className="text-[15px] md:text-[10px] uppercase tracking-[0.4em] text-ink-muted">{t('report_share_settings')}</h3>
             <p className="text-xs text-ink-muted leading-relaxed max-w-xs">
               {t('report_share_thumbnail_desc')}
             </p>

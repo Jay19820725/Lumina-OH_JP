@@ -16,6 +16,8 @@ export const useEnergyTestState = (onComplete: () => void) => {
   const [drawStage, setDrawStage] = useState<DrawStage>('idle');
   const [flippedImages, setFlippedImages] = useState<number[]>([]);
   const [flippedWords, setFlippedWords] = useState<number[]>([]);
+  const [hasRedrawnImages, setHasRedrawnImages] = useState(false);
+  const [hasRedrawnWords, setHasRedrawnWords] = useState(false);
   const [zoomedCard, setZoomedCard] = useState<ImageCard | WordCard | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingTime, setLoadingTime] = useState(0);
@@ -62,6 +64,20 @@ export const useEnergyTestState = (onComplete: () => void) => {
     } else if (flippedWords.length < 3) {
       setFlippedWords(prev => [...prev, index]);
     }
+  };
+
+  const handleRedrawImages = async () => {
+    if (hasRedrawnImages) return;
+    await startDraw(); // Re-draw cards from store
+    setFlippedImages([]);
+    setHasRedrawnImages(true);
+  };
+
+  const handleRedrawWords = async () => {
+    if (hasRedrawnWords) return;
+    await startDraw(); // Re-draw cards from store
+    setFlippedWords([]);
+    setHasRedrawnWords(true);
   };
 
   const handleContinueToWords = () => {
@@ -113,6 +129,10 @@ export const useEnergyTestState = (onComplete: () => void) => {
     handlePairingComplete,
     handleAssociationComplete,
     handleComplete,
+    handleRedrawImages,
+    handleRedrawWords,
+    hasRedrawnImages,
+    hasRedrawnWords,
     allImagesFlipped: flippedImages.length === 3,
     allWordsFlipped: flippedWords.length === 3,
   };

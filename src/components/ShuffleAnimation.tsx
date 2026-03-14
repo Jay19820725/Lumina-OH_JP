@@ -1,14 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Button } from './ui/Button';
-import { Sparkles } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ShuffleAnimationProps {
   onComplete: () => void;
 }
 
 export const ShuffleAnimation: React.FC<ShuffleAnimationProps> = ({ onComplete }) => {
+  const { t } = useLanguage();
   const [isStopping, setIsStopping] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const cardCount = 12;
   const baseRadius = 140;
 
@@ -21,6 +22,20 @@ export const ShuffleAnimation: React.FC<ShuffleAnimationProps> = ({ onComplete }
     })), []
   );
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsed(prev => {
+        if (prev >= 8) {
+          clearInterval(interval);
+          handleStop();
+          return 8;
+        }
+        return prev + 0.1;
+      });
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleStop = () => {
     setIsStopping(true);
     // The "Spread" duration
@@ -28,6 +43,10 @@ export const ShuffleAnimation: React.FC<ShuffleAnimationProps> = ({ onComplete }
       onComplete();
     }, 800);
   };
+
+  // Determine rotation speed based on time
+  // 0-6s: slow (20s duration), 6-8s: faster (5s duration)
+  const rotationDuration = elapsed < 6 ? 20 : 5;
 
   return (
     <div className="relative w-full h-[450px] md:h-[700px] flex flex-col items-center justify-center overflow-hidden mt-0 mb-[100px] md:my-0">
@@ -52,7 +71,7 @@ export const ShuffleAnimation: React.FC<ShuffleAnimationProps> = ({ onComplete }
           animate={!isStopping ? { rotate: 360 } : { rotate: 30, scale: 1.05 }}
           transition={{
             rotate: {
-              duration: 20,
+              duration: rotationDuration,
               repeat: !isStopping ? Infinity : 0,
               ease: "linear",
             },
@@ -94,7 +113,9 @@ export const ShuffleAnimation: React.FC<ShuffleAnimationProps> = ({ onComplete }
                 className="absolute w-24 h-36 bg-white/5 backdrop-blur-2xl border border-white/30 rounded-2xl shadow-2xl -ml-12 -mt-18 flex items-center justify-center overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-30" />
-                <Sparkles size={24} className="text-white/5 group-hover:text-white/20 transition-colors" strokeWidth={0.5} />
+                <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                  <div className="w-12 h-12 border border-white/20 rounded-full" />
+                </div>
                 
                 {/* Inner Glow */}
                 <motion.div 
@@ -107,44 +128,72 @@ export const ShuffleAnimation: React.FC<ShuffleAnimationProps> = ({ onComplete }
           })}
         </motion.div>
 
-        {/* Ritual Text Overlay */}
-        <AnimatePresence>
+        {/* Meditation Overlay - Narrative Flow */}
+        <AnimatePresence mode="wait">
           {!isStopping && (
             <motion.div
+              key="meditation"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute pointer-events-none"
+              className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10"
             >
-              <span className="text-[11px] uppercase tracking-[1.2em] text-ink/10 font-light">
-                共鳴中
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              <div className="space-y-12 text-center">
+                <div className="h-24 flex items-center justify-center">
+                  <AnimatePresence mode="wait">
+                    {elapsed < 3 ? (
+                      <motion.h2
+                        key="narrative1"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 1 }}
+                        className="text-lg md:text-xl font-serif text-ink tracking-[0.2em] px-6"
+                      >
+                        {t('test_meditation_narrative_1')}
+                      </motion.h2>
+                    ) : elapsed < 6 ? (
+                      <motion.h2
+                        key="narrative2"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 1 }}
+                        className="text-lg md:text-xl font-serif text-ink tracking-[0.2em] px-6"
+                      >
+                        {t('test_meditation_narrative_2')}
+                      </motion.h2>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
 
-      {/* Interaction Layer */}
-      <div className="absolute bottom-12 md:bottom-32 z-50">
-        <AnimatePresence>
-          {!isStopping && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 40, filter: 'blur(15px)' }}
-              transition={{ duration: 1.2, ease: [0.23, 1, 0.32, 1] }}
-            >
-              <Button
-                onClick={handleStop}
-                className="h-20 px-16 rounded-full bg-ink text-paper hover:bg-ink/90 transition-all group overflow-hidden relative shadow-2xl shadow-ink/10"
-              >
-                <motion.div 
-                  className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-700"
-                />
-                <span className="relative text-[12px] uppercase tracking-[0.6em] font-extralight">
-                  シャッフルを止める
-                </span>
-              </Button>
+                <div className="relative flex items-center justify-center">
+                  {/* Breathing Circle - 2 cycles of 4s */}
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      opacity: [0.3, 0.6, 0.3],
+                    }}
+                    transition={{
+                      duration: 4,
+                      repeat: 1, // 2 cycles total for 8s
+                      ease: "easeInOut",
+                    }}
+                    className="w-48 h-48 md:w-64 md:h-64 border border-ink/10 rounded-full"
+                  />
+                </div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1 }}
+                  className="pt-8"
+                >
+                  <span className="text-[9px] uppercase tracking-[0.8em] text-ink/20 animate-pulse">
+                    {t('test_meditation_resonance')}
+                  </span>
+                </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

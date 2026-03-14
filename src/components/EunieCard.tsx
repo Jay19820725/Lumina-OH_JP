@@ -63,7 +63,7 @@ export const EunieCard: React.FC<EunieCardProps> = ({
               {/* Vertical Japanese Title */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="vertical-text flex flex-col items-center gap-3">
-                  <span className="text-xs font-serif tracking-[0.5em] text-ink/30 uppercase">EUNIE</span>
+                  <span className="text-[15px] md:text-xs font-serif tracking-[0.5em] text-ink/30 uppercase">EUNIE</span>
                   <span className="text-[10px] font-sans tracking-[0.3em] text-ink/15 uppercase">嶼妳</span>
                 </div>
               </div>
