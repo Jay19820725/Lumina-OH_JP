@@ -63,6 +63,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
     handleRedrawWords,
     hasRedrawnImages,
     hasRedrawnWords,
+    isReshuffling,
     allImagesFlipped,
     allWordsFlipped,
   } = useEnergyTestState(onComplete);
@@ -75,12 +76,18 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
     <div className="ma-container pt-8 md:pt-16 pb-40 md:pb-80 min-h-screen flex flex-col items-center">
       {/* Global Loading Overlay for Generation/Saving */}
       <AnimatePresence>
-        {(isDrawing || isGenerating) && (
+        {(isDrawing || isGenerating || isReshuffling) && (
           <motion.div 
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ 
+              opacity: 1,
+              backgroundColor: isReshuffling ? ['rgba(245,245,244,0)', 'rgba(245,245,244,0.8)'] : 'rgba(245,245,244,0.8)'
+            }}
+            transition={{ 
+              backgroundColor: { delay: 0.5, duration: 0.5 }
+            }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center bg-paper/80 backdrop-blur-xl z-[100]"
+            className="fixed inset-0 flex items-center justify-center backdrop-blur-xl z-[100]"
           >
             <div className="flex flex-col items-center gap-10">
               <div className="relative w-24 h-24">
@@ -115,38 +122,27 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
 
                 {/* Center Pulse */}
                 <motion.div 
-                  animate={{ 
+                  initial={{ opacity: 0 }}
+                  animate={isReshuffling ? { 
                     scale: [0.8, 1.2, 0.8],
                     opacity: [0.2, 0.5, 0.2]
-                  }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  } : { opacity: 1 }}
+                  transition={isReshuffling ? { duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 } : {}}
                   className="absolute inset-10 bg-ink/5 rounded-full blur-xl"
                 />
-
-                {/* Floating Particles */}
-                {[...Array(6)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    animate={{
-                      y: [0, -40, 0],
-                      x: [0, (i % 2 === 0 ? 20 : -20), 0],
-                      opacity: [0, 0.4, 0],
-                      scale: [0, 1, 0]
-                    }}
-                    transition={{
-                      duration: 3 + i,
-                      repeat: Infinity,
-                      delay: i * 0.5,
-                      ease: "easeInOut"
-                    }}
-                    className="absolute top-1/2 left-1/2 w-1 h-1 bg-ink/20 rounded-full"
-                    style={{ marginLeft: '-2px', marginTop: '-2px' }}
-                  />
-                ))}
               </div>
 
               <div className="space-y-4 text-center max-w-[280px] md:max-w-xs">
-                {isGenerating ? (
+                {isReshuffling ? (
+                  <motion.span 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="text-[13px] md:text-sm tracking-[0.2em] text-ink/70 font-serif block italic animate-pulse"
+                  >
+                    {t('test_resensing_energy')}
+                  </motion.span>
+                ) : isGenerating ? (
                   <>
                     <AnimatePresence mode="wait">
                       <motion.span 
@@ -303,7 +299,11 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
               exit={{ opacity: 0, x: -100 }}
               className="w-full max-w-4xl flex flex-col items-center gap-8 md:gap-12 px-4"
             >
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 w-full">
+              <motion.div 
+                animate={isReshuffling ? { scale: 0.8, opacity: 0, filter: 'blur(10px)' } : { scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                transition={{ duration: 0.5 }}
+                className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 w-full"
+              >
                 {selectedCards.images.map((card, i) => (
                   <EunieCard
                     key={card.id}
@@ -313,12 +313,13 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                     onClick={() => handleFlipImage(i)}
                   />
                 ))}
-              </div>
+              </motion.div>
               
-              {allImagesFlipped && (
+              {allImagesFlipped && !isReshuffling && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   className="fixed inset-0 z-[60] flex items-center justify-center p-6 pointer-events-none"
                 >
                   <motion.div 
@@ -357,7 +358,11 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
               exit={{ opacity: 0, scale: 1.1 }}
               className="w-full max-w-4xl flex flex-col items-center gap-8 md:gap-12 px-4"
             >
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 w-full">
+              <motion.div 
+                animate={isReshuffling ? { scale: 0.8, opacity: 0, filter: 'blur(10px)' } : { scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                transition={{ duration: 0.5 }}
+                className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 w-full"
+              >
                 {selectedCards.words.map((card, i) => (
                   <EunieCard
                     key={card.id}
@@ -367,12 +372,13 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                     onClick={() => handleFlipWord(i)}
                   />
                 ))}
-              </div>
+              </motion.div>
               
-              {allWordsFlipped && (
+              {allWordsFlipped && !isReshuffling && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   className="fixed inset-0 z-[60] flex items-center justify-center p-6 pointer-events-none"
                 >
                   <motion.div 

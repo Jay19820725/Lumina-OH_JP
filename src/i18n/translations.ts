@@ -120,6 +120,7 @@ export const translations = {
     test_revealed_desc: "妳編織的故事將成為能量的地圖。",
     test_revealed_view_report: "查看完整能量報告",
     test_draw_again: "重新抽取",
+    test_resensing_energy: "正在重新感應能量...",
     report_revealed_ready: "靈魂訊息已準備就緒",
 
     // Energy Report Page
@@ -299,6 +300,7 @@ export const translations = {
     test_revealed_desc: "あなたが紡いだ物語が、エネルギーの地図となります。",
     test_revealed_view_report: "詳細なレポートを見る",
     test_draw_again: "もう一度引く",
+    test_resensing_energy: "エネルギーを再感知しています...",
     report_revealed_ready: "魂のメッセージが整いました",
 
     // Energy Report Page

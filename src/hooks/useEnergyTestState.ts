@@ -20,6 +20,7 @@ export const useEnergyTestState = (onComplete: () => void) => {
   const [hasRedrawnWords, setHasRedrawnWords] = useState(false);
   const [zoomedCard, setZoomedCard] = useState<ImageCard | WordCard | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isReshuffling, setIsReshuffling] = useState(false);
   const [loadingTime, setLoadingTime] = useState(0);
 
   // Loading timer for progressive messages
@@ -67,17 +68,31 @@ export const useEnergyTestState = (onComplete: () => void) => {
   };
 
   const handleRedrawImages = async () => {
-    if (hasRedrawnImages) return;
-    await startDraw(); // Re-draw cards from store
-    setFlippedImages([]);
-    setHasRedrawnImages(true);
+    if (hasRedrawnImages || isReshuffling) return;
+    
+    setIsReshuffling(true);
+    
+    // Ritual timing: 2 seconds
+    setTimeout(async () => {
+      await startDraw(); // Re-draw cards from store
+      setFlippedImages([]);
+      setHasRedrawnImages(true);
+      setIsReshuffling(false);
+    }, 2000);
   };
 
   const handleRedrawWords = async () => {
-    if (hasRedrawnWords) return;
-    await startDraw(); // Re-draw cards from store
-    setFlippedWords([]);
-    setHasRedrawnWords(true);
+    if (hasRedrawnWords || isReshuffling) return;
+    
+    setIsReshuffling(true);
+    
+    // Ritual timing: 2 seconds
+    setTimeout(async () => {
+      await startDraw(); // Re-draw cards from store
+      setFlippedWords([]);
+      setHasRedrawnWords(true);
+      setIsReshuffling(false);
+    }, 2000);
   };
 
   const handleContinueToWords = () => {
@@ -133,6 +148,7 @@ export const useEnergyTestState = (onComplete: () => void) => {
     handleRedrawWords,
     hasRedrawnImages,
     hasRedrawnWords,
+    isReshuffling,
     allImagesFlipped: flippedImages.length === 3,
     allWordsFlipped: flippedWords.length === 3,
   };
