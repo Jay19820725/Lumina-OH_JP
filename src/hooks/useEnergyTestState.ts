@@ -67,30 +67,18 @@ export const useEnergyTestState = (onComplete: () => void) => {
     }
   };
 
-  const handleRedrawImages = async () => {
-    if (hasRedrawnImages || isReshuffling) return;
-    
-    setIsReshuffling(true);
-    
-    // Ritual timing: 2 seconds
-    setTimeout(async () => {
-      await startDraw(); // Re-draw cards from store
-      setFlippedImages([]);
-      setHasRedrawnImages(true);
-      setIsReshuffling(false);
-    }, 2000);
-  };
-
-  const handleRedrawWords = async () => {
+  const handleRedrawAll = async () => {
     if (hasRedrawnWords || isReshuffling) return;
     
     setIsReshuffling(true);
     
     // Ritual timing: 2 seconds
     setTimeout(async () => {
-      await startDraw(); // Re-draw cards from store
+      await startDraw(); // Re-draw cards from store (gets new set of images and words)
+      setFlippedImages([]);
       setFlippedWords([]);
       setHasRedrawnWords(true);
+      setDrawStage('drawing_images'); // Jump back to the first stage
       setIsReshuffling(false);
     }, 2000);
   };
@@ -144,9 +132,7 @@ export const useEnergyTestState = (onComplete: () => void) => {
     handlePairingComplete,
     handleAssociationComplete,
     handleComplete,
-    handleRedrawImages,
-    handleRedrawWords,
-    hasRedrawnImages,
+    handleRedrawAll,
     hasRedrawnWords,
     isReshuffling,
     allImagesFlipped: flippedImages.length === 3,

@@ -59,9 +59,7 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
     handlePairingComplete,
     handleAssociationComplete,
     handleComplete,
-    handleRedrawImages,
-    handleRedrawWords,
-    hasRedrawnImages,
+    handleRedrawAll,
     hasRedrawnWords,
     isReshuffling,
     allImagesFlipped,
@@ -335,17 +333,6 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                       {t('test_continue_words')}
                       <ArrowRight className="ml-2 md:ml-4 group-hover:translate-x-1 transition-transform" size={20} />
                     </Button>
-
-                    {!hasRedrawnImages && (
-                      <Button
-                        variant="outline"
-                        onClick={handleRedrawImages}
-                        className="h-12 px-8 bg-white/60 backdrop-blur-xl border-white/50 text-ink hover:text-ink hover:border-white/80 rounded-xl shadow-xl"
-                      >
-                        <RefreshCw size={14} className="mr-2" />
-                        {t('test_redraw_images')}
-                      </Button>
-                    )}
                   </motion.div>
                 </motion.div>
               )}
@@ -398,11 +385,11 @@ export const EnergyTest: React.FC<{ onComplete: () => void }> = ({ onComplete })
                     {!hasRedrawnWords && (
                       <Button
                         variant="outline"
-                        onClick={handleRedrawWords}
+                        onClick={handleRedrawAll}
                         className="h-12 px-8 bg-white/60 backdrop-blur-xl border-white/50 text-ink hover:text-ink hover:border-white/80 rounded-xl shadow-xl"
                       >
                         <RefreshCw size={14} className="mr-2" />
-                        {t('test_redraw_words')}
+                        {t('test_draw_again')}
                       </Button>
                     )}
                   </motion.div>
