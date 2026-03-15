@@ -4,7 +4,7 @@ import { useLanguage } from '../i18n/LanguageContext';
 
 export const useEnergyReport = (onReset: () => void) => {
   const { report, setReport } = useTest();
-  const { language: currentLangCode } = useLanguage();
+  const { language: currentLangCode, setLanguage } = useLanguage();
   const [isLoadingShared, setIsLoadingShared] = useState(false);
   const [showWeavingDialog, setShowWeavingDialog] = useState(false);
   const [selectedShareThumbnail, setSelectedShareThumbnail] = useState<string | null>(report?.shareThumbnail || null);
@@ -52,6 +52,12 @@ export const useEnergyReport = (onReset: () => void) => {
             
             if (data && !data.error) {
               setReport(data);
+              
+              // Switch language if report has a different language
+              if (data.lang && data.lang !== currentLangCode) {
+                setLanguage(data.lang as any);
+              }
+
               if (!data.isAiComplete && retryCount < maxRetries) {
                 retryCount++;
                 setTimeout(fetchReport, 3000);

@@ -32,15 +32,16 @@ export const EnergyProfile: React.FC<EnergyProfileProps> = ({ report }) => {
   }));
 
   const translateElement = (el: string) => {
+    const normalizedEl = (el || '').toLowerCase();
     const map: Record<string, string> = {
       wood: t('home_element_wood'),
       fire: t('home_element_fire'),
       earth: t('home_element_earth'),
       metal: t('home_element_metal'),
       water: t('home_element_water'),
-      None: t('none')
+      none: t('none')
     };
-    return map[el] || el;
+    return map[normalizedEl] || el;
   };
 
   return (

@@ -308,7 +308,7 @@ export const translations = {
     report_title: "エネルギー・プロファイル",
     report_subtitle: "エネルギー・プロファイル報告",
     report_created_at: "作成日",
-    report_balance: "バランス",
+    report_balance: "バランス度",
     report_dominant: "今、放たれる輝き",
     report_weak: "静かに育む種",
     report_dominant_desc: "あなたの内なる「{element}」は今、高い周波数で共鳴しています。この力は、現在のあなたに独特な直感と行動力をもたらしています。それはあなたにとって最も自然なリソースです。この流れを信じ続けてください。",

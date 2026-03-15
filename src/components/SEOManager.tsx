@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { SEOSettings } from '../core/types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export const SEOManager: React.FC = () => {
+  const { language } = useLanguage();
   const { data: seo } = useQuery<SEOSettings>({
     queryKey: ['settings', 'seo'],
     queryFn: async () => {
@@ -16,7 +18,16 @@ export const SEOManager: React.FC = () => {
     if (!seo) return;
 
     // Update Title
-    document.title = seo.title;
+    let displayTitle = seo.title;
+    
+    // If it's the default title, localize it
+    if (displayTitle === "EUNIE 嶼妳 | 懂妳的能量，平衡妳的生活") {
+      displayTitle = language === 'ja' 
+        ? "EUNIE | あなたのエネルギーを理解し、生活を整える" 
+        : "EUNIE 嶼妳 | 懂妳的能量，平衡妳的生活";
+    }
+    
+    document.title = displayTitle;
 
     // Update Meta Tags
     const updateMeta = (name: string, content: string, attr: 'name' | 'property' = 'name') => {
@@ -66,7 +77,7 @@ export const SEOManager: React.FC = () => {
       updateMeta('google-site-verification', seo.search_console_id);
     }
 
-  }, [seo]);
+  }, [seo, language]);
 
   return null;
 };

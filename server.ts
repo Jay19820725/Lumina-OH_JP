@@ -316,6 +316,31 @@ async function startServer() {
       let ogImage = "https://picsum.photos/seed/lumina-og/1200/630";
       const url = `${process.env.APP_URL || 'https://' + req.get('host')}${req.originalUrl}`;
 
+      // Language detection for SEO
+      let seoLang = 'zh';
+      if (req.params.id) {
+        const langResult = await pool.query("SELECT lang FROM energy_reports WHERE id = $1", [req.params.id]);
+        if (langResult.rows.length > 0) {
+          seoLang = langResult.rows[0].lang || 'zh';
+        }
+      }
+
+      const seoTranslations: Record<string, { title: string, description: string }> = {
+        zh: {
+          title: "EUNIE 嶼妳 | 懂妳的能量，平衡妳的生活",
+          description: "透過五行能量卡片，探索內在自我，獲得每日心靈指引與能量平衡。"
+        },
+        ja: {
+          title: "EUNIE | あなたのエネルギーを理解し、生活を整える",
+          description: "五行エネルギーカードを通じて内なる自己を探索し、日々の心の指引とエネルギーバランスを得る。"
+        }
+      };
+
+      if (seoLang === 'ja') {
+        title = seoTranslations.ja.title;
+        description = seoTranslations.ja.description;
+      }
+
       // Fetch global SEO settings
       const seoResult = await pool.query("SELECT value FROM site_settings WHERE key = 'seo'");
       if (seoResult.rows.length > 0) {
@@ -345,15 +370,21 @@ async function startServer() {
 
           if (reportLang === 'ja') {
             description = `EUNIEでのエネルギー分析結果です。主要な要素：${translatedElement}。`;
+            if (!report.today_theme) {
+              title = seoTranslations.ja.title;
+            }
           } else {
             description = `這是我在 EUNIE 的能量剖析結果。主導元素：${translatedElement}。`;
+            if (!report.today_theme) {
+              title = seoTranslations.zh.title;
+            }
           }
         }
       }
 
       const html = `
         <!DOCTYPE html>
-        <html lang="zh-TW">
+        <html lang="${seoLang === 'ja' ? 'ja' : 'zh-TW'}">
         <head>
           <meta charset="UTF-8">
           <title>${title}</title>

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTest } from '../store/TestContext';
 import { Button } from '../components/ui/Button';
@@ -41,6 +41,15 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
     handleSelectThumbnail,
     isAiLoading,
   } = useEnergyReport(onReset);
+
+  // Update document title when report is loaded
+  useEffect(() => {
+    if (report?.todayTheme) {
+      document.title = `${report.todayTheme} | EUNIE`;
+    } else if (report) {
+      document.title = `${t('report_title')} | EUNIE`;
+    }
+  }, [report?.todayTheme, report?.id, t]);
 
   if (isLoadingShared) {
     return (
