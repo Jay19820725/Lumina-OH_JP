@@ -269,8 +269,8 @@ async function startServer() {
           module_name: 'analysis_task',
           category: 'scenario',
           status: 'active',
-          content_zh: '請根據用戶選擇的卡片與聯想文字，進行深度的心理引導。妳需要分析卡片中的象徵意義，並給出一段溫暖的建議。最後，妳必須輸出一個 JSON 格式，包含引導文字與能量數值更新。\n\n【用戶抽卡與連想】\n{{USER_DATA}}\n\n【當前五行能量權重】\n{{ENERGY_DATA}}',
-          content_ja: '相談者が選んだカードと連想した言葉に基づき、深い心理的ガイダンスを行ってください。カードの象徴的な意味を分析し、温かいアドバイスを伝えます。最後に、ガイダンス文とエネルギー数値の更新を含むJSON形式で出力してください。\n\n【ユーザーデータ】\n{{USER_DATA}}\n\n【現在のエネルギー】\n{{ENERGY_DATA}}'
+          content_zh: '請根據用戶選擇的卡片與聯想文字，進行深度的心理引導。妳需要分析卡片中的象徵意義，並給出一段溫暖的建議。請務必使用繁體中文 (zh-TW) 回答，不要夾雜日文。最後，妳必須輸出一個 JSON 格式，包含引導文字與能量數值更新。\n\n【用戶抽卡與連想】\n{{USER_DATA}}\n\n【當前五行能量權重】\n{{ENERGY_DATA}}',
+          content_ja: '相談者が選んだカードと連想した言葉に基づき、深い心理的ガイダンスを行ってください。カードの象徴的な意味を分析し、温かいアドバイスを伝えます。必ず日本語 (ja-JP) で回答し、中国語を混ぜないでください。最後に、ガイダンス文とエネルギー数値の更新を含むJSON形式で出力してください。\n\n【ユーザーデータ】\n{{USER_DATA}}\n\n【現在のエネルギー】\n{{ENERGY_DATA}}'
         },
         {
           module_name: 'format_instruction',
@@ -334,8 +334,20 @@ async function startServer() {
           // Use selected thumbnail if available, otherwise use dominant element image or default
           ogImage = report.share_thumbnail || ogImage;
           
-          // Optional: Add more descriptive text for reports
-          description = `這是我在 EUNIE 的能量剖析結果。主導元素：${report.dominant_element}。`;
+          // Language-aware description
+          const reportLang = report.lang || 'zh';
+          const elementMap: Record<string, Record<string, string>> = {
+            zh: { wood: '木', fire: '火', earth: '土', metal: '金', water: '水', none: '平衡' },
+            ja: { wood: '木', fire: '火', earth: '土', metal: '金', water: '水', none: 'バランス' }
+          };
+          const dominant = (report.dominant_element || 'none').toLowerCase();
+          const translatedElement = elementMap[reportLang as 'zh' | 'ja']?.[dominant] || report.dominant_element;
+
+          if (reportLang === 'ja') {
+            description = `EUNIEでのエネルギー分析結果です。主要な要素：${translatedElement}。`;
+          } else {
+            description = `這是我在 EUNIE 的能量剖析結果。主導元素：${translatedElement}。`;
+          }
         }
       }
 

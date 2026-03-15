@@ -43,26 +43,45 @@ export const generateAIAnalysis = async (
     `;
   }
 
-  const userData = selectedCards.pairs?.map((pair, i) => `
-    配對 ${i + 1}:
-    - 圖片卡: [${pair.image.name}] (五行權重: ${JSON.stringify(pair.image.elements)})
-    - 文字卡: [${pair.word.name}] (五行權重: ${JSON.stringify(pair.word.elements)})
-    - 用戶連想: "${pair.association}"
-  `).join('\n');
+  const userData = selectedCards.pairs?.map((pair, i) => {
+    if (currentLang === 'ja') {
+      return `
+        ペア ${i + 1}:
+        - 画像カード: [${pair.image.name}] (五行エネルギー: ${JSON.stringify(pair.image.elements)})
+        - 言葉カード: [${pair.word.name}] (五行エネルギー: ${JSON.stringify(pair.word.elements)})
+        - ユーザーの連想: "${pair.association}"
+      `;
+    }
+    return `
+      配對 ${i + 1}:
+      - 圖片卡: [${pair.image.name}] (五行權重: ${JSON.stringify(pair.image.elements)})
+      - 文字卡: [${pair.word.name}] (五行權重: ${JSON.stringify(pair.word.elements)})
+      - 用戶連想: "${pair.association}"
+    `;
+  }).join('\n');
 
   // Ensure placeholders exist, if not, append data to the end of the prompt
   let finalPrompt = promptTemplate;
   
+  // Add strict language instruction at the beginning
+  const langInstruction = currentLang === 'ja' 
+    ? "【重要】必ず日本語 (ja-JP) で回答してください。中国語を混ぜないでください。" 
+    : "【重要】請務必使用繁體中文 (zh-TW) 回答。不要夾雜日文。";
+  
+  finalPrompt = `${langInstruction}\n\n${finalPrompt}`;
+
   if (finalPrompt.includes('{{USER_DATA}}')) {
     finalPrompt = finalPrompt.replace('{{USER_DATA}}', userData || "");
   } else {
-    finalPrompt += `\n\n【用戶抽卡與連想資料】\n${userData}`;
+    const label = currentLang === 'ja' ? "【ユーザーデータ】" : "【用戶抽卡與連想資料】";
+    finalPrompt += `\n\n${label}\n${userData}`;
   }
 
   if (finalPrompt.includes('{{ENERGY_DATA}}')) {
     finalPrompt = finalPrompt.replace('{{ENERGY_DATA}}', JSON.stringify(totalScores));
   } else {
-    finalPrompt += `\n\n【當前五行能量權重】\n${JSON.stringify(totalScores)}`;
+    const label = currentLang === 'ja' ? "【エネルギーデータ】" : "【當前五行能量權重】";
+    finalPrompt += `\n\n${label}\n${JSON.stringify(totalScores)}`;
   }
 
   try {
