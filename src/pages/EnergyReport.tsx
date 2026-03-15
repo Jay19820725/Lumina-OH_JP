@@ -9,6 +9,7 @@ import { WeavingGuidanceDialog } from '../components/report/WeavingGuidanceDialo
 import { EnergyProfile } from '../components/report/EnergyProfile';
 import { PsychInsight } from '../components/report/PsychInsight';
 import { CardCollage } from '../components/report/CardCollage';
+import { PoeticLoading } from '../components/report/PoeticLoading';
 
 const WeavingLoader: React.FC<{ label?: string }> = ({ label }) => {
   const { t } = useLanguage();
@@ -126,7 +127,12 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
           >
             <span className="text-[14px] md:text-[10px] uppercase tracking-[0.8em] text-ink-muted mb-4 md:mb-6 block">{t('report_subtitle')}</span>
             <h1 className="text-[38px] md:text-[60px] font-serif italic font-extralight tracking-tighter-massive leading-[60.533px] md:leading-[111.533px] text-ink mb-8 text-left">
-              {displayContent.todayTheme || "..."}
+              {displayContent.todayTheme || (
+                <PoeticLoading 
+                  label={t('report_loading_theme')} 
+                  className="text-[24px] md:text-[40px] opacity-40" 
+                />
+              )}
             </h1>
           </motion.div>
           <motion.div 
@@ -169,7 +175,10 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
         >
           <span className="text-[15px] md:text-[10px] uppercase tracking-[0.8em] text-ink-muted block">{t('report_reflection')}</span>
           {isAiLoading ? (
-            <div className="h-12 bg-ink/5 rounded-xl w-full max-w-2xl animate-pulse" />
+            <PoeticLoading 
+              label={t('report_loading_reflection')} 
+              className="text-[20px] md:text-[24px] opacity-40 py-10" 
+            />
           ) : (
             <p className="text-[28px] md:text-[35px] font-serif font-extralight leading-relaxed text-ink italic tracking-tight md:w-[900px] md:text-center p-[10px] md:ml-[10px] mb-0">
               「{displayContent.reflection || "..."}」
