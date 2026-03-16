@@ -41,7 +41,7 @@ const EMOTIONS: { tag: EmotionTag; label: string; icon: React.ReactNode; color: 
 ];
 
 export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) => {
-  const { user, profile } = useAuth();
+  const { user, profile, isPremium } = useAuth();
   const { setReport } = useTest();
   const { language, t } = useLanguage();
   const [reports, setReports] = useState<AnalysisReport[]>([]);
@@ -77,7 +77,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
         setHasOtherLang(reportData.hasOtherLang || false);
 
         // Fetch Journals if premium
-        if (profile?.role === 'premium_member') {
+        if (isPremium) {
           const journalData = await journalService.getEntries(user.uid);
           // Filter journals by language if they have a lang field
           // For now, journals don't have a lang field in the schema, but we could add it.
@@ -92,7 +92,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
     };
 
     fetchData();
-  }, [user, profile, language]);
+  }, [user, profile, isPremium, language]);
 
   const timelineItems = useMemo(() => {
     const items: TimelineItem[] = [
@@ -209,7 +209,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
         )}
 
         {/* Weekly Insight Section (Mocked for now) */}
-        {profile?.role === 'premium_member' && timelineItems.length > 0 && (
+        {isPremium && timelineItems.length > 0 && (
           <GlassCard className="mb-16 p-8 md:p-12 bg-wood/5 border-wood/10">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-10 h-10 rounded-full bg-wood/10 flex items-center justify-center text-wood">
@@ -242,7 +242,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
 
         <div className="flex justify-between items-center mb-12">
           <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted">Timeline</h3>
-          {profile?.role === 'premium_member' && (
+          {isPremium && (
             <Button 
               onClick={() => setIsAddingJournal(!isAddingJournal)}
               variant={isAddingJournal ? 'outline' : 'primary'}

@@ -15,7 +15,7 @@ const EMOTIONS: { tag: EmotionTag; label: string; icon: React.ReactNode; color: 
 ];
 
 export const EnergyJournal: React.FC = () => {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, isPremium, loading: authLoading } = useAuth();
   const [entries, setEntries] = useState<EnergyJournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -27,12 +27,12 @@ export const EnergyJournal: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user && profile?.role === 'premium_member') {
+    if (user && isPremium) {
       fetchEntries();
     } else if (!authLoading) {
       setLoading(false);
     }
-  }, [user, profile, authLoading]);
+  }, [user, profile, isPremium, authLoading]);
 
   const fetchEntries = async () => {
     if (!user) return;
@@ -86,7 +86,7 @@ export const EnergyJournal: React.FC = () => {
     );
   }
 
-  if (profile?.role !== 'premium_member') {
+  if (profile && !isPremium) {
     return (
       <div className="ma-container py-20 px-4 text-center">
         <GlassCard className="max-w-2xl mx-auto p-12 space-y-8">

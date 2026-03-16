@@ -1,17 +1,17 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, User, History, Home, BookOpen, Star, ShieldAlert } from 'lucide-react';
-import { UserProfile } from '../../core/types';
+import { Sparkles, User, History, Home, ShieldAlert } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface NavigationProps {
   currentPath: string;
   onNavigate: (path: string) => void;
-  profile: UserProfile | null;
 }
 
-export const Navigation: React.FC<NavigationProps> = ({ currentPath, onNavigate, profile }) => {
+export const Navigation: React.FC<NavigationProps> = ({ currentPath, onNavigate }) => {
   const { t } = useLanguage();
+  const { isAdmin } = useAuth();
   
   const navItems = [
     { path: 'home', label: t('nav_home'), icon: Home },
@@ -20,7 +20,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPath, onNavigate,
     { path: 'profile', label: t('nav_profile'), icon: User },
   ];
 
-  if (profile?.role === 'admin') {
+  if (isAdmin) {
     navItems.push({ path: 'admin', label: t('admin_panel'), icon: ShieldAlert });
   }
 

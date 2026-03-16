@@ -162,15 +162,13 @@ export const userService = {
    * Update subscription status
    */
   async updateSubscription(uid: string, status: 'active' | 'inactive' | 'none'): Promise<void> {
-    const role: UserRole = status === 'active' ? 'premium_member' : 'free_member';
     const response = await fetch(`/api/users/${uid}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ 
-        subscription_status: status,
-        role: role
+        subscription_status: status
       }),
     });
 

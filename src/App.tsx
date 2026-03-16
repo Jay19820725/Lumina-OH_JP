@@ -142,7 +142,6 @@ function AppContent() {
       <Navigation 
         currentPath={currentPage} 
         onNavigate={(path) => navigate(path as Page)} 
-        profile={profile}
       />
       
       <SoundControl />

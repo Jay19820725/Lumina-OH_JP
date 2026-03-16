@@ -299,7 +299,7 @@ export const AdminDashboard: React.FC = () => {
           <thead>
             <tr className="bg-ink/5 text-ink-muted uppercase tracking-widest">
               <th className="px-6 py-4 font-medium">用戶</th>
-              <th className="px-6 py-4 font-medium">角色</th>
+              <th className="px-6 py-4 font-medium">身分與訂閱</th>
               <th className="px-6 py-4 font-medium">加入日期</th>
               <th className="px-6 py-4 font-medium">最後登入</th>
               <th className="px-6 py-4 font-medium">操作</th>
@@ -320,12 +320,18 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest ${
-                    user.role === 'admin' ? 'bg-fire/10 text-fire' : 
-                    user.role === 'premium_member' ? 'bg-amber-100 text-amber-700' : 'bg-ink/5 text-ink-muted'
-                  }`}>
-                    {user.role === 'admin' ? '管理員' : user.role === 'premium_member' ? '尊榮會員' : '一般會員'}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest w-fit ${
+                      user.role === 'admin' ? 'bg-fire/10 text-fire' : 'bg-ink/5 text-ink-muted'
+                    }`}>
+                      {user.role === 'admin' ? '管理員' : '一般用戶'}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest w-fit ${
+                      user.subscription_status === 'active' ? 'bg-amber-100 text-amber-700' : 'bg-ink/5 text-ink-muted'
+                    }`}>
+                      {user.subscription_status === 'active' ? '尊榮會員' : '免費方案'}
+                    </span>
+                  </div>
                 </td>
                 <td className="px-6 py-4 text-ink-muted">{formatDate(user.register_date)}</td>
                 <td className="px-6 py-4 text-ink-muted">{formatDate(user.last_login)}</td>
@@ -1225,7 +1231,7 @@ export const AdminDashboard: React.FC = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 uppercase tracking-widest text-[10px]">
-                  {user.role === 'premium_member' ? '尊榮會員' : '一般會員'}
+                  {user.role === 'admin' ? '管理員' : '一般用戶'}
                 </td>
                 <td className="px-6 py-4 text-ink-muted">{formatDate(user.register_date)}</td>
               </tr>

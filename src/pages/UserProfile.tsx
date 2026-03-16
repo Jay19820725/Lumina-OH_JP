@@ -14,7 +14,7 @@ interface UserProfileProps {
 }
 
 export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
-  const { user, profile, login, logout, loading, refreshProfile, setProfile } = useAuth();
+  const { user, profile, login, logout, loading, refreshProfile, setProfile, isAdmin, isSubscribed, isPremium } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const [isUpgrading, setIsUpgrading] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
@@ -51,9 +51,12 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
     setIsUpgrading(true);
     
     try {
+      // Preserve admin role if already admin
+      const newRole = isAdmin ? 'admin' : 'premium_member';
+      
       const updatedProfile = { 
         ...profile, 
-        role: 'premium_member' as const, 
+        role: newRole as any, 
         subscription_status: 'active' as const 
       };
       setProfile(updatedProfile);
@@ -127,11 +130,11 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               {profile ? (
                 <div className="flex items-center gap-2 justify-center md:justify-start">
                   <span className={`text-[8px] px-2 py-0.5 rounded-full border ${
-                    profile.role === 'admin' ? 'border-fire/20 text-fire bg-fire/5' :
-                    profile.role === 'premium_member' ? 'border-amber-200 text-amber-600 bg-amber-50' : 'border-ink/10 text-ink-muted'
+                    isAdmin ? 'border-fire/20 text-fire bg-fire/5' :
+                    isSubscribed ? 'border-amber-200 text-amber-600 bg-amber-50' : 'border-ink/10 text-ink-muted'
                   } uppercase tracking-widest`}>
-                    {profile.role === 'admin' ? 'Administrator' : 
-                     profile.role === 'premium_member' ? 'Premium Member' : 'Free Member'}
+                    {isAdmin ? 'Administrator' : 
+                     isSubscribed ? 'Premium Member' : 'Free Member'}
                   </span>
                 </div>
               ) : user ? (
@@ -170,7 +173,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                     {t('edit_profile')}
                   </Button>
                 )}
-                {profile?.role === 'admin' && !isEditing && (
+                {isAdmin && !isEditing && (
                   <Button 
                     onClick={() => onNavigate?.('admin')}
                     className="h-11 md:h-12 px-6 md:px-8 text-[10px] md:text-xs tracking-[0.2em] bg-fire/10 text-fire border-fire/20 hover:bg-fire hover:text-white"
@@ -294,7 +297,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
             transition={{ delay: 0.6 }}
             className="mt-12"
           >
-            {profile.role === 'premium_member' ? (
+            {isPremium ? (
               <GlassCard className="bg-amber-50/30 border-amber-200/50 p-8 md:p-12">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                   <div className="space-y-4 text-center md:text-left">

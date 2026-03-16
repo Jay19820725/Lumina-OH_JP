@@ -8,6 +8,9 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  isAdmin: boolean;
+  isSubscribed: boolean;
+  isPremium: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -92,8 +95,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const isAdmin = profile?.role === 'admin';
+  const isSubscribed = profile?.subscription_status === 'active';
+  const isPremium = isAdmin || isSubscribed;
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, login, logout, refreshProfile, setProfile }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      profile, 
+      loading, 
+      isAdmin,
+      isSubscribed,
+      isPremium,
+      login, 
+      logout, 
+      refreshProfile, 
+      setProfile 
+    }}>
       {children}
     </AuthContext.Provider>
   );
