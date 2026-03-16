@@ -4,6 +4,7 @@ import { createServer as createViteServer } from "vite";
 import pg from "pg";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import { WORDS, IMAGES } from "./src/core/cards.js";
 
@@ -107,6 +108,8 @@ async function startServer() {
       -- Image Cards table
       CREATE TABLE IF NOT EXISTS cards_image (
         id TEXT PRIMARY KEY,
+        locale TEXT DEFAULT 'zh-TW',
+        name_en TEXT,
         image_url TEXT NOT NULL,
         description TEXT,
         elements JSONB DEFAULT '{"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}'
@@ -115,11 +118,38 @@ async function startServer() {
       -- Word Cards table
       CREATE TABLE IF NOT EXISTS cards_word (
         id TEXT PRIMARY KEY,
+        locale TEXT DEFAULT 'zh-TW',
+        name_en TEXT,
         text TEXT NOT NULL,
         image_url TEXT,
         description TEXT,
         elements JSONB DEFAULT '{"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}'
       );
+
+      -- Add locale and name_en columns if they don't exist
+      DO $$ 
+      BEGIN 
+        BEGIN
+          ALTER TABLE cards_image ADD COLUMN locale TEXT DEFAULT 'zh-TW';
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE cards_image ADD COLUMN name_en TEXT;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE cards_word ADD COLUMN locale TEXT DEFAULT 'zh-TW';
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE cards_word ADD COLUMN name_en TEXT;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+      END $$;
 
       -- AI Prompts table (Modular & Bilingual)
       DROP TABLE IF EXISTS ai_prompts;
@@ -227,34 +257,8 @@ async function startServer() {
     client.release();
     console.log("Database tables initialized");
 
-    // Auto-seed cards if empty
-    const imageCount = await pool.query("SELECT COUNT(*) FROM cards_image");
-    if (parseInt(imageCount.rows[0].count) === 0) {
-      console.log("Seeding image cards...");
-      for (const img of IMAGES) {
-        const idStr = img.id.toString().padStart(2, '0');
-        await pool.query(
-          `INSERT INTO cards_image (id, image_url, description, elements) 
-           VALUES ($1, $2, $3, $4)`,
-          [`img_${idStr}`, `https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/oh-cards%2Fimg_${idStr}.jpeg?alt=media`, img.description || '', JSON.stringify({ wood: 20, fire: 20, earth: 20, metal: 20, water: 20 })]
-        );
-      }
-      console.log("Image cards seeded");
-    }
-
-    const wordCount = await pool.query("SELECT COUNT(*) FROM cards_word");
-    if (parseInt(wordCount.rows[0].count) === 0) {
-      console.log("Seeding word cards...");
-      for (const word of WORDS) {
-        const idStr = word.id.toString().padStart(2, '0');
-        await pool.query(
-          `INSERT INTO cards_word (id, text, image_url, description, elements) 
-           VALUES ($1, $2, $3, $4, $5)`,
-          [`word_${idStr}`, word.text || '', `https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/oh-cards%2Fword_${idStr}.jpeg?alt=media`, '', JSON.stringify({ wood: word.wood || 0, fire: word.fire || 0, earth: word.earth || 0, metal: word.metal || 0, water: word.water || 0 })]
-        );
-      }
-      console.log("Word cards seeded");
-    }
+    // Sync cards from JSON files (Correct Data Source)
+    await syncCardsFromJson(pool);
 
     // Auto-seed default prompts if empty
     const promptCount = await pool.query("SELECT COUNT(*) FROM ai_prompts");
@@ -604,8 +608,16 @@ async function startServer() {
 
   // Cards API
   app.get("/api/cards/image", async (req, res) => {
+    const { locale } = req.query;
     try {
-      const result = await pool.query("SELECT * FROM cards_image");
+      let query = "SELECT * FROM cards_image";
+      const params = [];
+      if (locale) {
+        query += " WHERE locale = $1";
+        params.push(locale);
+      }
+      query += " ORDER BY id ASC";
+      const result = await pool.query(query, params);
       res.json(result.rows);
     } catch (err) {
       console.error("Error fetching image cards:", err);
@@ -614,8 +626,16 @@ async function startServer() {
   });
 
   app.get("/api/cards/word", async (req, res) => {
+    const { locale } = req.query;
     try {
-      const result = await pool.query("SELECT * FROM cards_word");
+      let query = "SELECT * FROM cards_word";
+      const params = [];
+      if (locale) {
+        query += " WHERE locale = $1";
+        params.push(locale);
+      }
+      query += " ORDER BY id ASC";
+      const result = await pool.query(query, params);
       res.json(result.rows);
     } catch (err) {
       console.error("Error fetching word cards:", err);
@@ -922,16 +942,18 @@ async function startServer() {
   });
 
   app.post("/api/admin/cards/image", async (req, res) => {
-    const { id, image_url, description, elements } = req.body;
+    const { id, image_url, description, elements, locale, name_en } = req.body;
     try {
       await pool.query(
-        `INSERT INTO cards_image (id, image_url, description, elements) 
-         VALUES ($1, $2, $3, $4) 
+        `INSERT INTO cards_image (id, image_url, description, elements, locale, name_en) 
+         VALUES ($1, $2, $3, $4, $5, $6) 
          ON CONFLICT (id) DO UPDATE SET 
            image_url = EXCLUDED.image_url, 
            description = EXCLUDED.description, 
-           elements = EXCLUDED.elements`,
-        [id, image_url, description, JSON.stringify(elements)]
+           elements = EXCLUDED.elements,
+           locale = EXCLUDED.locale,
+           name_en = EXCLUDED.name_en`,
+        [id, image_url, description, JSON.stringify(elements), locale || 'zh-TW', name_en]
       );
       res.json({ success: true });
     } catch (err) {
@@ -952,17 +974,19 @@ async function startServer() {
   });
 
   app.post("/api/admin/cards/word", async (req, res) => {
-    const { id, text, image_url, description, elements } = req.body;
+    const { id, text, image_url, description, elements, locale, name_en } = req.body;
     try {
       await pool.query(
-        `INSERT INTO cards_word (id, text, image_url, description, elements) 
-         VALUES ($1, $2, $3, $4, $5) 
+        `INSERT INTO cards_word (id, text, image_url, description, elements, locale, name_en) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7) 
          ON CONFLICT (id) DO UPDATE SET 
            text = EXCLUDED.text, 
            image_url = EXCLUDED.image_url, 
            description = EXCLUDED.description, 
-           elements = EXCLUDED.elements`,
-        [id, text, image_url, description, JSON.stringify(elements)]
+           elements = EXCLUDED.elements,
+           locale = EXCLUDED.locale,
+           name_en = EXCLUDED.name_en`,
+        [id, text, image_url, description, JSON.stringify(elements), locale || 'zh-TW', name_en]
       );
       res.json({ success: true });
     } catch (err) {
@@ -1293,6 +1317,74 @@ async function startServer() {
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+}
+
+/**
+ * Syncs card data from JSON files in /public/data into the database.
+ * This ensures the database matches the "correct" frontend data.
+ */
+async function syncCardsFromJson(pool: pg.Pool) {
+  const dataDir = path.join(process.cwd(), "public", "data");
+  const files = [
+    { name: "cards_tw_img.json", type: "img", locale: "zh-TW" },
+    { name: "cards_jp_img.json", type: "img", locale: "ja-JP" },
+    { name: "cards_tw_word.json", type: "word", locale: "zh-TW" },
+    { name: "cards_jp_word.json", type: "word", locale: "ja-JP" },
+  ];
+
+  console.log("Starting card data synchronization from JSON files...");
+
+  try {
+    // We'll clear the tables first to ensure a clean sync as requested
+    await pool.query("DELETE FROM cards_image");
+    await pool.query("DELETE FROM cards_word");
+
+    for (const file of files) {
+      const filePath = path.join(dataDir, file.name);
+      if (!fs.existsSync(filePath)) {
+        console.warn(`File not found: ${filePath}`);
+        continue;
+      }
+
+      const rawData = fs.readFileSync(filePath, "utf-8");
+      const cards = JSON.parse(rawData);
+
+      for (const card of cards) {
+        if (file.type === "img") {
+          await pool.query(
+            `INSERT INTO cards_image (id, locale, name_en, image_url, description, elements)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [
+              card.card_id,
+              card.locale,
+              card.card_name_en,
+              card.image_path,
+              card.card_name, // Using card_name as description for now
+              JSON.stringify(card.elements)
+            ]
+          );
+        } else {
+          await pool.query(
+            `INSERT INTO cards_word (id, locale, name_en, text, image_url, description, elements)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [
+              card.card_id,
+              card.locale,
+              card.card_name_en,
+              card.card_name, // In word cards, card_name is the text
+              card.image_path,
+              card.card_name,
+              JSON.stringify(card.elements)
+            ]
+          );
+        }
+      }
+      console.log(`Synced ${cards.length} cards from ${file.name}`);
+    }
+    console.log("Card data synchronization complete.");
+  } catch (err) {
+    console.error("Error during card synchronization:", err);
+  }
 }
 
 startServer();

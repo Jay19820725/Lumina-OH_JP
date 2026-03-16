@@ -1,4 +1,5 @@
 import { ImageCard, WordCard, SelectedCards } from '../core/types';
+import { getFullStorageUrl } from '../utils/urlHelper';
 
 /**
  * EUNIE Card Draw Engine
@@ -27,31 +28,15 @@ function secureShuffle<T>(array: T[]): T[] {
 }
 
 /**
- * Maps app language to data file key
- */
-function getLocaleKey(language: string): string {
-  return language === 'ja' ? 'jp' : 'tw';
-}
-
-/**
- * Constructs Firebase Storage URL for an asset
- */
-function getFirebaseUrl(imagePath: string): string {
-  const bucket = 'yuni-8f439.firebasestorage.app';
-  const fullPath = `eunie-assets/${imagePath}`;
-  return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(fullPath)}?alt=media`;
-}
-
-/**
- * Fetches card data from JSON files
+ * Fetches card data from backend API
  */
 async function fetchCardData(language: string, type: 'img' | 'word'): Promise<any[]> {
-  const localeKey = getLocaleKey(language);
-  const fileName = `cards_${localeKey}_${type}.json`;
+  const locale = language === 'ja' ? 'ja-JP' : 'zh-TW';
+  const cardType = type === 'img' ? 'image' : 'word';
   try {
-    const response = await fetch(`/data/${fileName}`);
+    const response = await fetch(`/api/cards/${cardType}?locale=${locale}`);
     if (!response.ok) {
-      throw new Error(`Failed to fetch ${fileName}`);
+      throw new Error(`Failed to fetch ${cardType} cards`);
     }
     return await response.json();
   } catch (error) {
@@ -67,10 +52,12 @@ export async function drawCardImage(count: number = 3, language: string = 'zh'):
   if (!imageDeckCache[language]) {
     const rawData = await fetchCardData(language, 'img');
     imageDeckCache[language] = rawData.map(item => ({
-      id: item.card_id,
-      name: item.card_name,
-      imageUrl: getFirebaseUrl(item.image_path),
-      description: item.card_name_en || item.card_name,
+      id: item.id,
+      locale: item.locale,
+      name: item.description || '',
+      name_en: item.name_en,
+      imageUrl: getFullStorageUrl(item.image_url),
+      description: item.description,
       elements: item.elements
     } as ImageCard));
   }
@@ -86,11 +73,13 @@ export async function drawCardWord(count: number = 3, language: string = 'zh'): 
   if (!wordDeckCache[language]) {
     const rawData = await fetchCardData(language, 'word');
     wordDeckCache[language] = rawData.map(item => ({
-      id: item.card_id,
-      name: item.card_name,
-      text: item.card_name,
-      imageUrl: getFirebaseUrl(item.image_path),
-      description: item.card_name_en || item.card_name,
+      id: item.id,
+      locale: item.locale,
+      name: item.text || '',
+      name_en: item.name_en,
+      text: item.text || '',
+      imageUrl: getFullStorageUrl(item.image_url),
+      description: item.description,
       elements: item.elements
     } as WordCard));
   }

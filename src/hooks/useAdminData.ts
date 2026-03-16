@@ -23,13 +23,13 @@ export const useAdminSessions = () => {
   });
 };
 
-export const useAdminCards = () => {
+export const useAdminCards = (locale?: string) => {
   return useQuery({
-    queryKey: ['admin', 'cards'],
+    queryKey: ['admin', 'cards', locale],
     queryFn: async () => {
       const [images, words] = await Promise.all([
-        adminService.getAllImageCards(),
-        adminService.getAllWordCards()
+        adminService.getAllImageCards(locale),
+        adminService.getAllWordCards(locale)
       ]);
       return { images, words };
     },

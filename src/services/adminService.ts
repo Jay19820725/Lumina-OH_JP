@@ -1,4 +1,5 @@
 import { UserProfile, Session, ImageCard, WordCard, AIPrompt } from '../core/types';
+import { getFullStorageUrl, getRelativePath } from '../utils/urlHelper';
 
 export const adminService = {
   /**
@@ -54,39 +55,49 @@ export const adminService = {
   /**
    * Cards Management
    */
-  async getAllImageCards(): Promise<ImageCard[]> {
-    const response = await fetch('/api/cards/image');
+  async getAllImageCards(locale?: string): Promise<ImageCard[]> {
+    const url = locale ? `/api/cards/image?locale=${locale}` : '/api/cards/image';
+    const response = await fetch(url);
     if (!response.ok) return [];
     const cards = await response.json();
     return cards.map((c: any) => ({
       ...c,
-      imageUrl: c.image_url
+      imageUrl: getFullStorageUrl(c.image_url)
     }));
   },
 
-  async getAllWordCards(): Promise<WordCard[]> {
-    const response = await fetch('/api/cards/word');
+  async getAllWordCards(locale?: string): Promise<WordCard[]> {
+    const url = locale ? `/api/cards/word?locale=${locale}` : '/api/cards/word';
+    const response = await fetch(url);
     if (!response.ok) return [];
     const cards = await response.json();
     return cards.map((c: any) => ({
       ...c,
-      imageUrl: c.image_url
+      imageUrl: getFullStorageUrl(c.image_url)
     }));
   },
 
   async saveImageCard(card: Partial<ImageCard>): Promise<void> {
+    const data = {
+      ...card,
+      image_url: card.imageUrl ? getRelativePath(card.imageUrl) : undefined
+    };
     await fetch('/api/admin/cards/image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(card)
+      body: JSON.stringify(data)
     });
   },
 
   async saveWordCard(card: Partial<WordCard>): Promise<void> {
+    const data = {
+      ...card,
+      image_url: card.imageUrl ? getRelativePath(card.imageUrl) : undefined
+    };
     await fetch('/api/admin/cards/word', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(card)
+      body: JSON.stringify(data)
     });
   },
 

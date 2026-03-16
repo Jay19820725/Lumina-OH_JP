@@ -86,7 +86,8 @@ export const AdminDashboard: React.FC = () => {
   const { data: stats, isLoading: statsLoading } = useAdminStats();
   const { data: users, isLoading: usersLoading } = useAdminUsers();
   const { data: sessions, isLoading: sessionsLoading } = useAdminSessions();
-  const { data: cards, isLoading: cardsLoading } = useAdminCards();
+  const [cardLocale, setCardLocale] = useState<string>('zh-TW');
+  const { data: cards, isLoading: cardsLoading } = useAdminCards(cardLocale);
   const { data: subscriptions, isLoading: subscriptionsLoading } = useAdminSubscriptions();
   const [promptCategory, setPromptCategory] = useState<string>('');
   const { data: prompts, isLoading: promptsLoading } = useAdminPrompts(promptCategory);
@@ -344,31 +345,59 @@ export const AdminDashboard: React.FC = () => {
   const renderCards = () => {
     return (
       <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-        <div className="flex bg-ink/5 p-1 rounded-2xl w-full md:w-auto">
-          <button 
-            onClick={() => setCardTab('image')}
-            className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
-              cardTab === 'image' ? 'bg-white text-wood shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
-            }`}
-          >
-            圖像卡 ({cards?.images.length || 0})
-          </button>
-          <button 
-            onClick={() => setCardTab('word')}
-            className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
-              cardTab === 'word' ? 'bg-white text-fire shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
-            }`}
-          >
-            文字卡 ({cards?.words.length || 0})
-          </button>
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          <div className="flex bg-ink/5 p-1 rounded-2xl w-full md:w-auto">
+            <button 
+              onClick={() => setCardTab('image')}
+              className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+                cardTab === 'image' ? 'bg-white text-wood shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              圖像卡 ({cards?.images.length || 0})
+            </button>
+            <button 
+              onClick={() => setCardTab('word')}
+              className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+                cardTab === 'word' ? 'bg-white text-fire shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              文字卡 ({cards?.words.length || 0})
+            </button>
+          </div>
+
+          <div className="flex bg-ink/5 p-1 rounded-2xl w-full md:w-auto">
+            <button 
+              onClick={() => setCardLocale('zh-TW')}
+              className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+                cardLocale === 'zh-TW' ? 'bg-white text-ink shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              中文 (TW)
+            </button>
+            <button 
+              onClick={() => setCardLocale('ja-JP')}
+              className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all ${
+                cardLocale === 'ja-JP' ? 'bg-white text-ink shadow-sm font-medium' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              日文 (JP)
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-4 w-full md:w-auto">
           <Button 
             onClick={() => setEditingCard({ 
               type: 'image', 
-              data: { imageUrl: '', elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
+              data: { 
+                id: `img_${Date.now()}`,
+                imageUrl: '', 
+                elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 },
+                locale: cardLocale,
+                name: '',
+                name_en: ''
+              } 
             })}
             className="flex-1 md:flex-none gap-2 h-11 px-6 text-[10px] uppercase tracking-widest"
           >
@@ -377,7 +406,15 @@ export const AdminDashboard: React.FC = () => {
           <Button 
             onClick={() => setEditingCard({ 
               type: 'word', 
-              data: { text: '', imageUrl: '', elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 } } 
+              data: { 
+                id: `word_${Date.now()}`,
+                text: '', 
+                imageUrl: '', 
+                elements: { wood: 20, fire: 20, earth: 20, metal: 20, water: 20 },
+                locale: cardLocale,
+                name: '',
+                name_en: ''
+              } 
             })}
             className="flex-1 md:flex-none gap-2 h-11 px-6 text-[10px] uppercase tracking-widest"
           >
@@ -399,6 +436,15 @@ export const AdminDashboard: React.FC = () => {
                 {cards?.images.map(card => (
                   <div key={card.id} className="aspect-[3/4] rounded-2xl overflow-hidden bg-ink/5 border border-ink/5 group relative shadow-sm hover:shadow-md transition-all">
                     <img src={card.imageUrl} className="w-full h-full object-cover" />
+                    
+                    {/* Card Info Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+                      <p className="text-[10px] text-white font-medium truncate">{card.name}</p>
+                      {card.name_en && (
+                        <p className="text-[8px] text-white/70 truncate uppercase tracking-tighter">{card.name_en}</p>
+                      )}
+                    </div>
+
                     <div className="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-[2px]">
                       <Button 
                         variant="outline" 
@@ -433,6 +479,7 @@ export const AdminDashboard: React.FC = () => {
                     <tr className="bg-ink/[0.02] border-b border-ink/5">
                       <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">預覽</th>
                       <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字</th>
+                      <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">英文名稱</th>
                       <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium">五行能量</th>
                       <th className="px-8 py-5 text-[10px] uppercase tracking-widest text-ink-muted font-medium text-right">操作</th>
                     </tr>
@@ -450,6 +497,9 @@ export const AdminDashboard: React.FC = () => {
                         <td className="px-8 py-4">
                           <span className="text-sm font-serif text-ink">{card.text}</span>
                           <div className="text-[9px] text-ink-muted mt-1 uppercase tracking-widest opacity-50">ID: {card.id}</div>
+                        </td>
+                        <td className="px-8 py-4">
+                          <span className="text-[10px] uppercase tracking-widest text-ink-muted">{card.name_en || '-'}</span>
                         </td>
                         <td className="px-8 py-4">
                           <div className="flex gap-1.5">
@@ -1433,8 +1483,32 @@ export const AdminDashboard: React.FC = () => {
 
                   {/* Right Column: Data Entry */}
                   <div className="md:col-span-7 space-y-8">
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">語系 (Locale)</label>
+                        <select 
+                          value={editingCard.data.locale}
+                          onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, locale: e.target.value } })}
+                          className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                        >
+                          <option value="zh-TW">中文 (zh-TW)</option>
+                          <option value="ja-JP">日文 (ja-JP)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">英文名稱 (Internal)</label>
+                        <input 
+                          type="text" 
+                          value={editingCard.data.name_en}
+                          onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, name_en: e.target.value } })}
+                          className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                          placeholder="card_name_en"
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-6">
-                      {editingCard.type === 'word' && (
+                      {editingCard.type === 'word' ? (
                         <div className="space-y-2">
                           <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">關鍵字文本</label>
                           <input 
@@ -1443,6 +1517,17 @@ export const AdminDashboard: React.FC = () => {
                             onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, text: e.target.value } })}
                             className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
                             placeholder="輸入關鍵字..."
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">卡片名稱</label>
+                          <input 
+                            type="text" 
+                            value={editingCard.data.name}
+                            onChange={(e) => setEditingCard({ ...editingCard, data: { ...editingCard.data, name: e.target.value } })}
+                            className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30 focus:bg-white transition-all shadow-sm"
+                            placeholder="輸入卡片名稱..."
                           />
                         </div>
                       )}
