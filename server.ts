@@ -164,7 +164,6 @@ async function startServer() {
       END $$;
 
       -- AI Prompts table (Modular & Bilingual)
-      DROP TABLE IF EXISTS ai_prompts;
       CREATE TABLE IF NOT EXISTS ai_prompts (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         module_name TEXT NOT NULL,
@@ -1349,9 +1348,9 @@ async function syncCardsFromJson(pool: pg.Pool) {
   console.log("Starting card data synchronization from JSON files...");
 
   try {
-    // We'll clear the tables first to ensure a clean sync as requested
-    await pool.query("DELETE FROM cards_image");
-    await pool.query("DELETE FROM cards_word");
+    // We'll use UPSERT instead of DELETE + INSERT to prevent data loss if sync fails
+    // However, if we want to ensure ONLY JSON data exists, we might need a different approach.
+    // For now, let's just ensure defaults are there.
 
     for (const file of files) {
       const filePath = path.join(dataDir, file.name);
@@ -1362,37 +1361,57 @@ async function syncCardsFromJson(pool: pg.Pool) {
 
       const rawData = fs.readFileSync(filePath, "utf-8");
       const cards = JSON.parse(rawData);
+      console.log(`Processing ${cards.length} cards from ${file.name}...`);
 
       for (const card of cards) {
-        if (file.type === "img") {
-          await pool.query(
-            `INSERT INTO cards_image (id, locale, name, name_en, image_url, description, elements)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [
-              card.card_id,
-              card.locale,
-              card.card_name,
-              card.card_name_en,
-              card.image_path,
-              card.description || card.card_name,
-              JSON.stringify(card.elements)
-            ]
-          );
-        } else {
-          await pool.query(
-            `INSERT INTO cards_word (id, locale, name, name_en, text, image_url, description, elements)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-            [
-              card.card_id,
-              card.locale,
-              card.card_name,
-              card.card_name_en,
-              card.card_name, // In word cards, card_name is the text
-              card.image_path,
-              card.card_name,
-              JSON.stringify(card.elements)
-            ]
-          );
+        try {
+          if (file.type === "img") {
+            await pool.query(
+              `INSERT INTO cards_image (id, locale, name, name_en, image_url, description, elements)
+               VALUES ($1, $2, $3, $4, $5, $6, $7)
+               ON CONFLICT (id) DO UPDATE SET
+                 locale = EXCLUDED.locale,
+                 name = EXCLUDED.name,
+                 name_en = EXCLUDED.name_en,
+                 image_url = EXCLUDED.image_url,
+                 description = EXCLUDED.description,
+                 elements = EXCLUDED.elements`,
+              [
+                card.card_id,
+                card.locale,
+                card.card_name,
+                card.card_name_en,
+                card.image_path,
+                card.description || card.card_name,
+                JSON.stringify(card.elements)
+              ]
+            );
+          } else {
+            await pool.query(
+              `INSERT INTO cards_word (id, locale, name, name_en, text, image_url, description, elements)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+               ON CONFLICT (id) DO UPDATE SET
+                 locale = EXCLUDED.locale,
+                 name = EXCLUDED.name,
+                 name_en = EXCLUDED.name_en,
+                 text = EXCLUDED.text,
+                 image_url = EXCLUDED.image_url,
+                 description = EXCLUDED.description,
+                 elements = EXCLUDED.elements`,
+              [
+                card.card_id,
+                card.locale,
+                card.card_name,
+                card.card_name_en,
+                card.card_name, // In word cards, card_name is the text
+                card.image_path,
+                card.card_name,
+                JSON.stringify(card.elements)
+              ]
+            );
+          }
+        } catch (innerErr) {
+          console.error(`Error inserting card ${card.card_id}:`, innerErr);
         }
       }
       console.log(`Synced ${cards.length} cards from ${file.name}`);
