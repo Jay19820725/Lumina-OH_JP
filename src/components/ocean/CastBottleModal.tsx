@@ -46,7 +46,7 @@ export const CastBottleModal: React.FC<CastBottleModalProps> = ({ isOpen, onClos
           userId: user?.uid,
           content: content.trim(),
           element: element,
-          language: language,
+          lang: language,
           originLocale: language === 'zh' ? 'Taiwan' : 'Japan',
         }),
       });
