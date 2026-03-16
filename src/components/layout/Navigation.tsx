@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, User, History, Home, ShieldAlert } from 'lucide-react';
+import { Sparkles, User, History, Home, ShieldAlert, Waves } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -16,6 +16,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPath, onNavigate 
   const navItems = [
     { path: 'home', label: t('nav_home'), icon: Home },
     { path: 'test', label: t('nav_test'), icon: Sparkles },
+    { path: 'ocean', label: t('nav_ocean'), icon: Waves },
     { path: 'history', label: t('nav_history'), icon: History },
     { path: 'profile', label: t('nav_profile'), icon: User },
   ];

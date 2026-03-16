@@ -224,3 +224,31 @@ export interface SiteSettings {
   value: any;
   updated_at: string;
 }
+
+export interface Bottle {
+  id: string;
+  user_id: string;
+  content: string;
+  element: string;
+  lang: string;
+  origin_locale: string;
+  is_active: boolean;
+  created_at: string;
+  display_name?: string; // Joined from users table
+}
+
+export interface BottleTag {
+  id: string;
+  text_zh: string;
+  text_ja: string;
+  category: string;
+  created_at: string;
+}
+
+export interface BottleBlessing {
+  id: string;
+  bottle_id: string;
+  user_id: string;
+  tag_id: string;
+  created_at: string;
+}

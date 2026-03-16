@@ -44,6 +44,16 @@ export const translations = {
     nav_test: "能量探索",
     nav_history: "成長軌跡",
     nav_profile: "個人中心",
+    nav_ocean: "共鳴之海",
+    ocean_cast_btn: "投擲共鳴瓶",
+    ocean_cast_title: "投擲共鳴瓶",
+    ocean_cast_desc: "將妳此刻的感悟或祝福化作文字，讓它在共鳴之海中尋找有緣的靈魂。",
+    ocean_cast_placeholder: "寫下妳想分享的訊息...",
+    ocean_cast_success: "共鳴瓶已投向大海",
+    ocean_cast_error_sensitive: "訊息包含敏感詞彙，請重新調整。",
+    ocean_cast_error_premium: "投擲共鳴瓶是 Premium 會員的專屬功能。",
+    login_required_to_cast: "請先登入後再投擲共鳴瓶。",
+    ocean_cast_limit: "字數限制：{count}/100",
     
     // Home Page
     home_subtitle: "喚醒心中的光譜",
@@ -228,6 +238,16 @@ export const translations = {
     nav_test: "診断",
     nav_history: "履歴",
     nav_profile: "プロフィール",
+    nav_ocean: "共鳴の海",
+    ocean_cast_btn: "共鳴の瓶を流す",
+    ocean_cast_title: "共鳴の瓶を流す",
+    ocean_cast_desc: "今のあなたの気づきや祝福を言葉にして、共鳴の海で縁のある魂を探しましょう。",
+    ocean_cast_placeholder: "分かち合いたいメッセージを書いてください...",
+    ocean_cast_success: "共鳴の瓶が海に流されました",
+    ocean_cast_error_sensitive: "メッセージに不適切な表現が含まれています。調整してください。",
+    ocean_cast_error_premium: "共鳴の瓶を流すのはPremium会員限定の機能です。",
+    login_required_to_cast: "共鳴の瓶を流すにはログインが必要です。",
+    ocean_cast_limit: "文字数制限：{count}/100",
 
     // Home Page
     home_subtitle: "内なる光譜の覚醒",

@@ -6,6 +6,7 @@ import cors from "cors";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import { GoogleGenAI } from "@google/genai";
 import { WORDS, IMAGES } from "./src/core/cards.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -227,6 +228,44 @@ async function startServer() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Ocean of Resonance: Bottles table
+      CREATE TABLE IF NOT EXISTS bottles (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+        content TEXT NOT NULL,
+        element TEXT NOT NULL,
+        lang TEXT NOT NULL,
+        origin_locale TEXT NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Ocean of Resonance: Blessing Tags table
+      CREATE TABLE IF NOT EXISTS bottle_tags (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        text_zh TEXT NOT NULL,
+        text_ja TEXT NOT NULL,
+        category TEXT DEFAULT 'blessing',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Ocean of Resonance: Blessings table
+      CREATE TABLE IF NOT EXISTS bottle_blessings (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        bottle_id UUID NOT NULL REFERENCES bottles(id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+        tag_id UUID NOT NULL REFERENCES bottle_tags(id) ON DELETE CASCADE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Ocean of Resonance: Sensitive Words table
+      CREATE TABLE IF NOT EXISTS sensitive_words (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        word TEXT NOT NULL UNIQUE,
+        category TEXT DEFAULT 'general',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
       -- Initialize default SEO settings if not exists
       INSERT INTO site_settings (key, value)
       VALUES ('seo', '{
@@ -334,6 +373,37 @@ async function startServer() {
         );
       }
       console.log("Default music tracks seeded");
+    }
+
+    // Auto-seed blessing tags if empty
+    const tagCount = await pool.query("SELECT COUNT(*) FROM bottle_tags");
+    if (parseInt(tagCount.rows[0].count) === 0) {
+      console.log("Seeding default blessing tags...");
+      const defaultTags = [
+        { zh: '願你平安', ja: 'あなたの平安を願っています' },
+        { zh: '能量共鳴', ja: 'エネルギーが共鳴しています' },
+        { zh: '溫暖相隨', ja: '温もりが共にありますように' },
+        { zh: '光芒守護', ja: '光があなたを守りますように' }
+      ];
+      for (const t of defaultTags) {
+        await pool.query(
+          "INSERT INTO bottle_tags (text_zh, text_ja) VALUES ($1, $2)",
+          [t.zh, t.ja]
+        );
+      }
+    }
+
+    // Auto-seed sensitive words if empty (basic list)
+    const wordCount = await pool.query("SELECT COUNT(*) FROM sensitive_words");
+    if (parseInt(wordCount.rows[0].count) === 0) {
+      console.log("Seeding initial sensitive words...");
+      const initialWords = ['幹', '死', '殺', '笨', '蠢', '垃圾', '廢物', '死ね', '殺す', 'バカ', 'アホ', 'クズ'];
+      for (const w of initialWords) {
+        await pool.query(
+          "INSERT INTO sensitive_words (word) VALUES ($1) ON CONFLICT (word) DO NOTHING",
+          [w]
+        );
+      }
     }
   } catch (err) {
     console.error("Database initialization error:", err);
@@ -742,7 +812,7 @@ async function startServer() {
     }
   });
 
-  app.get("/api/reports/:userId", async (req, res) => {
+  app.get(["/api/reports/:userId", "/api/reports/:userId/"], async (req, res) => {
     const { userId } = req.params;
     const { lang } = req.query;
     console.log(`[API] GET /api/reports/${userId} (lang: ${lang})`);
@@ -896,6 +966,116 @@ async function startServer() {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+  // Ocean of Resonance API
+  app.get("/api/bottles/tags", async (req, res) => {
+    try {
+      const result = await pool.query("SELECT * FROM bottle_tags ORDER BY created_at ASC");
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching bottle tags:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/bottles", async (req, res) => {
+    const { userId, content, element, lang, originLocale } = req.body;
+    
+    try {
+      // 1. Check Premium Status
+      const userResult = await pool.query("SELECT role, subscription_status FROM users WHERE uid = $1", [userId]);
+      if (userResult.rows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      const user = userResult.rows[0];
+      const isPremium = user.role === 'admin' || user.role === 'premium_member' || user.subscription_status === 'active';
+      
+      if (!isPremium) {
+        return res.status(403).json({ error: "Premium membership required to cast a bottle." });
+      }
+
+      // 2. Sensitive Word Filter (Direct Rejection)
+      const sensitiveWordsResult = await pool.query("SELECT word FROM sensitive_words");
+      const sensitiveWords = sensitiveWordsResult.rows.map(r => r.word);
+      
+      for (const word of sensitiveWords) {
+        if (content.includes(word)) {
+          return res.status(400).json({ 
+            error: "Content contains sensitive words.", 
+            code: "SENSITIVE_CONTENT" 
+          });
+        }
+      }
+
+      // 3. Save Bottle
+      const result = await pool.query(
+        "INSERT INTO bottles (user_id, content, element, lang, origin_locale) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+        [userId, content, element, lang, originLocale]
+      );
+      
+      res.json(result.rows[0]);
+    } catch (err) {
+      console.error("Error casting bottle:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/bottles/random", async (req, res) => {
+    const { userId, targetLang } = req.query;
+    try {
+      // Pick a random bottle that is active and not from the current user
+      const result = await pool.query(
+        "SELECT b.*, u.display_name FROM bottles b JOIN users u ON b.user_id = u.uid WHERE b.is_active = TRUE AND b.user_id != $1 ORDER BY RANDOM() LIMIT 1",
+        [userId || '']
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "No bottles found in the ocean." });
+      }
+      
+      const bottle = result.rows[0];
+      
+      // Translation logic using Gemini
+      if (targetLang && bottle.lang !== targetLang && process.env.GEMINI_API_KEY) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+          const model = "gemini-3-flash-preview";
+          const prompt = `Translate the following message from ${bottle.lang} to ${targetLang}. Only return the translated text.
+          Message: ${bottle.content}`;
+          
+          const aiResponse = await ai.models.generateContent({
+            model,
+            contents: [{ parts: [{ text: prompt }] }]
+          });
+          
+          bottle.translatedContent = aiResponse.text;
+        } catch (aiErr) {
+          console.error("AI Translation error:", aiErr);
+          // Fallback: don't include translatedContent if AI fails
+        }
+      }
+      
+      res.json(bottle);
+    } catch (err) {
+      console.error("Error picking up bottle:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/bottles/:id/bless", async (req, res) => {
+    const { id } = req.params;
+    const { userId, tagId } = req.body;
+    try {
+      await pool.query(
+        "INSERT INTO bottle_blessings (bottle_id, user_id, tag_id) VALUES ($1, $2, $3)",
+        [id, userId, tagId]
+      );
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error blessing bottle:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/admin/stats", async (req, res) => {
     try {
       const today = new Date();
@@ -1205,6 +1385,75 @@ async function startServer() {
       res.status(204).send();
     } catch (err) {
       console.error("Error deleting music track:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin: Ocean of Resonance Management
+  app.get("/api/admin/bottles", async (req, res) => {
+    try {
+      const result = await pool.query(`
+        SELECT b.*, u.display_name, u.email 
+        FROM bottles b 
+        JOIN users u ON b.user_id = u.uid 
+        ORDER BY b.created_at DESC
+      `);
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching admin bottles:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/bottles/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query("DELETE FROM bottles WHERE id = $1", [id]);
+      res.status(204).send();
+    } catch (err) {
+      console.error("Error deleting bottle:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/bottles/tags", async (req, res) => {
+    try {
+      const result = await pool.query("SELECT * FROM bottle_tags ORDER BY created_at DESC");
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching admin bottle tags:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/bottles/tags", async (req, res) => {
+    const { id, text_zh, text_ja, category } = req.body;
+    try {
+      if (id) {
+        await pool.query(
+          "UPDATE bottle_tags SET text_zh = $1, text_ja = $2, category = $3 WHERE id = $4",
+          [text_zh, text_ja, category, id]
+        );
+      } else {
+        await pool.query(
+          "INSERT INTO bottle_tags (text_zh, text_ja, category) VALUES ($1, $2, $3)",
+          [text_zh, text_ja, category]
+        );
+      }
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error saving bottle tag:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/bottles/tags/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query("DELETE FROM bottle_tags WHERE id = $1", [id]);
+      res.status(204).send();
+    } catch (err) {
+      console.error("Error deleting bottle tag:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });

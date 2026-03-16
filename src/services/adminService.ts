@@ -234,5 +234,54 @@ export const adminService = {
 
   async deleteMusic(id: string): Promise<void> {
     await fetch(`/api/admin/music/${id}`, { method: 'DELETE' });
+  },
+
+  /**
+   * Ocean of Resonance Management
+   */
+  async getAllBottles(limit = 50, offset = 0): Promise<{ bottles: any[], total: number }> {
+    const response = await fetch(`/api/admin/bottles?limit=${limit}&offset=${offset}`);
+    if (!response.ok) return { bottles: [], total: 0 };
+    return await response.json();
+  },
+
+  async deleteBottle(id: string): Promise<void> {
+    await fetch(`/api/admin/bottles/${id}`, { method: 'DELETE' });
+  },
+
+  async getAllBottleTags(): Promise<any[]> {
+    const response = await fetch('/api/admin/bottles/tags');
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
+  async saveBottleTag(tag: any): Promise<void> {
+    await fetch('/api/admin/bottles/tags', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tag)
+    });
+  },
+
+  async deleteBottleTag(id: string): Promise<void> {
+    await fetch(`/api/admin/bottles/tags/${id}`, { method: 'DELETE' });
+  },
+
+  async getAllSensitiveWords(): Promise<any[]> {
+    const response = await fetch('/api/admin/sensitive-words');
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
+  async saveSensitiveWord(word: any): Promise<void> {
+    await fetch('/api/admin/sensitive-words', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(word)
+    });
+  },
+
+  async deleteSensitiveWord(id: string): Promise<void> {
+    await fetch(`/api/admin/sensitive-words/${id}`, { method: 'DELETE' });
   }
 };

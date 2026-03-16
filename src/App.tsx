@@ -17,10 +17,11 @@ const EnergyReport = lazy(() => import('./pages/EnergyReport').then(m => ({ defa
 const UserProfile = lazy(() => import('./pages/UserProfile').then(m => ({ default: m.UserProfile })));
 const EnergyTimeline = lazy(() => import('./pages/EnergyTimeline').then(m => ({ default: m.EnergyTimeline })));
 const Manifestations = lazy(() => import('./pages/Manifestations').then(m => ({ default: m.Manifestations })));
+const Ocean = lazy(() => import('./pages/Ocean').then(m => ({ default: m.Ocean })));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const AdminLogin = lazy(() => import('./pages/AdminLogin').then(m => ({ default: m.AdminLogin })));
 
-type Page = 'home' | 'test' | 'report' | 'profile' | 'history' | 'admin' | 'admin-login';
+type Page = 'home' | 'test' | 'report' | 'profile' | 'history' | 'admin' | 'admin-login' | 'ocean';
 
 // Minimalist Sanctuary Loader
 const SanctuaryLoader = () => (
@@ -45,9 +46,20 @@ function AppContent() {
   useEffect(() => {
     if (profile?.uid && currentPage !== 'report') {
       fetch(`/api/reports/${profile.uid}`)
-        .then(res => res.json())
-        .then(reports => {
-          if (reports && reports.length > 0) {
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`Server responded with ${res.status}`);
+          }
+          const contentType = res.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Response was not JSON");
+          }
+          return res.json();
+        })
+        .then(data => {
+          // The API returns { reports: [...], hasOtherLang: boolean, otherLangCount: number }
+          const reports = data.reports || [];
+          if (Array.isArray(reports) && reports.length > 0) {
             const latest = reports[0];
             const lastSeenId = localStorage.getItem('lastSeenReportId');
             // If it's a completed report (has todayTheme) and we haven't seen it
@@ -56,7 +68,12 @@ function AppContent() {
             }
           }
         })
-        .catch(err => console.error("Failed to fetch reports for return prompt:", err));
+        .catch(err => {
+          // Only log if it's not a common "not found" or "unauthorized" error during initial load
+          if (!err.message.includes('404') && !err.message.includes('401')) {
+            console.error("Failed to fetch reports for return prompt:", err);
+          }
+        });
     }
   }, [profile?.uid, currentPage]);
 
@@ -72,7 +89,7 @@ function AppContent() {
       }
 
       const cleanPath = path.replace('/', '') || 'home';
-      const validPages: Page[] = ['home', 'test', 'report', 'profile', 'history', 'admin', 'admin-login'];
+      const validPages: Page[] = ['home', 'test', 'report', 'profile', 'history', 'admin', 'admin-login', 'ocean'];
       if (validPages.includes(cleanPath as Page)) {
         setCurrentPage(cleanPath as Page);
       } else {
@@ -111,6 +128,8 @@ function AppContent() {
         return <UserProfile onNavigate={(page) => navigate(page as Page)} />;
       case 'history':
         return <EnergyTimeline onNavigate={(page) => navigate(page as Page)} />;
+      case 'ocean':
+        return <Ocean />;
       case 'admin':
         return <AdminDashboard />;
       case 'admin-login':

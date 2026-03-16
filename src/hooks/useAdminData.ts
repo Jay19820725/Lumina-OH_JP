@@ -197,3 +197,74 @@ export const useDeleteMusicMutation = () => {
     },
   });
 };
+
+export const useAdminBottles = (limit = 50, offset = 0) => {
+  return useQuery({
+    queryKey: ['admin', 'bottles', limit, offset],
+    queryFn: () => adminService.getAllBottles(limit, offset),
+  });
+};
+
+export const useDeleteBottleMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminService.deleteBottle(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'bottles'] });
+    },
+  });
+};
+
+export const useAdminBottleTags = () => {
+  return useQuery({
+    queryKey: ['admin', 'bottles', 'tags'],
+    queryFn: () => adminService.getAllBottleTags(),
+  });
+};
+
+export const useSaveBottleTagMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (tag: any) => adminService.saveBottleTag(tag),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'bottles', 'tags'] });
+    },
+  });
+};
+
+export const useDeleteBottleTagMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminService.deleteBottleTag(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'bottles', 'tags'] });
+    },
+  });
+};
+
+export const useAdminSensitiveWords = () => {
+  return useQuery({
+    queryKey: ['admin', 'sensitive-words'],
+    queryFn: () => adminService.getAllSensitiveWords(),
+  });
+};
+
+export const useSaveSensitiveWordMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (word: any) => adminService.saveSensitiveWord(word),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sensitive-words'] });
+    },
+  });
+};
+
+export const useDeleteSensitiveWordMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminService.deleteSensitiveWord(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sensitive-words'] });
+    },
+  });
+};

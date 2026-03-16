@@ -30,7 +30,8 @@ import {
   Globe,
   Share2,
   BarChart3,
-  Music
+  Music,
+  Waves
 } from 'lucide-react';
 import { 
   useAdminStats, 
@@ -53,7 +54,15 @@ import {
   useDeleteMusicMutation,
   useAdminReports,
   useDeleteReportMutation,
-  useDeleteReportsMutation
+  useDeleteReportsMutation,
+  useAdminBottles,
+  useDeleteBottleMutation,
+  useAdminBottleTags,
+  useSaveBottleTagMutation,
+  useDeleteBottleTagMutation,
+  useAdminSensitiveWords,
+  useSaveSensitiveWordMutation,
+  useDeleteSensitiveWordMutation
 } from '../hooks/useAdminData';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserProfile, Session, ImageCard, WordCard, FiveElement, AIPrompt, SEOSettings } from '../core/types';
@@ -79,7 +88,7 @@ import {
 } from 'recharts';
 
 
-type AdminModule = 'dashboard' | 'cards' | 'users' | 'sessions' | 'subscriptions' | 'analytics' | 'prompts' | 'settings' | 'music' | 'reports';
+type AdminModule = 'dashboard' | 'cards' | 'users' | 'sessions' | 'subscriptions' | 'analytics' | 'prompts' | 'settings' | 'music' | 'reports' | 'ocean';
 
 export const AdminDashboard: React.FC = () => {
   const [activeModule, setActiveModule] = useState<AdminModule>('dashboard');
@@ -110,6 +119,9 @@ export const AdminDashboard: React.FC = () => {
     20, 
     reportPage * 20
   );
+  const { data: bottlesData, isLoading: bottlesLoading } = useAdminBottles(20, 0);
+  const { data: bottleTags, isLoading: bottleTagsLoading } = useAdminBottleTags();
+  const { data: sensitiveWords, isLoading: sensitiveWordsLoading } = useAdminSensitiveWords();
 
   // Mutations
   const saveCardMutation = useSaveCardMutation();
@@ -123,11 +135,18 @@ export const AdminDashboard: React.FC = () => {
   const deleteMusicMutation = useDeleteMusicMutation();
   const deleteReportMutation = useDeleteReportMutation();
   const deleteReportsMutation = useDeleteReportsMutation();
+  const deleteBottleMutation = useDeleteBottleMutation();
+  const saveBottleTagMutation = useSaveBottleTagMutation();
+  const deleteBottleTagMutation = useDeleteBottleTagMutation();
+  const saveSensitiveWordMutation = useSaveSensitiveWordMutation();
+  const deleteSensitiveWordMutation = useDeleteSensitiveWordMutation();
 
   // Card Editing State
   const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
   const [editingMusic, setEditingMusic] = useState<any | null>(null);
+  const [editingBottleTag, setEditingBottleTag] = useState<any | null>(null);
+  const [editingSensitiveWord, setEditingSensitiveWord] = useState<any | null>(null);
   const [cardTab, setCardTab] = useState<'image' | 'word'>('image');
 
   // Lock body scroll when modal is open
@@ -152,6 +171,7 @@ export const AdminDashboard: React.FC = () => {
     (activeModule === 'analytics' && analyticsLoading) ||
     (activeModule === 'music' && musicLoading) ||
     (activeModule === 'reports' && reportsLoading) ||
+    (activeModule === 'ocean' && (bottlesLoading || bottleTagsLoading || sensitiveWordsLoading)) ||
     (activeModule === 'settings' && (seoLoading || fontsLoading));
 
   const handleSaveCard = async () => {
@@ -248,6 +268,58 @@ export const AdminDashboard: React.FC = () => {
       await deleteReportMutation.mutateAsync(id);
     } catch (error) {
       console.error("刪除報告失敗:", error);
+      alert('刪除失敗');
+    }
+  };
+
+  const handleSaveBottleTag = async () => {
+    if (!editingBottleTag) return;
+    try {
+      await saveBottleTagMutation.mutateAsync(editingBottleTag);
+      setEditingBottleTag(null);
+    } catch (error) {
+      console.error("儲存標籤失敗:", error);
+      alert('儲存失敗');
+    }
+  };
+
+  const handleDeleteBottleTag = async (id: string) => {
+    if (!confirm('確定要刪除此標籤嗎？')) return;
+    try {
+      await deleteBottleTagMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("刪除標籤失敗:", error);
+      alert('刪除失敗');
+    }
+  };
+
+  const handleSaveSensitiveWord = async () => {
+    if (!editingSensitiveWord) return;
+    try {
+      await saveSensitiveWordMutation.mutateAsync(editingSensitiveWord);
+      setEditingSensitiveWord(null);
+    } catch (error) {
+      console.error("儲存敏感詞失敗:", error);
+      alert('儲存失敗');
+    }
+  };
+
+  const handleDeleteSensitiveWord = async (id: string) => {
+    if (!confirm('確定要刪除此敏感詞嗎？')) return;
+    try {
+      await deleteSensitiveWordMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("刪除敏感詞失敗:", error);
+      alert('刪除失敗');
+    }
+  };
+
+  const handleDeleteBottle = async (id: string) => {
+    if (!confirm('確定要刪除此瓶中信嗎？')) return;
+    try {
+      await deleteBottleMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("刪除瓶中信失敗:", error);
       alert('刪除失敗');
     }
   };
@@ -1068,6 +1140,262 @@ export const AdminDashboard: React.FC = () => {
     );
   };
 
+  const renderOcean = () => {
+    const bottles = bottlesData?.bottles || [];
+    const tags = bottleTags || [];
+    const words = sensitiveWords || [];
+
+    return (
+      <div className="space-y-12 pb-20">
+        {/* Tags Management */}
+        <section>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-serif">祝福標籤管理</h2>
+            <Button 
+              onClick={() => setEditingBottleTag({ name_zh: '', name_ja: '', color: '#8E9299' })}
+              className="bg-wood text-white gap-2"
+            >
+              <Plus size={18} /> 新增標籤
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {tags.map((tag: any) => (
+              <GlassCard key={tag.id} className="p-4 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
+                  <div>
+                    <p className="text-sm font-medium">{tag.name_zh}</p>
+                    <p className="text-[10px] text-ink-muted">{tag.name_ja}</p>
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  <button 
+                    onClick={() => setEditingBottleTag(tag)}
+                    className="p-1.5 hover:bg-ink/5 rounded-lg transition-colors text-ink-muted"
+                  >
+                    <SettingsIcon size={14} />
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteBottleTag(tag.id)}
+                    className="p-1.5 hover:bg-fire/10 rounded-lg transition-colors text-fire"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </section>
+
+        {/* Sensitive Words Management */}
+        <section>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-serif">敏感詞彙管理</h2>
+            <Button 
+              onClick={() => setEditingSensitiveWord({ word: '', category: 'general' })}
+              className="bg-fire text-white gap-2"
+            >
+              <Plus size={18} /> 新增敏感詞
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {words.map((word: any) => (
+              <div 
+                key={word.id} 
+                className="px-3 py-1.5 bg-white/50 border border-ink/5 rounded-full flex items-center gap-2 group"
+              >
+                <span className="text-sm">{word.word}</span>
+                <button 
+                  onClick={() => handleDeleteSensitiveWord(word.id)}
+                  className="p-0.5 hover:bg-fire/10 rounded-full text-fire opacity-0 group-hover:opacity-100 transition-all"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Bottles Management */}
+        <section>
+          <div className="mb-6">
+            <h2 className="text-xl font-serif">瓶中信內容管理</h2>
+          </div>
+          <GlassCard className="overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-ink/5 text-ink-muted uppercase tracking-widest text-[10px]">
+                    <th className="px-6 py-4 font-medium">內容</th>
+                    <th className="px-6 py-4 font-medium">屬性</th>
+                    <th className="px-6 py-4 font-medium">語言</th>
+                    <th className="px-6 py-4 font-medium">發送者</th>
+                    <th className="px-6 py-4 font-medium">日期</th>
+                    <th className="px-6 py-4 font-medium">操作</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ink/5">
+                  {bottles.map((bottle: any) => (
+                    <tr key={bottle.id} className="hover:bg-ink/[0.02] transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="text-sm line-clamp-1 max-w-xs">{bottle.content}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-0.5 bg-ink/5 rounded-full text-[9px] uppercase tracking-widest">
+                          {bottle.element}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm uppercase">{bottle.lang}</td>
+                      <td className="px-6 py-4 text-sm text-ink-muted">{bottle.user_id?.substring(0, 8)}...</td>
+                      <td className="px-6 py-4 text-sm text-ink-muted">
+                        {new Date(bottle.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <button 
+                          onClick={() => handleDeleteBottle(bottle.id)}
+                          className="p-2 hover:bg-fire/10 rounded-full transition-colors text-fire"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </GlassCard>
+        </section>
+
+        {/* Tag Editing Modal */}
+        <AnimatePresence>
+          {editingBottleTag && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setEditingBottleTag(null)}
+                className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-8">
+                  <h3 className="text-xl font-serif mb-6">編輯標籤</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-ink-muted mb-2">中文名稱</label>
+                      <input 
+                        type="text" 
+                        value={editingBottleTag.name_zh}
+                        onChange={(e) => setEditingBottleTag({ ...editingBottleTag, name_zh: e.target.value })}
+                        className="w-full bg-ink/5 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-wood/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-ink-muted mb-2">日文名稱</label>
+                      <input 
+                        type="text" 
+                        value={editingBottleTag.name_ja}
+                        onChange={(e) => setEditingBottleTag({ ...editingBottleTag, name_ja: e.target.value })}
+                        className="w-full bg-ink/5 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-wood/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-ink-muted mb-2">顏色 (Hex)</label>
+                      <div className="flex gap-3">
+                        <input 
+                          type="color" 
+                          value={editingBottleTag.color}
+                          onChange={(e) => setEditingBottleTag({ ...editingBottleTag, color: e.target.value })}
+                          className="w-12 h-12 rounded-lg cursor-pointer"
+                        />
+                        <input 
+                          type="text" 
+                          value={editingBottleTag.color}
+                          onChange={(e) => setEditingBottleTag({ ...editingBottleTag, color: e.target.value })}
+                          className="flex-1 bg-ink/5 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-wood/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 mt-8">
+                    <Button 
+                      onClick={() => setEditingBottleTag(null)}
+                      className="flex-1 bg-ink/5 text-ink"
+                    >
+                      取消
+                    </Button>
+                    <Button 
+                      onClick={handleSaveBottleTag}
+                      className="flex-1 bg-wood text-white"
+                    >
+                      儲存
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Sensitive Word Modal */}
+        <AnimatePresence>
+          {editingSensitiveWord && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setEditingSensitiveWord(null)}
+                className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-8">
+                  <h3 className="text-xl font-serif mb-6">新增敏感詞</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-ink-muted mb-2">詞彙</label>
+                      <input 
+                        type="text" 
+                        value={editingSensitiveWord.word}
+                        onChange={(e) => setEditingSensitiveWord({ ...editingSensitiveWord, word: e.target.value })}
+                        className="w-full bg-ink/5 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-fire/20"
+                        placeholder="輸入敏感詞..."
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 mt-8">
+                    <Button 
+                      onClick={() => setEditingSensitiveWord(null)}
+                      className="flex-1 bg-ink/5 text-ink"
+                    >
+                      取消
+                    </Button>
+                    <Button 
+                      onClick={handleSaveSensitiveWord}
+                      className="flex-1 bg-fire text-white"
+                    >
+                      儲存
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
+
   const renderSettings = () => {
     // Provide defaults if data is missing but loading is finished
     const seo = seoSettings || {
@@ -1568,6 +1896,12 @@ export const AdminDashboard: React.FC = () => {
               label="報告管理" 
             />
             <NavButton 
+              active={activeModule === 'ocean'} 
+              onClick={() => setActiveModule('ocean')} 
+              icon={<Waves size={18} />} 
+              label="共鳴之海管理" 
+            />
+            <NavButton 
               active={activeModule === 'sessions'} 
               onClick={() => setActiveModule('sessions')} 
               icon={<Database size={18} />} 
@@ -1613,6 +1947,7 @@ export const AdminDashboard: React.FC = () => {
                   {activeModule === 'dashboard' && renderDashboard()}
                   {activeModule === 'users' && renderUsers()}
                   {activeModule === 'reports' && renderReports()}
+                  {activeModule === 'ocean' && renderOcean()}
                   {activeModule === 'cards' && renderCards()}
                   {activeModule === 'prompts' && renderPrompts()}
                   {activeModule === 'music' && renderMusic()}

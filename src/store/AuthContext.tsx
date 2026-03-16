@@ -96,8 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const isAdmin = profile?.role === 'admin';
+  const isPremiumMember = profile?.role === 'premium_member';
   const isSubscribed = profile?.subscription_status === 'active';
-  const isPremium = isAdmin || isSubscribed;
+  const isPremium = isAdmin || isPremiumMember || isSubscribed;
 
   return (
     <AuthContext.Provider value={{ 

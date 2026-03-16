@@ -10,6 +10,7 @@ import { EnergyProfile } from '../components/report/EnergyProfile';
 import { PsychInsight } from '../components/report/PsychInsight';
 import { CardCollage } from '../components/report/CardCollage';
 import { PoeticLoading } from '../components/report/PoeticLoading';
+import { CastBottleModal } from '../components/ocean/CastBottleModal';
 
 const WeavingLoader: React.FC<{ label?: string }> = ({ label }) => {
   const { t } = useLanguage();
@@ -42,6 +43,8 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
     handleSelectThumbnail,
     isAiLoading,
   } = useEnergyReport(onReset);
+
+  const [showCastModal, setShowCastModal] = React.useState(false);
 
   // Update document title when report is loaded
   useEffect(() => {
@@ -230,6 +233,13 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
             >
               <RefreshCw size={16} /> {t('report_new_test')}
             </Button>
+            <Button
+              onClick={() => setShowCastModal(true)}
+              variant="outline"
+              className="h-16 w-full gap-4 text-xs uppercase tracking-[0.4em] font-light border-ink/10 hover:bg-ink/5"
+            >
+              <Sparkles size={16} /> {t('ocean_cast_btn')}
+            </Button>
           </div>
 
           {isGuest && (
@@ -248,6 +258,13 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
           )}
         </div>
       </footer>
+
+      <CastBottleModal 
+        isOpen={showCastModal} 
+        onClose={() => setShowCastModal(false)} 
+        defaultContent={displayContent.reflection || ''}
+        element={report.dominantElement}
+      />
     </div>
   );
 };
