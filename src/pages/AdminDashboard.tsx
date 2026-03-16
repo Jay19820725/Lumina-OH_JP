@@ -1195,7 +1195,7 @@ export const AdminDashboard: React.FC = () => {
             name: '', 
             element: 'wood', 
             url: '', 
-            active: true, 
+            is_active: true, 
             sort_order: (music?.length || 0) + 1 
           })}
           className="gap-2 h-10 px-4 text-xs"
@@ -1235,9 +1235,9 @@ export const AdminDashboard: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest ${
-                      track.active ? 'bg-emerald-100 text-emerald-700' : 'bg-ink/5 text-ink-muted'
+                      track.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-ink/5 text-ink-muted'
                     }`}>
-                      {track.active ? '啟用中' : '已停用'}
+                      {track.is_active ? '啟用中' : '已停用'}
                     </span>
                   </td>
                   <td className="px-6 py-4 font-mono">{track.sort_order}</td>
@@ -1615,10 +1615,10 @@ export const AdminDashboard: React.FC = () => {
                     <p className="text-[8px] text-ink-muted tracking-widest mt-1">關閉後前台將無法看到此音樂</p>
                   </div>
                   <button 
-                    onClick={() => setEditingMusic({ ...editingMusic, active: !editingMusic.active })}
-                    className={`w-10 h-5 rounded-full relative transition-colors ${editingMusic.active ? 'bg-wood' : 'bg-ink/10'}`}
+                    onClick={() => setEditingMusic({ ...editingMusic, is_active: !editingMusic.is_active })}
+                    className={`w-10 h-5 rounded-full relative transition-colors ${editingMusic.is_active ? 'bg-wood' : 'bg-ink/10'}`}
                   >
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${editingMusic.active ? 'left-6' : 'left-1'}`} />
+                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${editingMusic.is_active ? 'left-6' : 'left-1'}`} />
                   </button>
                 </div>
               </div>
