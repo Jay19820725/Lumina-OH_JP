@@ -109,6 +109,7 @@ async function startServer() {
       CREATE TABLE IF NOT EXISTS cards_image (
         id TEXT PRIMARY KEY,
         locale TEXT DEFAULT 'zh-TW',
+        name TEXT,
         name_en TEXT,
         image_url TEXT NOT NULL,
         description TEXT,
@@ -119,6 +120,7 @@ async function startServer() {
       CREATE TABLE IF NOT EXISTS cards_word (
         id TEXT PRIMARY KEY,
         locale TEXT DEFAULT 'zh-TW',
+        name TEXT,
         name_en TEXT,
         text TEXT NOT NULL,
         image_url TEXT,
@@ -140,7 +142,17 @@ async function startServer() {
           WHEN duplicate_column THEN NULL;
         END;
         BEGIN
+          ALTER TABLE cards_image ADD COLUMN name TEXT;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
           ALTER TABLE cards_word ADD COLUMN locale TEXT DEFAULT 'zh-TW';
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE cards_word ADD COLUMN name TEXT;
         EXCEPTION
           WHEN duplicate_column THEN NULL;
         END;
@@ -942,18 +954,19 @@ async function startServer() {
   });
 
   app.post("/api/admin/cards/image", async (req, res) => {
-    const { id, image_url, description, elements, locale, name_en } = req.body;
+    const { id, image_url, description, elements, locale, name_en, name } = req.body;
     try {
       await pool.query(
-        `INSERT INTO cards_image (id, image_url, description, elements, locale, name_en) 
-         VALUES ($1, $2, $3, $4, $5, $6) 
+        `INSERT INTO cards_image (id, image_url, description, elements, locale, name_en, name) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7) 
          ON CONFLICT (id) DO UPDATE SET 
            image_url = EXCLUDED.image_url, 
            description = EXCLUDED.description, 
            elements = EXCLUDED.elements,
            locale = EXCLUDED.locale,
-           name_en = EXCLUDED.name_en`,
-        [id, image_url, description, JSON.stringify(elements), locale || 'zh-TW', name_en]
+           name_en = EXCLUDED.name_en,
+           name = EXCLUDED.name`,
+        [id, image_url, description, JSON.stringify(elements), locale || 'zh-TW', name_en, name]
       );
       res.json({ success: true });
     } catch (err) {
@@ -974,19 +987,20 @@ async function startServer() {
   });
 
   app.post("/api/admin/cards/word", async (req, res) => {
-    const { id, text, image_url, description, elements, locale, name_en } = req.body;
+    const { id, text, image_url, description, elements, locale, name_en, name } = req.body;
     try {
       await pool.query(
-        `INSERT INTO cards_word (id, text, image_url, description, elements, locale, name_en) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        `INSERT INTO cards_word (id, text, image_url, description, elements, locale, name_en, name) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
          ON CONFLICT (id) DO UPDATE SET 
            text = EXCLUDED.text, 
            image_url = EXCLUDED.image_url, 
            description = EXCLUDED.description, 
            elements = EXCLUDED.elements,
            locale = EXCLUDED.locale,
-           name_en = EXCLUDED.name_en`,
-        [id, text, image_url, description, JSON.stringify(elements), locale || 'zh-TW', name_en]
+           name_en = EXCLUDED.name_en,
+           name = EXCLUDED.name`,
+        [id, text, image_url, description, JSON.stringify(elements), locale || 'zh-TW', name_en, name]
       );
       res.json({ success: true });
     } catch (err) {
@@ -1352,24 +1366,26 @@ async function syncCardsFromJson(pool: pg.Pool) {
       for (const card of cards) {
         if (file.type === "img") {
           await pool.query(
-            `INSERT INTO cards_image (id, locale, name_en, image_url, description, elements)
-             VALUES ($1, $2, $3, $4, $5, $6)`,
+            `INSERT INTO cards_image (id, locale, name, name_en, image_url, description, elements)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
             [
               card.card_id,
               card.locale,
+              card.card_name,
               card.card_name_en,
               card.image_path,
-              card.card_name, // Using card_name as description for now
+              card.description || card.card_name,
               JSON.stringify(card.elements)
             ]
           );
         } else {
           await pool.query(
-            `INSERT INTO cards_word (id, locale, name_en, text, image_url, description, elements)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            `INSERT INTO cards_word (id, locale, name, name_en, text, image_url, description, elements)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
             [
               card.card_id,
               card.locale,
+              card.card_name,
               card.card_name_en,
               card.card_name, // In word cards, card_name is the text
               card.image_path,
