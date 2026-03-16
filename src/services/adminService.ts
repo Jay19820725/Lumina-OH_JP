@@ -124,6 +124,37 @@ export const adminService = {
   },
 
   /**
+   * Report Management
+   */
+  async getAllReports(email?: string, limit = 50, offset = 0): Promise<{ reports: any[], total: number }> {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      offset: offset.toString()
+    });
+    if (email) params.append('email', email);
+    
+    const response = await fetch(`/api/admin/reports?${params.toString()}`);
+    if (!response.ok) return { reports: [], total: 0 };
+    return await response.json();
+  },
+
+  async deleteReport(id: string): Promise<void> {
+    const response = await fetch(`/api/admin/reports/${id}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) throw new Error('Failed to delete report');
+  },
+
+  async deleteReports(ids: string[]): Promise<void> {
+    const response = await fetch('/api/admin/reports', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids })
+    });
+    if (!response.ok) throw new Error('Failed to delete reports');
+  },
+
+  /**
    * AI Prompt Management
    */
   async getAllPrompts(category?: string): Promise<AIPrompt[]> {

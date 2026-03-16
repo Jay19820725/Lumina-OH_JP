@@ -43,6 +43,33 @@ export const useAdminSubscriptions = () => {
   });
 };
 
+export const useAdminReports = (email?: string, limit = 50, offset = 0) => {
+  return useQuery({
+    queryKey: ['admin', 'reports', email, limit, offset],
+    queryFn: () => adminService.getAllReports(email, limit, offset),
+  });
+};
+
+export const useDeleteReportMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminService.deleteReport(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+    },
+  });
+};
+
+export const useDeleteReportsMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => adminService.deleteReports(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+    },
+  });
+};
+
 export const useAdminPrompts = (category?: string) => {
   return useQuery({
     queryKey: ['admin', 'prompts', category],

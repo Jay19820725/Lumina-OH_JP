@@ -50,7 +50,10 @@ import {
   useDeleteSessionDraftsMutation,
   useAdminMusic,
   useSaveMusicMutation,
-  useDeleteMusicMutation
+  useDeleteMusicMutation,
+  useAdminReports,
+  useDeleteReportMutation,
+  useDeleteReportsMutation
 } from '../hooks/useAdminData';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserProfile, Session, ImageCard, WordCard, FiveElement, AIPrompt, SEOSettings } from '../core/types';
@@ -76,7 +79,7 @@ import {
 } from 'recharts';
 
 
-type AdminModule = 'dashboard' | 'cards' | 'users' | 'sessions' | 'subscriptions' | 'analytics' | 'prompts' | 'settings' | 'music';
+type AdminModule = 'dashboard' | 'cards' | 'users' | 'sessions' | 'subscriptions' | 'analytics' | 'prompts' | 'settings' | 'music' | 'reports';
 
 export const AdminDashboard: React.FC = () => {
   const [activeModule, setActiveModule] = useState<AdminModule>('dashboard');
@@ -96,6 +99,18 @@ export const AdminDashboard: React.FC = () => {
   const { data: fontSettings, isLoading: fontsLoading, isError: fontsError } = useAdminSettings('fonts');
   const { data: music, isLoading: musicLoading } = useAdminMusic();
 
+  // Reports Management State
+  const [reportSearchEmail, setReportSearchEmail] = useState('');
+  const [reportPage, setReportPage] = useState(0);
+  const [selectedReports, setSelectedReports] = useState<string[]>([]);
+  const [viewingReport, setViewingReport] = useState<any | null>(null);
+  
+  const { data: reportsData, isLoading: reportsLoading } = useAdminReports(
+    reportSearchEmail, 
+    20, 
+    reportPage * 20
+  );
+
   // Mutations
   const saveCardMutation = useSaveCardMutation();
   const deleteCardMutation = useDeleteCardMutation();
@@ -106,6 +121,8 @@ export const AdminDashboard: React.FC = () => {
   const deleteSessionDraftsMutation = useDeleteSessionDraftsMutation();
   const saveMusicMutation = useSaveMusicMutation();
   const deleteMusicMutation = useDeleteMusicMutation();
+  const deleteReportMutation = useDeleteReportMutation();
+  const deleteReportsMutation = useDeleteReportsMutation();
 
   // Card Editing State
   const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
@@ -134,6 +151,7 @@ export const AdminDashboard: React.FC = () => {
     (activeModule === 'prompts' && promptsLoading) ||
     (activeModule === 'analytics' && analyticsLoading) ||
     (activeModule === 'music' && musicLoading) ||
+    (activeModule === 'reports' && reportsLoading) ||
     (activeModule === 'settings' && (seoLoading || fontsLoading));
 
   const handleSaveCard = async () => {
@@ -221,6 +239,28 @@ export const AdminDashboard: React.FC = () => {
     } catch (error) {
       console.error("刪除音樂失敗:", error);
       alert('刪除失敗');
+    }
+  };
+
+  const handleDeleteReport = async (id: string) => {
+    if (!confirm('確定要永久刪除此報告紀錄嗎？此操作無法復原。')) return;
+    try {
+      await deleteReportMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("刪除報告失敗:", error);
+      alert('刪除失敗');
+    }
+  };
+
+  const handleBatchDeleteReports = async () => {
+    if (selectedReports.length === 0) return;
+    if (!confirm(`確定要永久刪除選中的 ${selectedReports.length} 筆報告紀錄嗎？此操作無法復原。`)) return;
+    try {
+      await deleteReportsMutation.mutateAsync(selectedReports);
+      setSelectedReports([]);
+    } catch (error) {
+      console.error("批次刪除報告失敗:", error);
+      alert('批次刪除失敗');
     }
   };
 
@@ -347,6 +387,158 @@ export const AdminDashboard: React.FC = () => {
       </div>
     </GlassCard>
   );
+
+  const renderReports = () => {
+    const reports = reportsData?.reports || [];
+    const total = reportsData?.total || 0;
+    const totalPages = Math.ceil(total / 20);
+
+    return (
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
+          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+            <div className="relative flex-1 md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted" size={18} />
+              <input 
+                type="text" 
+                placeholder="搜尋用戶 Email..." 
+                value={reportSearchEmail}
+                onChange={(e) => {
+                  setReportSearchEmail(e.target.value);
+                  setReportPage(0);
+                }}
+                className="w-full bg-white/50 border border-ink/5 rounded-2xl pl-12 pr-6 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-wood/20 transition-all"
+              />
+            </div>
+            {selectedReports.length > 0 && (
+              <Button 
+                onClick={handleBatchDeleteReports}
+                className="bg-fire text-white gap-2"
+              >
+                <Trash2 size={18} /> 批次刪除 ({selectedReports.length})
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-ink-muted">
+            共 {total} 筆報告
+          </div>
+        </div>
+
+        <GlassCard className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-ink/5 text-ink-muted uppercase tracking-widest text-[10px]">
+                  <th className="px-6 py-4 font-medium w-12">
+                    <input 
+                      type="checkbox" 
+                      checked={reports.length > 0 && selectedReports.length === reports.length}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedReports(reports.map((r: any) => r.id));
+                        } else {
+                          setSelectedReports([]);
+                        }
+                      }}
+                      className="rounded border-ink/10 text-wood focus:ring-wood"
+                    />
+                  </th>
+                  <th className="px-6 py-4 font-medium">用戶</th>
+                  <th className="px-6 py-4 font-medium text-center">優勢元素</th>
+                  <th className="px-6 py-4 font-medium text-center">平衡分數</th>
+                  <th className="px-6 py-4 font-medium text-center">語言</th>
+                  <th className="px-6 py-4 font-medium">日期</th>
+                  <th className="px-6 py-4 font-medium text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink/5">
+                {reports.map((report: any) => (
+                  <tr key={report.id} className="hover:bg-ink/[0.02] transition-colors group">
+                    <td className="px-6 py-4">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedReports.includes(report.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedReports([...selectedReports, report.id]);
+                          } else {
+                            setSelectedReports(selectedReports.filter(id => id !== report.id));
+                          }
+                        }}
+                        className="rounded border-ink/10 text-wood focus:ring-wood"
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">{report.user_name || '匿名用戶'}</span>
+                        <span className="text-[10px] text-ink-muted">{report.user_email || '無 Email'}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="px-3 py-1 bg-wood/10 text-wood rounded-full text-[10px] tracking-widest">
+                        {report.dominant_element}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="font-serif text-fire">{report.balance_score}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center uppercase text-[10px] tracking-widest text-ink-muted">
+                      {report.lang}
+                    </td>
+                    <td className="px-6 py-4 text-ink-muted text-[10px]">
+                      {new Date(report.timestamp).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => setViewingReport(report)}
+                          className="p-2 hover:bg-wood/10 text-wood rounded-full transition-colors"
+                          title="查看詳情"
+                        >
+                          <BarChart3 size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteReport(report.id)}
+                          className="p-2 hover:bg-fire/10 text-fire rounded-full transition-colors"
+                          title="刪除"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {totalPages > 1 && (
+            <div className="p-6 border-t border-ink/5 flex justify-center gap-4">
+              <Button 
+                variant="outline" 
+                disabled={reportPage === 0}
+                onClick={() => setReportPage(p => p - 1)}
+                className="h-10 px-6 text-[10px] uppercase tracking-widest"
+              >
+                上一頁
+              </Button>
+              <div className="flex items-center text-[10px] tracking-widest text-ink-muted">
+                第 {reportPage + 1} 頁 / 共 {totalPages} 頁
+              </div>
+              <Button 
+                variant="outline" 
+                disabled={reportPage >= totalPages - 1}
+                onClick={() => setReportPage(p => p + 1)}
+                className="h-10 px-6 text-[10px] uppercase tracking-widest"
+              >
+                下一頁
+              </Button>
+            </div>
+          )}
+        </GlassCard>
+      </div>
+    );
+  };
 
   const renderCards = () => {
     return (
@@ -1370,6 +1562,12 @@ export const AdminDashboard: React.FC = () => {
               label="會員管理" 
             />
             <NavButton 
+              active={activeModule === 'reports'} 
+              onClick={() => setActiveModule('reports')} 
+              icon={<BarChart3 size={18} />} 
+              label="報告管理" 
+            />
+            <NavButton 
               active={activeModule === 'sessions'} 
               onClick={() => setActiveModule('sessions')} 
               icon={<Database size={18} />} 
@@ -1414,6 +1612,7 @@ export const AdminDashboard: React.FC = () => {
                 <>
                   {activeModule === 'dashboard' && renderDashboard()}
                   {activeModule === 'users' && renderUsers()}
+                  {activeModule === 'reports' && renderReports()}
                   {activeModule === 'cards' && renderCards()}
                   {activeModule === 'prompts' && renderPrompts()}
                   {activeModule === 'music' && renderMusic()}
@@ -1429,6 +1628,84 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Modals via Portal */}
+      {viewingReport && createPortal(
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setViewingReport(null)}
+            className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+          />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+          >
+            <div className="p-6 border-b border-ink/5 flex justify-between items-center bg-white sticky top-0 z-10">
+              <div>
+                <h3 className="text-xl font-serif tracking-widest">報告詳情</h3>
+                <p className="text-[10px] text-ink-muted uppercase tracking-widest mt-1">
+                  {viewingReport.user_name || '匿名用戶'} ({viewingReport.user_email}) - {new Date(viewingReport.timestamp).toLocaleString()}
+                </p>
+              </div>
+              <button 
+                onClick={() => setViewingReport(null)}
+                className="p-2 hover:bg-ink/5 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-ink/[0.01]">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <GlassCard className="p-6 text-center">
+                  <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-2">優勢元素</span>
+                  <p className="text-2xl font-serif text-wood">{viewingReport.dominant_element}</p>
+                </GlassCard>
+                <GlassCard className="p-6 text-center">
+                  <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-2">平衡分數</span>
+                  <p className="text-2xl font-serif text-fire">{viewingReport.balance_score}</p>
+                </GlassCard>
+                <GlassCard className="p-6 text-center">
+                  <span className="text-[10px] uppercase tracking-widest text-ink-muted block mb-2">語言</span>
+                  <p className="text-2xl font-serif uppercase">{viewingReport.lang}</p>
+                </GlassCard>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-xs uppercase tracking-widest font-bold">今日主題</h4>
+                <p className="text-lg font-serif leading-relaxed italic">「{viewingReport.today_theme}」</p>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-xs uppercase tracking-widest font-bold">完整報告數據 (JSON)</h4>
+                <pre className="bg-ink/5 p-6 rounded-2xl text-[10px] font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                  {JSON.stringify(viewingReport.report_data, null, 2)}
+                </pre>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-ink/5 bg-white flex justify-end gap-4">
+              <Button variant="outline" onClick={() => setViewingReport(null)}>
+                關閉
+              </Button>
+              <Button 
+                className="bg-fire text-white"
+                onClick={() => {
+                  handleDeleteReport(viewingReport.id);
+                  setViewingReport(null);
+                }}
+              >
+                刪除此報告
+              </Button>
+            </div>
+          </motion.div>
+        </div>,
+        document.body
+      )}
+
       {editingCard && createPortal(
         <AnimatePresence>
           <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">

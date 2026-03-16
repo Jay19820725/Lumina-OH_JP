@@ -1031,6 +1031,62 @@ async function startServer() {
     }
   });
 
+  // Admin Report Management
+  app.get("/api/admin/reports", async (req, res) => {
+    const { email, limit = 50, offset = 0 } = req.query;
+    try {
+      let query = `
+        SELECT r.*, u.email as user_email, u.display_name as user_name 
+        FROM energy_reports r
+        LEFT JOIN users u ON r.user_id = u.uid
+      `;
+      const values: any[] = [];
+      
+      if (email) {
+        query += " WHERE u.email ILIKE $1";
+        values.push(`%${email}%`);
+      }
+      
+      const countQuery = `SELECT count(*) FROM (${query}) as total`;
+      const totalResult = await pool.query(countQuery, values);
+      const total = parseInt(totalResult.rows[0].count);
+
+      query += ` ORDER BY r.timestamp DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+      values.push(limit, offset);
+      
+      const result = await pool.query(query, values);
+      res.json({ reports: result.rows, total });
+    } catch (err) {
+      console.error("Error fetching admin reports:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/reports/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query("DELETE FROM energy_reports WHERE id = $1", [id]);
+      res.status(204).send();
+    } catch (err) {
+      console.error("Error deleting admin report:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/reports", async (req, res) => {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "Invalid IDs" });
+    }
+    try {
+      await pool.query("DELETE FROM energy_reports WHERE id = ANY($1)", [ids]);
+      res.status(204).send();
+    } catch (err) {
+      console.error("Error batch deleting admin reports:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/admin/prompts", async (req, res) => {
     const { category, status } = req.query;
     try {
