@@ -141,3 +141,32 @@ export const useSaveSettingsMutation = () => {
     },
   });
 };
+
+export const useAdminMusic = () => {
+  return useQuery({
+    queryKey: ['admin', 'music'],
+    queryFn: () => adminService.getAllMusic(),
+  });
+};
+
+export const useSaveMusicMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (track: any) => adminService.saveMusic(track),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'music'] });
+      queryClient.invalidateQueries({ queryKey: ['music'] }); // Also invalidate public music list
+    },
+  });
+};
+
+export const useDeleteMusicMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminService.deleteMusic(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'music'] });
+      queryClient.invalidateQueries({ queryKey: ['music'] }); // Also invalidate public music list
+    },
+  });
+};

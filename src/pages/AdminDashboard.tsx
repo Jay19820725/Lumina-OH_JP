@@ -29,7 +29,8 @@ import {
   Settings as SettingsIcon,
   Globe,
   Share2,
-  BarChart3
+  BarChart3,
+  Music
 } from 'lucide-react';
 import { 
   useAdminStats, 
@@ -46,7 +47,10 @@ import {
   useSavePromptMutation,
   useDeletePromptMutation,
   useActivatePromptMutation,
-  useDeleteSessionDraftsMutation
+  useDeleteSessionDraftsMutation,
+  useAdminMusic,
+  useSaveMusicMutation,
+  useDeleteMusicMutation
 } from '../hooks/useAdminData';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserProfile, Session, ImageCard, WordCard, FiveElement, AIPrompt, SEOSettings } from '../core/types';
@@ -72,7 +76,7 @@ import {
 } from 'recharts';
 
 
-type AdminModule = 'dashboard' | 'cards' | 'users' | 'sessions' | 'subscriptions' | 'analytics' | 'prompts' | 'settings';
+type AdminModule = 'dashboard' | 'cards' | 'users' | 'sessions' | 'subscriptions' | 'analytics' | 'prompts' | 'settings' | 'music';
 
 export const AdminDashboard: React.FC = () => {
   const [activeModule, setActiveModule] = useState<AdminModule>('dashboard');
@@ -89,6 +93,7 @@ export const AdminDashboard: React.FC = () => {
   const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics();
   const { data: seoSettings, isLoading: seoLoading, isError: seoError } = useAdminSettings('seo');
   const { data: fontSettings, isLoading: fontsLoading, isError: fontsError } = useAdminSettings('fonts');
+  const { data: music, isLoading: musicLoading } = useAdminMusic();
 
   // Mutations
   const saveCardMutation = useSaveCardMutation();
@@ -98,10 +103,13 @@ export const AdminDashboard: React.FC = () => {
   const activatePromptMutation = useActivatePromptMutation();
   const saveSettingsMutation = useSaveSettingsMutation();
   const deleteSessionDraftsMutation = useDeleteSessionDraftsMutation();
+  const saveMusicMutation = useSaveMusicMutation();
+  const deleteMusicMutation = useDeleteMusicMutation();
 
   // Card Editing State
   const [editingCard, setEditingCard] = useState<{ type: 'image' | 'word'; data: any } | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
+  const [editingMusic, setEditingMusic] = useState<any | null>(null);
   const [cardTab, setCardTab] = useState<'image' | 'word'>('image');
 
   // Lock body scroll when modal is open
@@ -124,6 +132,7 @@ export const AdminDashboard: React.FC = () => {
     (activeModule === 'subscriptions' && subscriptionsLoading) ||
     (activeModule === 'prompts' && promptsLoading) ||
     (activeModule === 'analytics' && analyticsLoading) ||
+    (activeModule === 'music' && musicLoading) ||
     (activeModule === 'settings' && (seoLoading || fontsLoading));
 
   const handleSaveCard = async () => {
@@ -190,6 +199,27 @@ export const AdminDashboard: React.FC = () => {
     } catch (error) {
       console.error("清空草稿失敗:", error);
       alert('清空失敗');
+    }
+  };
+
+  const handleSaveMusic = async () => {
+    if (!editingMusic) return;
+    try {
+      await saveMusicMutation.mutateAsync(editingMusic);
+      setEditingMusic(null);
+    } catch (error) {
+      console.error("儲存音樂失敗:", error);
+      alert('儲存失敗');
+    }
+  };
+
+  const handleDeleteMusic = async (id: string) => {
+    if (!confirm('確定要刪除此音樂嗎？')) return;
+    try {
+      await deleteMusicMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("刪除音樂失敗:", error);
+      alert('刪除失敗');
     }
   };
 
@@ -1156,6 +1186,87 @@ export const AdminDashboard: React.FC = () => {
     </GlassCard>
   );
 
+  const renderMusic = () => (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h3 className="text-xs uppercase tracking-widest">音樂管理</h3>
+        <Button 
+          onClick={() => setEditingMusic({ 
+            name: '', 
+            element: 'wood', 
+            url: '', 
+            active: true, 
+            sort_order: (music?.length || 0) + 1 
+          })}
+          className="gap-2 h-10 px-4 text-xs"
+        >
+          <Plus size={14} /> 新增音樂
+        </Button>
+      </div>
+
+      <GlassCard className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-ink/5 text-ink-muted uppercase tracking-widest">
+                <th className="px-6 py-4 font-medium">名稱</th>
+                <th className="px-6 py-4 font-medium">五行屬性</th>
+                <th className="px-6 py-4 font-medium">狀態</th>
+                <th className="px-6 py-4 font-medium">排序</th>
+                <th className="px-6 py-4 font-medium text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink/5">
+              {music?.map(track => (
+                <tr key={track.id} className="hover:bg-ink/[0.02] transition-colors">
+                  <td className="px-6 py-4">
+                    <p className="font-medium">{track.name}</p>
+                    <p className="text-[9px] text-ink-muted truncate max-w-[200px]">{track.url}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest ${
+                      track.element === 'wood' ? 'bg-wood/10 text-wood' : 
+                      track.element === 'fire' ? 'bg-fire/10 text-fire' : 
+                      track.element === 'earth' ? 'bg-earth/10 text-earth' : 
+                      track.element === 'metal' ? 'bg-metal/10 text-metal' : 'bg-water/10 text-water'
+                    }`}>
+                      {track.element}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest ${
+                      track.active ? 'bg-emerald-100 text-emerald-700' : 'bg-ink/5 text-ink-muted'
+                    }`}>
+                      {track.active ? '啟用中' : '已停用'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 font-mono">{track.sort_order}</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setEditingMusic(track)}
+                        className="h-8 px-3 text-[9px]"
+                      >
+                        編輯
+                      </Button>
+                      <button 
+                        onClick={() => handleDeleteMusic(track.id)}
+                        className="p-2 text-rose-400 hover:text-rose-500 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </GlassCard>
+    </div>
+  );
+
   return (
     <div className="ma-container pt-24 pb-32 min-h-screen">
       <div className="flex flex-col md:flex-row gap-12">
@@ -1189,6 +1300,12 @@ export const AdminDashboard: React.FC = () => {
               onClick={() => setActiveModule('prompts')} 
               icon={<Sparkles size={18} />} 
               label="AI Prompt 管理" 
+            />
+            <NavButton 
+              active={activeModule === 'music'} 
+              onClick={() => setActiveModule('music')} 
+              icon={<Music size={18} />} 
+              label="音樂管理" 
             />
             <NavButton 
               active={activeModule === 'users'} 
@@ -1243,6 +1360,7 @@ export const AdminDashboard: React.FC = () => {
                   {activeModule === 'users' && renderUsers()}
                   {activeModule === 'cards' && renderCards()}
                   {activeModule === 'prompts' && renderPrompts()}
+                  {activeModule === 'music' && renderMusic()}
                   {activeModule === 'sessions' && renderSessions()}
                   {activeModule === 'subscriptions' && renderSubscriptions()}
                   {activeModule === 'analytics' && renderAnalytics()}
@@ -1399,6 +1517,116 @@ export const AdminDashboard: React.FC = () => {
                   disabled={saveCardMutation.isPending} 
                 >
                   {saveCardMutation.isPending ? '儲存中...' : '儲存卡片'}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </AnimatePresence>
+      , document.body)}
+
+      {/* Music Edit Modal */}
+      {editingMusic && createPortal(
+        <AnimatePresence>
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingMusic(null)}
+              className="absolute inset-0 bg-ink/60 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20"
+            >
+              <div className="p-8 border-b border-ink/5 flex justify-between items-center bg-ink/[0.02]">
+                <div className="flex items-center gap-4">
+                  <div className="p-2.5 rounded-2xl bg-wood/10 text-wood">
+                    <Music size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs uppercase tracking-[0.3em] font-semibold text-ink">
+                      {editingMusic.id ? '編輯' : '新增'} 音樂
+                    </h3>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setEditingMusic(null)} 
+                  className="p-3 hover:bg-ink/5 rounded-full transition-all"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-10 space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">音樂名稱</label>
+                  <input 
+                    type="text" 
+                    value={editingMusic.name}
+                    onChange={(e) => setEditingMusic({ ...editingMusic, name: e.target.value })}
+                    className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30"
+                    placeholder="例如：森林晨光"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">五行屬性</label>
+                    <select 
+                      value={editingMusic.element}
+                      onChange={(e) => setEditingMusic({ ...editingMusic, element: e.target.value })}
+                      className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30"
+                    >
+                      <option value="wood">Wood (木)</option>
+                      <option value="fire">Fire (火)</option>
+                      <option value="earth">Earth (土)</option>
+                      <option value="metal">Metal (金)</option>
+                      <option value="water">Water (水)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">排序</label>
+                    <input 
+                      type="number" 
+                      value={editingMusic.sort_order}
+                      onChange={(e) => setEditingMusic({ ...editingMusic, sort_order: parseInt(e.target.value) })}
+                      className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-ink-muted font-medium">音檔 URL</label>
+                  <input 
+                    type="text" 
+                    value={editingMusic.url}
+                    onChange={(e) => setEditingMusic({ ...editingMusic, url: e.target.value })}
+                    className="w-full px-5 py-4 bg-ink/[0.02] border border-ink/5 rounded-2xl text-sm focus:outline-none focus:border-wood/30"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-ink/[0.02] rounded-2xl border border-ink/5">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest font-medium">啟用狀態</p>
+                    <p className="text-[8px] text-ink-muted tracking-widest mt-1">關閉後前台將無法看到此音樂</p>
+                  </div>
+                  <button 
+                    onClick={() => setEditingMusic({ ...editingMusic, active: !editingMusic.active })}
+                    className={`w-10 h-5 rounded-full relative transition-colors ${editingMusic.active ? 'bg-wood' : 'bg-ink/10'}`}
+                  >
+                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${editingMusic.active ? 'left-6' : 'left-1'}`} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-8 bg-ink/[0.02] border-t border-ink/5 flex justify-end gap-4">
+                <Button variant="outline" onClick={() => setEditingMusic(null)}>取消</Button>
+                <Button onClick={handleSaveMusic} disabled={saveMusicMutation.isPending}>
+                  {saveMusicMutation.isPending ? '儲存中...' : '儲存音樂'}
                 </Button>
               </div>
             </motion.div>

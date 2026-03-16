@@ -171,5 +171,26 @@ export const adminService = {
       throw new Error(`Failed to save settings for ${key}`);
     }
     return await response.json();
+  },
+
+  /**
+   * Music Management
+   */
+  async getAllMusic(): Promise<any[]> {
+    const response = await fetch('/api/admin/music');
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
+  async saveMusic(track: any): Promise<void> {
+    await fetch('/api/admin/music', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(track)
+    });
+  },
+
+  async deleteMusic(id: string): Promise<void> {
+    await fetch(`/api/admin/music/${id}`, { method: 'DELETE' });
   }
 };

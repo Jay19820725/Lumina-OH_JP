@@ -175,6 +175,17 @@ async function startServer() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Music Tracks table
+      CREATE TABLE IF NOT EXISTS music_tracks (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name TEXT NOT NULL,
+        element TEXT NOT NULL,
+        url TEXT NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        sort_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
       -- Initialize default SEO settings if not exists
       INSERT INTO site_settings (key, value)
       VALUES ('seo', '{
@@ -288,6 +299,26 @@ async function startServer() {
         );
       }
       console.log("Default prompts seeded");
+    }
+
+    // Auto-seed music tracks if empty
+    const musicCount = await pool.query("SELECT COUNT(*) FROM music_tracks");
+    if (parseInt(musicCount.rows[0].count) === 0) {
+      console.log("Seeding default music tracks...");
+      const defaultMusic = [
+        { name: 'Little Forest Spirit', element: 'wood', url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20Forest%20Spirit%20Tea%20Time%EF%BC%88%E6%9C%A8%EF%BC%89%20(1).mp3?alt=media&token=2fa73b22-abdb-481b-b9ac-82f7b075fce1', sort_order: 1 },
+        { name: 'Little Ember', element: 'fire', url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20Ember%20Tea%20Time%EF%BC%88%E7%81%AB%EF%BC%89%20(1).mp3?alt=media&token=6512316f-3129-4d8a-bde0-53014d00d950', sort_order: 2 },
+        { name: 'Little Mountain Garden', element: 'earth', url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20Mountain%20Garden%20Tea%20Time%EF%BC%88%E5%9C%9F%EF%BC%89%20(1).mp3?alt=media&token=dc38d876-3867-4694-87b3-a499c62bc97f', sort_order: 3 },
+        { name: 'Little Silver Bell', element: 'metal', url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20Silver%20Bell%20Tea%20Time%EF%BC%88%E9%87%91%EF%BC%89%20(1).mp3?alt=media&token=4666bbd6-021b-46c5-a8a9-7d0f3077e756', sort_order: 4 },
+        { name: 'Little River Breeze', element: 'water', url: 'https://firebasestorage.googleapis.com/v0/b/lumina-oh-jp.firebasestorage.app/o/audio%2FLittle%20River%20Breeze%20Tea%20Time%EF%BC%88%E6%B0%B4%EF%BC%89%20(1).mp3?alt=media&token=928fe51c-0b8d-4c91-ad9b-be5b46767f05', sort_order: 5 }
+      ];
+      for (const m of defaultMusic) {
+        await pool.query(
+          "INSERT INTO music_tracks (name, element, url, sort_order) VALUES ($1, $2, $3, $4)",
+          [m.name, m.element, m.url, m.sort_order]
+        );
+      }
+      console.log("Default music tracks seeded");
     }
   } catch (err) {
     console.error("Database initialization error:", err);
@@ -1028,6 +1059,59 @@ async function startServer() {
       res.json({ success: true });
     } catch (err) {
       console.error("Error activating prompt:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Music Management APIs
+  app.get("/api/music", async (req, res) => {
+    try {
+      const result = await pool.query("SELECT * FROM music_tracks WHERE is_active = TRUE ORDER BY sort_order ASC");
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching music:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/music", async (req, res) => {
+    try {
+      const result = await pool.query("SELECT * FROM music_tracks ORDER BY sort_order ASC");
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching admin music:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/music", async (req, res) => {
+    const { id, name, element, url, is_active, sort_order } = req.body;
+    try {
+      if (id) {
+        await pool.query(
+          "UPDATE music_tracks SET name = $1, element = $2, url = $3, is_active = $4, sort_order = $5 WHERE id = $6",
+          [name, element, url, is_active, sort_order, id]
+        );
+      } else {
+        await pool.query(
+          "INSERT INTO music_tracks (name, element, url, is_active, sort_order) VALUES ($1, $2, $3, $4, $5)",
+          [name, element, url, is_active, sort_order]
+        );
+      }
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error saving music track:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/music/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query("DELETE FROM music_tracks WHERE id = $1", [id]);
+      res.status(204).send();
+    } catch (err) {
+      console.error("Error deleting music track:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });

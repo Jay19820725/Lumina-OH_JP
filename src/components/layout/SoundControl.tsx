@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Volume2, VolumeX, Music, Leaf, Mountain, Flame, Sparkles, Waves } from 'lucide-react';
-import { useSoundscape, SOUNDSCAPES } from '../../store/SoundscapeContext';
+import { Volume2, VolumeX, Music, Leaf, Mountain, Flame, Sparkles, Waves, Repeat, Repeat1, SkipForward } from 'lucide-react';
+import { useSoundscape } from '../../store/SoundscapeContext';
 
 const ElementIcon = ({ element, size = 14 }: { element: string, size?: number }) => {
   switch (element) {
@@ -15,7 +15,7 @@ const ElementIcon = ({ element, size = 14 }: { element: string, size?: number })
 };
 
 export const SoundControl: React.FC = () => {
-  const { isPlaying, currentSound, togglePlay, setSound } = useSoundscape();
+  const { isPlaying, currentSound, togglePlay, setSound, playbackMode, setPlaybackMode, nextTrack, tracks } = useSoundscape();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -26,22 +26,38 @@ export const SoundControl: React.FC = () => {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="bg-white/90 backdrop-blur-2xl border border-white/50 p-4 rounded-[2rem] shadow-2xl flex flex-col gap-2 min-w-[220px]"
+            className="bg-white/90 backdrop-blur-2xl border border-white/50 p-4 rounded-[2rem] shadow-2xl flex flex-col gap-2 min-w-[240px]"
           >
             <div className="flex items-center justify-between px-2 mb-2">
               <span className="text-[10px] uppercase tracking-[0.2em] text-ink/40">
                 Soundscape
               </span>
-              <button 
-                onClick={togglePlay}
-                className={`p-2 rounded-full transition-colors ${isPlaying ? 'text-ink' : 'text-ink/30'}`}
-              >
-                {isPlaying ? <Volume2 size={16} /> : <VolumeX size={16} />}
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPlaybackMode(playbackMode === 'list' ? 'single' : 'list')}
+                  title={playbackMode === 'list' ? 'List Loop' : 'Single Loop'}
+                  className="p-2 rounded-full text-ink/40 hover:text-ink transition-colors"
+                >
+                  {playbackMode === 'list' ? <Repeat size={14} /> : <Repeat1 size={14} />}
+                </button>
+                <button
+                  onClick={nextTrack}
+                  title="Next Track"
+                  className="p-2 rounded-full text-ink/40 hover:text-ink transition-colors"
+                >
+                  <SkipForward size={14} />
+                </button>
+                <button 
+                  onClick={togglePlay}
+                  className={`p-2 rounded-full transition-colors ${isPlaying ? 'text-ink' : 'text-ink/30'}`}
+                >
+                  {isPlaying ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                </button>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-1">
-              {SOUNDSCAPES.map((sound) => (
+            <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+              {tracks.map((sound) => (
                 <button
                   key={sound.id}
                   onClick={() => {
@@ -54,7 +70,7 @@ export const SoundControl: React.FC = () => {
                   }`}
                 >
                   <ElementIcon element={sound.element} />
-                  <span className="text-xs tracking-wider font-light">{sound.name}</span>
+                  <span className="text-xs tracking-wider font-light truncate max-w-[140px]">{sound.name}</span>
                   {currentSound?.id === sound.id && isPlaying && (
                     <motion.div 
                       animate={{ scaleY: [1, 1.5, 1] }}
