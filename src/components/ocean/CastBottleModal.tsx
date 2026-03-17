@@ -1,26 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
+import { oceanService } from '../../services/oceanService';
 import { Button } from '../ui/Button';
 
 interface CastBottleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  defaultContent?: string;
+  defaultQuote?: string;
+  cardImages?: string[];
   element?: string;
 }
 
-export const CastBottleModal: React.FC<CastBottleModalProps> = ({ isOpen, onClose, defaultContent = '', element = 'none' }) => {
+export const CastBottleModal: React.FC<CastBottleModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  defaultQuote = '', 
+  cardImages = [],
+  element = 'none' 
+}) => {
   const { t, language } = useLanguage();
-  const { user, isPremium } = useAuth();
-  const [content, setContent] = useState(defaultContent);
+  const { user, isPremium, profile } = useAuth();
+  const [quote, setQuote] = useState(defaultQuote);
+  const [userMessage, setUserMessage] = useState('');
+  const [selectedCardUrl, setSelectedCardUrl] = useState<string | null>(cardImages[0] || null);
+  const [nickname, setNickname] = useState(profile?.ocean_nickname || profile?.displayName || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // isPremium is already calculated in AuthContext (isAdmin || isSubscribed)
+  // Reset content when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setQuote(defaultQuote);
+      setUserMessage('');
+      setSelectedCardUrl(cardImages[0] || null);
+      setNickname(profile?.ocean_nickname || profile?.displayName || '');
+      setError(null);
+      setSuccess(false);
+    }
+  }, [isOpen, defaultQuote, profile, cardImages]);
 
   const handleSubmit = async () => {
     if (!user) {
@@ -33,63 +55,58 @@ export const CastBottleModal: React.FC<CastBottleModalProps> = ({ isOpen, onClos
       return;
     }
 
-    if (!content.trim()) return;
+    if (!quote.trim() && !userMessage.trim()) return;
 
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/bottles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.uid,
-          content: content.trim(),
-          element: element,
-          lang: language,
-          originLocale: language === 'zh' ? 'Taiwan' : 'Japan',
-        }),
+      await oceanService.castBottle({
+        user_id: user?.uid,
+        content: userMessage.trim(),
+        quote: quote.trim(),
+        card_image_url: selectedCardUrl,
+        element: element,
+        nickname: nickname.trim(),
+        lang: language,
+        origin_locale: language === 'zh' ? 'Taiwan' : 'Japan',
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (data.code === 'SENSITIVE_CONTENT') {
-          throw new Error(t('ocean_cast_error_sensitive'));
-        }
-        throw new Error(data.error || 'Failed to cast bottle');
-      }
 
       setSuccess(true);
       setTimeout(() => {
         onClose();
         setSuccess(false);
-        setContent('');
+        setQuote('');
+        setUserMessage('');
       }, 2000);
     } catch (err) {
-      setError((err as Error).message);
+      if ((err as Error).message === 'CONTENT_SENSITIVE') {
+        setError(t('ocean_cast_error_sensitive'));
+      } else {
+        setError((err as Error).message);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-ink/40 backdrop-blur-md"
+            className="fixed inset-0 bg-ink/60 backdrop-blur-md"
           />
 
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-lg bg-[#FDFCF8] rounded-[2.5rem] shadow-2xl overflow-hidden"
+            className="relative w-full max-w-lg bg-[#FDFCF8] rounded-[2.5rem] shadow-2xl overflow-hidden my-auto"
           >
             <div className="p-8 md:p-12 space-y-8">
               <div className="flex justify-between items-start">
@@ -124,15 +141,68 @@ export const CastBottleModal: React.FC<CastBottleModalProps> = ({ isOpen, onClos
                 </motion.div>
               ) : (
                 <div className="space-y-6">
-                  <div className="relative">
-                    <textarea
-                      value={content}
-                      onChange={(e) => setContent(e.target.value.slice(0, 100))}
-                      placeholder={t('ocean_cast_placeholder')}
-                      className="w-full h-40 bg-ink/[0.02] border border-ink/5 rounded-2xl p-6 text-sm text-ink placeholder:text-ink/20 focus:outline-none focus:border-ink/20 transition-colors resize-none font-sans leading-relaxed"
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-[0.4em] text-ink-muted ml-2">
+                      {t('ocean_nickname_label') || '暱稱 / Nickname'}
+                    </label>
+                    <input
+                      type="text"
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value.slice(0, 20))}
+                      placeholder={t('ocean_nickname_placeholder') || '妳的稱呼...'}
+                      className="w-full h-12 bg-ink/[0.02] border border-ink/5 rounded-xl px-6 text-sm text-ink placeholder:text-ink/20 focus:outline-none focus:border-ink/20 transition-colors font-sans"
                     />
-                    <div className="absolute bottom-4 right-4 text-[10px] tracking-widest text-ink/20 uppercase">
-                      {t('ocean_cast_limit').replace('{count}', content.length.toString())}
+                  </div>
+
+                  {cardImages.length > 0 && (
+                    <div className="space-y-3">
+                      <label className="text-[10px] uppercase tracking-[0.4em] text-ink-muted ml-2">
+                        {t('ocean_select_card_label')}
+                      </label>
+                      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide px-2">
+                        {cardImages.map((url, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setSelectedCardUrl(url)}
+                            className={`relative flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                              selectedCardUrl === url ? 'border-ink scale-105 shadow-md' : 'border-transparent opacity-50'
+                            }`}
+                          >
+                            <img src={url} alt="" className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-[0.4em] text-ink-muted ml-2">
+                        {t('ocean_reflection_title')}
+                      </label>
+                      <textarea
+                        value={quote}
+                        onChange={(e) => setQuote(e.target.value.slice(0, 200))}
+                        placeholder={t('ocean_reflection_title')}
+                        className="w-full h-24 bg-ink/[0.02] border border-ink/5 rounded-2xl p-4 text-xs text-ink/60 italic placeholder:text-ink/20 focus:outline-none focus:border-ink/20 transition-colors resize-none font-serif leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-[0.4em] text-ink-muted ml-2">
+                        {t('ocean_user_message_label')}
+                      </label>
+                      <div className="relative">
+                        <textarea
+                          value={userMessage}
+                          onChange={(e) => setUserMessage(e.target.value.slice(0, 200))}
+                          placeholder={t('ocean_cast_placeholder')}
+                          className="w-full h-32 bg-ink/[0.02] border border-ink/5 rounded-2xl p-6 text-sm text-ink placeholder:text-ink/20 focus:outline-none focus:border-ink/20 transition-colors resize-none font-sans leading-relaxed"
+                        />
+                        <div className="absolute bottom-4 right-4 text-[10px] tracking-widest text-ink/20 uppercase">
+                          {t('ocean_cast_limit').replace('{count}', userMessage.length.toString())}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -149,7 +219,7 @@ export const CastBottleModal: React.FC<CastBottleModalProps> = ({ isOpen, onClos
 
                   <Button
                     onClick={handleSubmit}
-                    disabled={isSubmitting || !content.trim()}
+                    disabled={isSubmitting || (!quote.trim() && !userMessage.trim())}
                     className="w-full h-14 rounded-full bg-ink text-white hover:bg-ink/90 gap-3 text-xs uppercase tracking-[0.4em] font-light"
                   >
                     {isSubmitting ? (
@@ -167,4 +237,6 @@ export const CastBottleModal: React.FC<CastBottleModalProps> = ({ isOpen, onClos
       )}
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 };

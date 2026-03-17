@@ -1899,7 +1899,7 @@ export const AdminDashboard: React.FC = () => {
               active={activeModule === 'ocean'} 
               onClick={() => setActiveModule('ocean')} 
               icon={<Waves size={18} />} 
-              label="共鳴之海管理" 
+              label="瓶中信之海管理" 
             />
             <NavButton 
               active={activeModule === 'sessions'} 

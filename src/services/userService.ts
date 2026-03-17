@@ -1,43 +1,54 @@
 import { User } from 'firebase/auth';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { UserProfile, UserRole } from '../core/types';
 
 /**
  * userService
  * 
- * Handles operations for user profiles using the PostgreSQL-backed API.
+ * Handles operations for user profiles using Firebase Firestore.
  */
 export const userService = {
   /**
-   * Get or create user profile in PostgreSQL
+   * Get or create user profile in Firestore
    */
   async getOrCreateProfile(user: User): Promise<UserProfile> {
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        return {
+          ...data,
           uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get or create user profile');
+          displayName: data.display_name || data.displayName,
+          photoURL: data.photo_url || data.photoURL,
+        } as UserProfile;
+      } else {
+        // Create new profile
+        const newProfile: any = {
+          uid: user.uid,
+          email: user.email || '',
+          display_name: user.displayName || 'Guest',
+          photo_url: user.photoURL || '',
+          role: 'free_member',
+          register_date: new Date().toISOString(),
+          subscription_status: 'none',
+          last_login: new Date().toISOString(),
+          settings: { daily_reminder: false, dark_mode: false, newsletter: false }
+        };
+        
+        await setDoc(userRef, newProfile);
+        
+        return {
+          ...newProfile,
+          displayName: newProfile.display_name,
+          photoURL: newProfile.photo_url,
+        } as UserProfile;
       }
-
-      const profile = await response.json();
-      return {
-        ...profile,
-        displayName: profile.display_name,
-        photoURL: profile.photo_url,
-        settings: profile.settings || { daily_reminder: false, dark_mode: false, newsletter: false }
-      } as UserProfile;
     } catch (error: any) {
-      console.error("Failed to fetch user profile from API:", error);
+      console.error("Failed to fetch user profile from Firestore:", error);
       
       // Fallback for offline mode or network issues
       return {
@@ -58,16 +69,19 @@ export const userService = {
    * Get user profile by UID
    */
   async getProfile(uid: string): Promise<UserProfile> {
-    const response = await fetch(`/api/users/${uid}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch user profile');
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      throw new Error('User profile not found');
     }
-    const profile = await response.json();
+    
+    const data = userSnap.data();
     return {
-      ...profile,
-      displayName: profile.display_name,
-      photoURL: profile.photo_url,
-      settings: profile.settings || { daily_reminder: false, dark_mode: false, newsletter: false }
+      ...data,
+      uid: uid,
+      displayName: data.display_name || data.displayName,
+      photoURL: data.photo_url || data.photoURL,
     } as UserProfile;
   },
 
@@ -75,105 +89,40 @@ export const userService = {
    * Update user role
    */
   async updateRole(uid: string, role: UserRole): Promise<UserProfile> {
-    const response = await fetch(`/api/users/${uid}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ role }),
-    });
-
-    const contentType = response.headers.get("content-type");
-    let data: any;
-
-    if (contentType && contentType.includes("application/json")) {
-      data = await response.json();
-    } else {
-      const text = await response.text();
-      console.error("Server returned non-JSON response:", text);
-      throw new Error(`伺服器錯誤 (${response.status}): 傳回了非 JSON 格式的回應。`);
-    }
-
-    if (!response.ok) {
-      throw new Error(data.error || `更新失敗 (${response.status})`);
-    }
-    
-    return {
-      ...data,
-      displayName: data.display_name,
-      photoURL: data.photo_url,
-      settings: data.settings || { daily_reminder: false, dark_mode: false, newsletter: false }
-    } as UserProfile;
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { role });
+    return this.getProfile(uid);
   },
 
   /**
    * Update user profile fields (displayName, photoURL, etc.)
    */
   async updateProfile(uid: string, updates: Partial<UserProfile>): Promise<UserProfile> {
-    const response = await fetch(`/api/users/${uid}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updates),
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || 'Failed to update profile');
-    }
-
-    const data = await response.json();
-    return {
-      ...data,
-      displayName: data.display_name,
-      photoURL: data.photo_url,
-      settings: data.settings
-    } as UserProfile;
+    const userRef = doc(db, 'users', uid);
+    
+    // Map camelCase to snake_case for Firestore consistency if needed
+    const firestoreUpdates: any = { ...updates };
+    if (updates.displayName) firestoreUpdates.display_name = updates.displayName;
+    if (updates.photoURL) firestoreUpdates.photo_url = updates.photoURL;
+    
+    await updateDoc(userRef, firestoreUpdates);
+    return this.getProfile(uid);
   },
 
   /**
    * Update user settings
    */
   async updateSettings(uid: string, settings: UserProfile['settings']): Promise<UserProfile> {
-    const response = await fetch(`/api/users/${uid}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ settings }),
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || 'Failed to update settings');
-    }
-
-    const data = await response.json();
-    return {
-      ...data,
-      displayName: data.display_name,
-      photoURL: data.photo_url,
-      settings: data.settings
-    } as UserProfile;
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { settings });
+    return this.getProfile(uid);
   },
 
   /**
    * Update subscription status
    */
   async updateSubscription(uid: string, status: 'active' | 'inactive' | 'none'): Promise<void> {
-    const response = await fetch(`/api/users/${uid}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        subscription_status: status
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update subscription');
-    }
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { subscription_status: status });
   }
 };

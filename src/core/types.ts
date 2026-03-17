@@ -98,6 +98,7 @@ export interface AnalysisReport {
   fiveElementAnalysis?: string;
   reflection?: string;
   actionSuggestion?: string;
+  shareableReflection?: string;
   shareThumbnail?: string;
 
   // Multilingual Content
@@ -109,6 +110,7 @@ export interface AnalysisReport {
       fiveElementAnalysis: string;
       reflection: string;
       actionSuggestion: string;
+      shareableReflection?: string;
       pairInterpretations: { pair_id: string; text: string }[];
     };
     'ja-JP': {
@@ -118,6 +120,7 @@ export interface AnalysisReport {
       fiveElementAnalysis: string;
       reflection: string;
       actionSuggestion: string;
+      shareableReflection?: string;
       pairInterpretations: { pair_id: string; text: string }[];
     };
   };
@@ -138,6 +141,7 @@ export interface UserProfile {
   displayName?: string;
   photoURL?: string;
   role: UserRole;
+  ocean_nickname?: string;
   register_date: string;
   subscription_status: 'active' | 'inactive' | 'none';
   last_login?: string;
@@ -229,12 +233,16 @@ export interface Bottle {
   id: string;
   user_id: string;
   content: string;
+  quote?: string;
+  card_image_url?: string;
   element: string;
   lang: string;
   origin_locale: string;
   is_active: boolean;
   created_at: string;
+  nickname?: string;
   display_name?: string; // Joined from users table
+  translatedContent?: string; // Added for UI
 }
 
 export interface BottleTag {
