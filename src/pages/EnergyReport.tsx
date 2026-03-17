@@ -29,7 +29,7 @@ const WeavingLoader: React.FC<{ label?: string }> = ({ label }) => {
   );
 };
 
-export const EnergyReport: React.FC<{ onReset: () => void; onNavigate?: (page: string) => void }> = ({ onReset, onNavigate }) => {
+export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => {
   const { selectedCards } = useTest();
   const { t } = useLanguage();
   const reportRef = useRef<HTMLDivElement>(null);
@@ -183,20 +183,9 @@ export const EnergyReport: React.FC<{ onReset: () => void; onNavigate?: (page: s
               className="text-[20px] md:text-[24px] opacity-40 py-10" 
             />
           ) : (
-            <div className="space-y-12">
-              <p className="text-[28px] md:text-[35px] font-serif font-extralight leading-relaxed text-ink italic tracking-tight md:w-[900px] md:text-center p-[10px] md:ml-[10px] mb-0">
-                「{displayContent.reflection || "..."}」
-              </p>
-              
-              {displayContent.shareableReflection && (
-                <div className="max-w-md mx-auto p-8 border border-ink/5 rounded-2xl bg-white/50 backdrop-blur-sm space-y-4">
-                  <span className="text-[10px] uppercase tracking-[0.4em] text-ink-muted block opacity-60">{t('ocean_reflection_title')}</span>
-                  <p className="text-sm text-ink-muted leading-relaxed italic">
-                    {displayContent.shareableReflection}
-                  </p>
-                </div>
-              )}
-            </div>
+            <p className="text-[28px] md:text-[35px] font-serif font-extralight leading-relaxed text-ink italic tracking-tight md:w-[900px] md:text-center p-[10px] md:ml-[10px] mb-0">
+              「{displayContent.reflection || "..."}」
+            </p>
           )}
           <div className="w-px h-16 bg-ink/10 mx-auto" />
         </motion.div>
@@ -260,7 +249,7 @@ export const EnergyReport: React.FC<{ onReset: () => void; onNavigate?: (page: s
                 {t('report_guest_desc')}
               </p>
               <button 
-                onClick={() => onNavigate ? onNavigate('profile') : window.location.href = '/profile'} 
+                onClick={() => window.location.href = '/profile'} 
                 className="text-[10px] uppercase tracking-[0.4em] text-ink border-b border-ink pb-1 hover:opacity-60 transition-opacity"
               >
                 {t('report_signin_btn')}
@@ -273,8 +262,7 @@ export const EnergyReport: React.FC<{ onReset: () => void; onNavigate?: (page: s
       <CastBottleModal 
         isOpen={showCastModal} 
         onClose={() => setShowCastModal(false)} 
-        defaultQuote={displayContent.shareableReflection || displayContent.reflection || ''}
-        cardImages={report.pairs ? report.pairs.flatMap(p => [p.image.imageUrl, p.word.imageUrl]) : [...selectedCards.images, ...selectedCards.words].map(c => c.imageUrl)}
+        defaultContent={displayContent.reflection || ''}
         element={report.dominantElement}
       />
     </div>

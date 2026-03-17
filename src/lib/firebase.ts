@@ -1,17 +1,31 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
-// Import the Firebase configuration from the auto-generated file
-import firebaseConfig from '../../firebase-applet-config.json';
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+};
+
+// Debug check for missing configuration
+if (import.meta.env.PROD && !firebaseConfig.authDomain) {
+  console.error(
+    "Firebase Configuration Error: VITE_FIREBASE_AUTH_DOMAIN is missing. " +
+    "Ensure environment variables are set BEFORE building the application."
+  );
+}
 
 // Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
-const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 const storage = getStorage(app);
 
 // Initialize Analytics
@@ -19,13 +33,9 @@ let analytics: any = null;
 if (typeof window !== "undefined") {
   isSupported().then((supported) => {
     if (supported) {
-      try {
-        analytics = getAnalytics(app);
-      } catch (err) {
-        console.error("Firebase Analytics initialization failed:", err);
-      }
+      analytics = getAnalytics(app);
     }
   });
 }
 
-export { app, auth, db, storage, analytics };
+export { app, auth, storage, analytics };

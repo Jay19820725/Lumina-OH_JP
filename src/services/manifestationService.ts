@@ -1,5 +1,3 @@
-import { collection, addDoc, getDocs, query, where, orderBy, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { Manifestation, ManifestationDeadlineOption, ManifestationStatus } from '../core/types';
 
 export const manifestationService = {
@@ -7,26 +5,12 @@ export const manifestationService = {
    * Get all manifestations for a user
    */
   async getUserManifestations(userId: string): Promise<Manifestation[]> {
-    try {
-      const manifestationsRef = collection(db, 'manifestations');
-      const q = query(
-        manifestationsRef,
-        where('user_id', '==', userId),
-        orderBy('created_at', 'desc')
-      );
-
-      const querySnapshot = await getDocs(q);
-      const manifestations: Manifestation[] = [];
-      
-      querySnapshot.forEach((doc) => {
-        manifestations.push({ ...doc.data(), id: doc.id } as Manifestation);
-      });
-      
-      return manifestations;
-    } catch (error) {
-      console.error("Error fetching manifestations from Firestore:", error);
-      throw error;
+    const response = await fetch(`/api/manifestations/${userId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch manifestations');
     }
+    const data = await response.json();
+    return data as Manifestation[];
   },
 
   /**
@@ -52,34 +36,42 @@ export const manifestationService = {
         break;
     }
 
-    try {
-      const manifestationsRef = collection(db, 'manifestations');
-      const docRef = await addDoc(manifestationsRef, {
+    const response = await fetch('/api/manifestations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         user_id: userId,
         wish_title: wishTitle,
         deadline: deadlineDate.toISOString(),
         deadline_option: deadlineOption,
-        status: 'active',
-        reminder_sent: false,
-        created_at: serverTimestamp()
-      });
-      return docRef.id;
-    } catch (error) {
-      console.error("Error creating manifestation in Firestore:", error);
-      throw error;
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create manifestation');
     }
+
+    const result = await response.json();
+    return result.id;
   },
 
   /**
    * Update manifestation status
    */
   async updateStatus(manifestationId: string, status: ManifestationStatus): Promise<void> {
-    try {
-      const manifestationRef = doc(db, 'manifestations', manifestationId);
-      await updateDoc(manifestationRef, { status });
-    } catch (error) {
-      console.error("Error updating manifestation status in Firestore:", error);
-      throw error;
+    const response = await fetch(`/api/manifestations/${manifestationId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update manifestation status');
     }
   },
 
@@ -105,12 +97,16 @@ export const manifestationService = {
    * Mark reminder as sent
    */
   async markReminderSent(manifestationId: string): Promise<void> {
-    try {
-      const manifestationRef = doc(db, 'manifestations', manifestationId);
-      await updateDoc(manifestationRef, { reminder_sent: true });
-    } catch (error) {
-      console.error("Error marking reminder as sent in Firestore:", error);
-      throw error;
+    const response = await fetch(`/api/manifestations/${manifestationId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ reminder_sent: true }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to mark reminder as sent');
     }
   }
 };
