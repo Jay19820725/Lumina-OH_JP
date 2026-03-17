@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Noto+Serif+JP:wght@200;300;400;500&family=Shippori+Mincho:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Noto+Serif+JP:wght@200;300;400;500&family=Shippori+Mincho:wght@400;500;600&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Noto+Serif+TC:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: var(--font-body, "Noto Sans JP", ui-sans-serif, system-ui, sans-serif);
-  --font-serif: var(--font-display, "Noto Serif JP", serif);
+  --font-serif: "Playfair Display", "Noto Serif TC", "Noto Serif JP", serif;
   --font-shippori: "Shippori Mincho", serif;
 
   --color-bg-washi: #FDFCF8;
@@ -162,5 +162,13 @@
 
   .rotate-y-180 {
     transform: rotateY(180deg);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

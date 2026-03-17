@@ -141,6 +141,7 @@ export interface UserProfile {
   register_date: string;
   subscription_status: 'active' | 'inactive' | 'none';
   last_login?: string;
+  default_bottle_nickname?: string;
   settings?: {
     daily_reminder: boolean;
     dark_mode: boolean;
@@ -232,9 +233,19 @@ export interface Bottle {
   element: string;
   lang: string;
   origin_locale: string;
+  card_id?: string;
+  quote?: string;
+  report_id?: string;
+  sender_nickname?: string;
   is_active: boolean;
   created_at: string;
   display_name?: string; // Joined from users table
+  sender_name?: string; // COALESCE(sender_nickname, display_name)
+  card_image?: string;
+  card_name?: string;
+  word_text?: string;
+  word_name?: string;
+  translatedContent?: string; // For frontend translation
 }
 
 export interface BottleTag {

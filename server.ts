@@ -236,9 +236,58 @@ async function startServer() {
         element TEXT NOT NULL,
         lang TEXT NOT NULL,
         origin_locale TEXT NOT NULL,
+        card_id TEXT,
+        quote TEXT,
+        report_id UUID,
+        sender_nickname TEXT,
         is_active BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Ensure new columns exist if table was created earlier
+      DO $$ 
+      BEGIN 
+        BEGIN
+          ALTER TABLE bottles ADD COLUMN card_id TEXT;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE bottles ADD COLUMN quote TEXT;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE bottles ADD COLUMN report_id UUID;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE bottles ADD COLUMN sender_nickname TEXT;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE bottles ADD COLUMN view_count INTEGER DEFAULT 0;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE bottles ADD COLUMN last_checked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+      END $$;
+
+      -- Update users table for default nickname
+      DO $$ 
+      BEGIN 
+        BEGIN
+          ALTER TABLE users ADD COLUMN default_bottle_nickname TEXT;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+      END $$;
 
       -- Ocean of Resonance: Blessing Tags table
       CREATE TABLE IF NOT EXISTS bottle_tags (
@@ -978,10 +1027,16 @@ async function startServer() {
   });
 
   app.post("/api/bottles", async (req, res) => {
-    const { userId, content, element, lang, originLocale } = req.body;
+    const { userId, content, element, lang, originLocale, cardId, quote, reportId, nickname } = req.body;
     
     try {
-      // 1. Check Premium Status
+      // 1. Check if user has at least one report
+      const reportsCount = await pool.query("SELECT COUNT(*) FROM energy_reports WHERE user_id = $1", [userId]);
+      if (parseInt(reportsCount.rows[0].count) === 0) {
+        return res.status(403).json({ error: "You must complete at least one energy test to create a bottle mail." });
+      }
+
+      // 2. Check Premium Status
       const userResult = await pool.query("SELECT role, subscription_status FROM users WHERE uid = $1", [userId]);
       if (userResult.rows.length === 0) {
         return res.status(404).json({ error: "User not found" });
@@ -993,7 +1048,12 @@ async function startServer() {
         return res.status(403).json({ error: "Premium membership required to cast a bottle." });
       }
 
-      // 2. Sensitive Word Filter (Direct Rejection)
+      // 3. Update default nickname if provided
+      if (nickname) {
+        await pool.query("UPDATE users SET default_bottle_nickname = $1 WHERE uid = $2", [nickname, userId]);
+      }
+
+      // 4. Sensitive Word Filter (Direct Rejection)
       const sensitiveWordsResult = await pool.query("SELECT word FROM sensitive_words");
       const sensitiveWords = sensitiveWordsResult.rows.map(r => r.word);
       
@@ -1006,10 +1066,10 @@ async function startServer() {
         }
       }
 
-      // 3. Save Bottle
+      // 5. Save Bottle
       const result = await pool.query(
-        "INSERT INTO bottles (user_id, content, element, lang, origin_locale) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-        [userId, content, element, lang, originLocale]
+        "INSERT INTO bottles (user_id, content, element, lang, origin_locale, card_id, quote, report_id, sender_nickname) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
+        [userId, content, element, lang, originLocale, cardId, quote, reportId, nickname]
       );
       
       res.json(result.rows[0]);
@@ -1024,7 +1084,16 @@ async function startServer() {
     try {
       // Pick a random bottle that is active and not from the current user
       const result = await pool.query(
-        "SELECT b.*, u.display_name FROM bottles b JOIN users u ON b.user_id = u.uid WHERE b.is_active = TRUE AND b.user_id != $1 ORDER BY RANDOM() LIMIT 1",
+        `SELECT b.*, 
+                COALESCE(b.sender_nickname, u.display_name) as sender_name,
+                COALESCE(ci.image_url, cw.image_url) as card_image,
+                COALESCE(ci.name, cw.name) as card_name
+         FROM bottles b 
+         JOIN users u ON b.user_id = u.uid 
+         LEFT JOIN cards_image ci ON b.card_id = ci.id
+         LEFT JOIN cards_word cw ON b.card_id = cw.id
+         WHERE b.is_active = TRUE AND b.user_id != $1 
+         ORDER BY RANDOM() LIMIT 1`,
         [userId || '']
       );
       
@@ -1033,6 +1102,11 @@ async function startServer() {
       }
       
       const bottle = result.rows[0];
+
+      // Increment view count asynchronously
+      pool.query("UPDATE bottles SET view_count = view_count + 1 WHERE id = $1", [bottle.id]).catch(err => {
+        console.error("Error incrementing bottle view count:", err);
+      });
       
       // Translation logic using Gemini
       if (targetLang && bottle.lang !== targetLang && process.env.GEMINI_API_KEY) {
@@ -1072,6 +1146,43 @@ async function startServer() {
       res.json({ success: true });
     } catch (err) {
       console.error("Error blessing bottle:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/bottles/my/:userId", async (req, res) => {
+    const { userId } = req.params;
+    try {
+      const result = await pool.query(
+        `SELECT b.*, 
+                COALESCE(ci.image_url, cw.image_url) as card_image,
+                COALESCE(ci.name, cw.name) as card_name,
+                (SELECT COUNT(*) FROM bottle_blessings WHERE bottle_id = b.id) as blessing_count,
+                (SELECT MAX(created_at) FROM bottle_blessings WHERE bottle_id = b.id) as last_blessing_at
+         FROM bottles b 
+         LEFT JOIN cards_image ci ON b.card_id = ci.id
+         LEFT JOIN cards_word cw ON b.card_id = cw.id
+         WHERE b.user_id = $1 
+         ORDER BY b.created_at DESC`,
+        [userId]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching user's bottles:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/bottles/:id/mark-read", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query(
+        "UPDATE bottles SET last_checked_at = CURRENT_TIMESTAMP WHERE id = $1",
+        [id]
+      );
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error marking bottle as read:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });

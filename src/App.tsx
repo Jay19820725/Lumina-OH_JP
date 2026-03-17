@@ -129,7 +129,7 @@ function AppContent() {
       case 'history':
         return <EnergyTimeline onNavigate={(page) => navigate(page as Page)} />;
       case 'ocean':
-        return <Ocean />;
+        return <Ocean onNavigate={(page) => navigate(page as Page)} />;
       case 'admin':
         return <AdminDashboard />;
       case 'admin-login':

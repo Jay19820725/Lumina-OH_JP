@@ -262,8 +262,7 @@ export const EnergyReport: React.FC<{ onReset: () => void }> = ({ onReset }) => 
       <CastBottleModal 
         isOpen={showCastModal} 
         onClose={() => setShowCastModal(false)} 
-        defaultContent={displayContent.reflection || ''}
-        element={report.dominantElement}
+        initialReport={report}
       />
     </div>
   );
