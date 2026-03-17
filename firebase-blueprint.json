@@ -1,230 +1,88 @@
 {
   "entities": {
-    "User": {
-      "title": "User",
-      "description": "User profile and settings",
+    "SEOSettings": {
+      "title": "SEOSettings",
+      "description": "Bilingual SEO settings for the website",
       "type": "object",
       "properties": {
-        "uid": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "display_name": { "type": "string" },
-        "photo_url": { "type": "string" },
-        "role": { "type": "string", "enum": ["free_member", "premium_member", "admin"] },
-        "ocean_nickname": { "type": "string" },
-        "register_date": { "type": "string", "format": "date-time" },
-        "subscription_status": { "type": "string", "enum": ["none", "active", "expired"] },
-        "last_login": { "type": "string", "format": "date-time" },
-        "settings": {
+        "zh": {
           "type": "object",
           "properties": {
-            "daily_reminder": { "type": "boolean" },
-            "dark_mode": { "type": "boolean" },
-            "newsletter": { "type": "boolean" }
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "og_image": { "type": "string" }
+          },
+          "required": ["title", "description", "og_image"]
+        },
+        "ja": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "og_image": { "type": "string" }
+          },
+          "required": ["title", "description", "og_image"]
+        },
+        "google_analytics_id": { "type": "string" },
+        "search_console_id": { "type": "string" },
+        "index_enabled": { "type": "boolean" }
+      },
+      "required": ["zh", "ja", "index_enabled"]
+    },
+    "FontSettings": {
+      "title": "FontSettings",
+      "description": "Bilingual font settings for the website",
+      "type": "object",
+      "properties": {
+        "zh": {
+          "type": "object",
+          "properties": {
+            "display": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string" },
+                "family": { "type": "string" }
+              }
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string" },
+                "family": { "type": "string" }
+              }
+            }
           }
         },
-        "energy": {
+        "ja": {
           "type": "object",
           "properties": {
-            "wood": { "type": "number" },
-            "fire": { "type": "number" },
-            "earth": { "type": "number" },
-            "metal": { "type": "number" },
-            "water": { "type": "number" }
+            "display": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string" },
+                "family": { "type": "string" }
+              }
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string" },
+                "family": { "type": "string" }
+              }
+            }
           }
         }
-      },
-      "required": ["uid"]
-    },
-    "Bottle": {
-      "title": "Bottle",
-      "description": "A message in a bottle cast into the ocean",
-      "type": "object",
-      "properties": {
-        "user_id": { "type": "string" },
-        "content": { "type": "string" },
-        "quote": { "type": "string" },
-        "card_image_url": { "type": "string" },
-        "element": { "type": "string", "enum": ["wood", "fire", "earth", "metal", "water"] },
-        "nickname": { "type": "string" },
-        "lang": { "type": "string" },
-        "origin_locale": { "type": "string" },
-        "is_active": { "type": "boolean" },
-        "view_count": { "type": "integer" },
-        "bless_count": { "type": "integer" },
-        "random_seed": { "type": "number" },
-        "created_at": { "type": "string", "format": "date-time" }
-      },
-      "required": ["user_id", "content", "element", "lang", "origin_locale"]
-    },
-    "Notification": {
-      "title": "Notification",
-      "description": "User notification",
-      "type": "object",
-      "properties": {
-        "user_id": { "type": "string" },
-        "type": { "type": "string", "enum": ["resonance", "system"] },
-        "title_zh": { "type": "string" },
-        "title_ja": { "type": "string" },
-        "content_zh": { "type": "string" },
-        "content_ja": { "type": "string" },
-        "is_read": { "type": "boolean" },
-        "created_at": { "type": "string", "format": "date-time" }
-      },
-      "required": ["user_id", "type"]
-    },
-    "EnergyReport": {
-      "title": "EnergyReport",
-      "description": "Daily energy analysis report",
-      "type": "object",
-      "properties": {
-        "user_id": { "type": "string" },
-        "lang": { "type": "string" },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "is_ai_complete": { "type": "boolean" },
-        "dominant_element": { "type": "string" },
-        "weak_element": { "type": "string" },
-        "balance_score": { "type": "number" },
-        "today_theme": { "type": "string" },
-        "share_thumbnail": { "type": "string" },
-        "shareable_reflection": { "type": "string" },
-        "report_data": { "type": "object" }
       }
-    },
-    "EnergyJournalEntry": {
-      "title": "EnergyJournalEntry",
-      "description": "A single entry in the user's energy journal",
-      "type": "object",
-      "properties": {
-        "user_id": { "type": "string" },
-        "emotion_tag": { "type": "string" },
-        "insight": { "type": "string" },
-        "intention": { "type": "string" },
-        "date": { "type": "string", "format": "date-time" },
-        "created_at": { "type": "string", "format": "date-time" }
-      },
-      "required": ["user_id", "emotion_tag", "insight", "intention"]
-    },
-    "Manifestation": {
-      "title": "Manifestation",
-      "description": "A user's wish or manifestation goal",
-      "type": "object",
-      "properties": {
-        "user_id": { "type": "string" },
-        "wish_title": { "type": "string" },
-        "deadline": { "type": "string", "format": "date-time" },
-        "deadline_option": { "type": "string" },
-        "status": { "type": "string", "enum": ["active", "achieved", "expired"] },
-        "reminder_sent": { "type": "boolean" },
-        "created_at": { "type": "string", "format": "date-time" }
-      },
-      "required": ["user_id", "wish_title", "deadline"]
-    },
-    "SensitiveWord": {
-      "title": "SensitiveWord",
-      "description": "A word that is not allowed in bottle content",
-      "type": "object",
-      "properties": {
-        "word": { "type": "string" },
-        "category": { "type": "string" }
-      },
-      "required": ["word"]
-    },
-    "BottleTag": {
-      "title": "BottleTag",
-      "description": "A tag for blessing a bottle",
-      "type": "object",
-      "properties": {
-        "text_zh": { "type": "string" },
-        "text_ja": { "type": "string" },
-        "icon": { "type": "string" }
-      },
-      "required": ["text_zh", "text_ja"]
-    },
-    "BottleBlessing": {
-      "title": "BottleBlessing",
-      "description": "A blessing sent to a bottle",
-      "type": "object",
-      "properties": {
-        "bottle_id": { "type": "string" },
-        "user_id": { "type": "string" },
-        "tag_id": { "type": "string" },
-        "created_at": { "type": "string", "format": "date-time" }
-      },
-      "required": ["bottle_id", "user_id", "tag_id"]
-    },
-    "Prompt": {
-      "title": "Prompt",
-      "description": "An AI prompt template",
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "content": { "type": "string" },
-        "lang": { "type": "string" },
-        "is_active": { "type": "boolean" },
-        "created_at": { "type": "string", "format": "date-time" }
-      },
-      "required": ["name", "content", "lang"]
-    },
-    "Session": {
-      "title": "Session",
-      "description": "An OH card drawing session",
-      "type": "object",
-      "properties": {
-        "user_id": { "type": "string" },
-        "session_time": { "type": "string", "format": "date-time" },
-        "image_cards": { "type": "array", "items": { "type": "object" } },
-        "word_cards": { "type": "array", "items": { "type": "object" } },
-        "pairs": { "type": "array", "items": { "type": "object" } },
-        "association_text": { "type": "array", "items": { "type": "string" } },
-        "created_at": { "type": "string", "format": "date-time" }
-      },
-      "required": ["user_id"]
     }
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": "User",
-      "description": "User profiles"
+    "site_settings/seo": {
+      "schema": "SEOSettings",
+      "description": "Global SEO configuration"
     },
-    "/bottles/{bottleId}": {
-      "schema": "Bottle",
-      "description": "Messages in bottles"
-    },
-    "/notifications/{notificationId}": {
-      "schema": "Notification",
-      "description": "User notifications"
-    },
-    "/energy_reports/{reportId}": {
-      "schema": "EnergyReport",
-      "description": "Energy analysis reports"
-    },
-    "/energy_journal/{entryId}": {
-      "schema": "EnergyJournalEntry",
-      "description": "User journal entries"
-    },
-    "/manifestations/{manifestationId}": {
-      "schema": "Manifestation",
-      "description": "User manifestations"
-    },
-    "/sessions/{sessionId}": {
-      "schema": "Session",
-      "description": "OH card drawing sessions"
-    },
-    "/sensitive_words/{wordId}": {
-      "schema": "SensitiveWord",
-      "description": "Sensitive words for filtering"
-    },
-    "/bottle_tags/{tagId}": {
-      "schema": "BottleTag",
-      "description": "Tags for blessing bottles"
-    },
-    "/bottle_blessings/{blessingId}": {
-      "schema": "BottleBlessing",
-      "description": "Blessings sent to bottles"
-    },
-    "/prompts/{promptId}": {
-      "schema": "Prompt",
-      "description": "AI prompt templates"
+    "site_settings/fonts": {
+      "schema": "FontSettings",
+      "description": "Global font configuration"
     }
   }
 }

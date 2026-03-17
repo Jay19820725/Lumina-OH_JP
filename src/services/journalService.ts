@@ -1,11 +1,9 @@
-import { collection, addDoc, getDocs, query, where, orderBy, limit, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { EnergyJournalEntry, EmotionTag } from '../core/types';
 
 /**
  * journalService
  * 
- * Handles operations for the Energy Journal using Firebase Firestore.
+ * Handles operations for the Energy Journal using the PostgreSQL-backed API.
  */
 export const journalService = {
   /**
@@ -13,18 +11,27 @@ export const journalService = {
    */
   async addEntry(userId: string, data: { emotion_tag: EmotionTag; insight: string; intention: string }): Promise<string> {
     try {
-      const journalRef = collection(db, 'energy_journal');
-      const docRef = await addDoc(journalRef, {
-        user_id: userId,
-        emotion_tag: data.emotion_tag,
-        insight: data.insight,
-        intention: data.intention,
-        date: new Date().toISOString(),
-        created_at: serverTimestamp()
+      const response = await fetch('/api/journal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          emotion_tag: data.emotion_tag,
+          insight: data.insight,
+          intention: data.intention,
+        }),
       });
-      return docRef.id;
+
+      if (!response.ok) {
+        throw new Error('Failed to add journal entry');
+      }
+
+      const result = await response.json();
+      return result.id;
     } catch (error) {
-      console.error("Error adding journal entry to Firestore:", error);
+      console.error("Error adding journal entry:", error);
       throw error;
     }
   },
@@ -34,29 +41,16 @@ export const journalService = {
    */
   async getEntries(userId: string, maxEntries: number = 50): Promise<EnergyJournalEntry[]> {
     try {
-      const journalRef = collection(db, 'energy_journal');
-      const q = query(
-        journalRef,
-        where('user_id', '==', userId),
-        orderBy('created_at', 'desc'),
-        limit(maxEntries)
-      );
+      const response = await fetch(`/api/journal/${userId}?limit=${maxEntries}`);
 
-      const querySnapshot = await getDocs(q);
-      const entries: EnergyJournalEntry[] = [];
-      
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        entries.push({
-          ...data,
-          id: doc.id,
-          date: data.date || data.created_at?.toDate()?.toISOString() || new Date().toISOString()
-        } as EnergyJournalEntry);
-      });
-      
-      return entries;
+      if (!response.ok) {
+        throw new Error('Failed to fetch journal entries');
+      }
+
+      const entries = await response.json();
+      return entries as EnergyJournalEntry[];
     } catch (error) {
-      console.error("Error fetching journal entries from Firestore:", error);
+      console.error("Error fetching journal entries:", error);
       throw error;
     }
   },
@@ -66,10 +60,15 @@ export const journalService = {
    */
   async deleteEntry(entryId: string): Promise<void> {
     try {
-      const entryRef = doc(db, 'energy_journal', entryId);
-      await deleteDoc(entryRef);
+      const response = await fetch(`/api/journal/${entryId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete journal entry');
+      }
     } catch (error) {
-      console.error("Error deleting journal entry from Firestore:", error);
+      console.error("Error deleting journal entry:", error);
       throw error;
     }
   }

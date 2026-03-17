@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Calendar, ChevronRight, Info } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { auth } from '../lib/firebase';
 import { AnalysisReport } from '../core/types';
 import { useTest } from '../store/TestContext';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -12,7 +12,6 @@ interface HistoryProps {
 }
 
 export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
-  const { user } = useAuth();
   const [reports, setReports] = useState<AnalysisReport[]>([]);
   const [hasOtherLang, setHasOtherLang] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -21,6 +20,7 @@ export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     const fetchHistory = async () => {
+      const user = auth.currentUser;
       if (!user) {
         setLoading(false);
         return;
@@ -40,7 +40,7 @@ export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
     };
 
     fetchHistory();
-  }, [user, language]);
+  }, [language]);
 
   const handleViewReport = (report: AnalysisReport) => {
     setReport(report);
@@ -72,9 +72,9 @@ export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-20 md:mb-32 space-y-6 md:space-y-10">
           <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted block">Journey Log</span>
-          <h1 className="font-serif tracking-widest">診斷紀錄</h1>
+          <h1 className="font-serif tracking-widest">診断の履歴</h1>
           <div className="w-12 h-px bg-ink/10 mx-auto" />
-          <p className="text-sm md:text-lg text-ink-muted font-light tracking-widest leading-relaxed">探索妳的能量變遷軌跡。</p>
+          <p className="text-sm md:text-lg text-ink-muted font-light tracking-widest leading-relaxed">あなたのエネルギーの変遷を辿ります。</p>
         </header>
 
         {hasOtherLang && (
@@ -88,13 +88,13 @@ export const History: React.FC<HistoryProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        {!user ? (
+        {!auth.currentUser ? (
           <div className="text-center py-20 opacity-40">
-            <p className="font-serif italic text-sm md:text-base">請先登入以查看紀錄。</p>
+            <p className="font-serif italic text-sm md:text-base">履歴を表示するにはサインインしてください。</p>
           </div>
         ) : reports.length === 0 ? (
           <div className="text-center py-20 opacity-40">
-            <p className="font-serif italic text-sm md:text-base">尚無診斷紀錄。</p>
+            <p className="font-serif italic text-sm md:text-base">まだ診断の記録がありません。</p>
           </div>
         ) : (
           <div className="space-y-4 md:space-y-6">

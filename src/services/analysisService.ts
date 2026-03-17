@@ -1,5 +1,3 @@
-import { collection, query, where, limit, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { GoogleGenAI, Type } from "@google/genai";
 import { SelectedCards, AnalysisReport, FiveElementValues } from "../core/types";
 
@@ -17,23 +15,17 @@ export const generateAIAnalysis = async (
 ): Promise<Partial<AnalysisReport>> => {
   const model = "gemini-3.1-pro-preview";
   
-  // Fetch active prompt from Firestore for the specific language
+  // Fetch active prompt from database for the specific language
   let promptTemplate = "";
   
   try {
-    const promptsRef = collection(db, 'prompts');
-    const q = query(
-      promptsRef,
-      where('is_active', '==', true),
-      where('lang', '==', currentLang),
-      limit(1)
-    );
-    const querySnapshot = await getDocs(q);
-    if (!querySnapshot.empty) {
-      promptTemplate = querySnapshot.docs[0].data().content || "";
+    const promptResponse = await fetch(`/api/prompts/active?lang=${currentLang}`);
+    if (promptResponse.ok) {
+      const activePrompt = await promptResponse.json();
+      promptTemplate = activePrompt.content || "";
     }
   } catch (err) {
-    console.warn("Failed to fetch active prompt from Firestore, using fallback:", err);
+    console.warn("Failed to fetch active prompt, using fallback:", err);
   }
 
   // Fallback hardcoded prompt if no prompt found in DB
@@ -107,10 +99,6 @@ export const generateAIAnalysis = async (
             fiveElementAnalysis: { type: Type.STRING },
             reflection: { type: Type.STRING },
             actionSuggestion: { type: Type.STRING },
-            shareableReflection: { 
-              type: Type.STRING, 
-              description: "A short, poetic, and shareable reflection (100-150 characters) that summarizes the energy report's core message for the 'Ocean of Resonance'."
-            },
             pairInterpretations: {
               type: Type.ARRAY,
               items: {
@@ -123,7 +111,7 @@ export const generateAIAnalysis = async (
               }
             }
           },
-          required: ["todayTheme", "cardInterpretation", "psychologicalInsight", "fiveElementAnalysis", "reflection", "actionSuggestion", "shareableReflection"]
+          required: ["todayTheme", "cardInterpretation", "psychologicalInsight", "fiveElementAnalysis", "reflection", "actionSuggestion"]
         }
       }
     });
@@ -146,8 +134,7 @@ export const generateAIAnalysis = async (
       psychologicalInsight: currentLang === 'ja' ? "現在のあなたは変化の段階にあります。わずかな不安はあるものの、それ以上に未来への期待が大きいです。" : "當前的妳正處於一個轉化的階段，雖然有些微的焦慮，但更多的是對未來的期許。",
       fiveElementAnalysis: currentLang === 'ja' ? "エネルギーの浮き沈みは自然なリズムです。優勢な要素はあなたに力を与え、不足している要素は立ち止まることを教えてくれます。" : "能量的起伏是自然的律動，優勢的元素帶給妳力量，不足的元素則提醒妳停下腳步。 ",
       reflection: currentLang === 'ja' ? "目を閉じて、呼吸の頻度を感じてみてください。自分に問いかけてみましょう：今の私に、最も必要な抱擁は何ですか？" : "閉上眼，感受呼吸的頻率，問問自己：現在的我，最需要什麼樣的擁抱？",
-      actionSuggestion: currentLang === 'ja' ? "今日は自分のために温かいお茶を淹れ、静かな場所で座ってみてください。何もしなくていい、ただそこにいるだけで。" : "今天試著為自己泡一杯熱茶，在安靜的角落坐下，什麼都不做，只是存在。",
-      shareableReflection: currentLang === 'ja' ? "静寂の中で自分を見つめ、内なる光を信じて。" : "在寧靜中凝視自我，相信內在的光芒。"
+      actionSuggestion: currentLang === 'ja' ? "今日は自分のために温かいお茶を淹れ、静かな場所で座ってみてください。何もしなくていい、ただそこにいるだけで。" : "今天試著為自己泡一杯熱茶，在安靜的角落坐下，什麼都不做，只是存在。"
     };
   }
 };

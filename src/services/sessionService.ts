@@ -1,12 +1,10 @@
-import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { drawCardImage, drawCardWord } from './cardEngine';
 import { ImageCard, WordCard, CardPair } from '../core/types';
 
 /**
  * drawSession function
  * 
- * Creates a new session using Firebase Firestore.
+ * Creates a new session using the PostgreSQL-backed API.
  */
 export async function drawSession(userId: string, language: string = 'zh'): Promise<{ sessionId: string; imageCards: ImageCard[]; wordCards: WordCard[] }> {
   // 1. Draw 3 random image cards
@@ -15,26 +13,33 @@ export async function drawSession(userId: string, language: string = 'zh'): Prom
   // 2. Draw 3 random word cards
   const wordCards = await drawCardWord(3, language);
   
-  // 3. Create session via Firestore
+  // 3. Create session via API
   try {
-    const sessionsRef = collection(db, 'sessions');
-    const docRef = await addDoc(sessionsRef, {
-      user_id: userId,
-      session_time: new Date().toISOString(),
-      image_cards: imageCards,
-      word_cards: wordCards,
-      pairs: [],
-      association_text: [],
-      created_at: serverTimestamp()
+    const response = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        image_cards: imageCards,
+        word_cards: wordCards,
+      }),
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to create session');
+    }
+
+    const result = await response.json();
     
     return {
-      sessionId: docRef.id,
+      sessionId: result.id,
       imageCards,
       wordCards
     };
   } catch (error) {
-    console.error("Error creating draw session in Firestore:", error);
+    console.error("Error creating draw session:", error);
     throw error;
   }
 }
@@ -42,7 +47,7 @@ export async function drawSession(userId: string, language: string = 'zh'): Prom
 /**
  * updateSession function
  * 
- * Updates an existing session using Firebase Firestore.
+ * Updates an existing session using the PostgreSQL-backed API.
  */
 export async function updateSession(sessionId: string, pairs: CardPair[]): Promise<void> {
   // Extract association texts as requested
@@ -52,13 +57,22 @@ export async function updateSession(sessionId: string, pairs: CardPair[]): Promi
   const finalPairs = pairs.slice(0, 3);
 
   try {
-    const sessionRef = doc(db, 'sessions', sessionId);
-    await updateDoc(sessionRef, {
-      pairs: finalPairs,
-      association_text: associationTexts
+    const response = await fetch(`/api/sessions/${sessionId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        pairs: finalPairs,
+        association_text: associationTexts
+      }),
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to update session');
+    }
   } catch (error) {
-    console.error("Error updating session in Firestore:", error);
+    console.error("Error updating session:", error);
     throw error;
   }
 }

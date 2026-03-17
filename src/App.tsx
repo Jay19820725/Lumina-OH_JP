@@ -123,13 +123,13 @@ function AppContent() {
       case 'test':
         return <EnergyTest onComplete={() => navigate('report')} />;
       case 'report':
-        return <EnergyReport onReset={() => navigate('home')} onNavigate={(page) => navigate(page as Page)} />;
+        return <EnergyReport onReset={() => navigate('home')} />;
       case 'profile':
         return <UserProfile onNavigate={(page) => navigate(page as Page)} />;
       case 'history':
         return <EnergyTimeline onNavigate={(page) => navigate(page as Page)} />;
       case 'ocean':
-        return <Ocean onNavigate={(page) => navigate(page as Page)} />;
+        return <Ocean />;
       case 'admin':
         return <AdminDashboard />;
       case 'admin-login':

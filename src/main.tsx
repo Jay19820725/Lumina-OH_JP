@@ -4,7 +4,6 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { AuthProvider } from './store/AuthContext';
-import { NotificationProvider } from './store/NotificationContext';
 import { TestProvider } from './store/TestContext';
 import { LanguageProvider } from './i18n/LanguageContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -25,11 +24,9 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <AuthProvider>
-          <NotificationProvider>
-            <TestProvider>
-              <App />
-            </TestProvider>
-          </NotificationProvider>
+          <TestProvider>
+            <App />
+          </TestProvider>
         </AuthProvider>
       </LanguageProvider>
     </QueryClientProvider>
