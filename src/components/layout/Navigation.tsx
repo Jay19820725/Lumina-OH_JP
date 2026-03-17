@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, User, History, Home, ShieldAlert, Waves } from 'lucide-react';
+import { Sparkles, User, History, Home, ShieldAlert, Waves, Bell } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
+import { useNotifications } from '../../store/NotificationContext';
 
 interface NavigationProps {
   currentPath: string;
@@ -12,6 +13,7 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({ currentPath, onNavigate }) => {
   const { t } = useLanguage();
   const { isAdmin } = useAuth();
+  const { unreadCount } = useNotifications();
   
   const navItems = [
     { path: 'home', label: t('nav_home'), icon: Home },
@@ -45,6 +47,10 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPath, onNavigate 
               }`}
             >
               <Icon size={isActive ? 20 : 18} strokeWidth={isActive ? 1.8 : 1.2} />
+              
+              {item.path === 'profile' && unreadCount > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-water rounded-full shadow-[0_0_8px_rgba(139,168,137,0.6)]" />
+              )}
               
               <AnimatePresence mode="wait">
                 {isActive && (

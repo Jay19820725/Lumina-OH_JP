@@ -7,6 +7,8 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
+import { Server } from "socket.io";
+import { createServer as createHttpServer } from "http";
 import { WORDS, IMAGES } from "./src/core/cards.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -59,6 +61,7 @@ async function startServer() {
         display_name TEXT,
         photo_url TEXT,
         role TEXT DEFAULT 'free_member',
+        ocean_nickname TEXT,
         register_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         subscription_status TEXT DEFAULT 'none',
         last_login TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -83,6 +86,9 @@ async function startServer() {
           WHEN duplicate_column THEN NULL;
         END;
       END $$;
+
+      -- Ensure ocean_nickname exists
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS ocean_nickname TEXT;
 
       -- Energy Journal table
       CREATE TABLE IF NOT EXISTS energy_journal (
@@ -201,11 +207,13 @@ async function startServer() {
         balance_score FLOAT,
         today_theme TEXT,
         share_thumbnail TEXT,
+        shareable_reflection TEXT,
         report_data JSONB DEFAULT '{}' -- Stores all other complex data (pairs, scores, interpretations)
       );
 
-      -- Ensure lang column exists if table was already created
+      -- Ensure columns exist if table was already created
       ALTER TABLE energy_reports ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'zh';
+      ALTER TABLE energy_reports ADD COLUMN IF NOT EXISTS shareable_reflection TEXT;
 
       CREATE INDEX IF NOT EXISTS idx_reports_user_id ON energy_reports(user_id);
       CREATE INDEX IF NOT EXISTS idx_reports_timestamp ON energy_reports(timestamp DESC);
@@ -233,10 +241,35 @@ async function startServer() {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
         content TEXT NOT NULL,
+        quote TEXT,
+        card_image_url TEXT,
         element TEXT NOT NULL,
+        nickname TEXT,
         lang TEXT NOT NULL,
         origin_locale TEXT NOT NULL,
         is_active BOOLEAN DEFAULT TRUE,
+        view_count INTEGER DEFAULT 0,
+        bless_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Ensure columns exist in bottles
+      ALTER TABLE bottles ADD COLUMN IF NOT EXISTS nickname TEXT;
+      ALTER TABLE bottles ADD COLUMN IF NOT EXISTS quote TEXT;
+      ALTER TABLE bottles ADD COLUMN IF NOT EXISTS card_image_url TEXT;
+      ALTER TABLE bottles ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0;
+      ALTER TABLE bottles ADD COLUMN IF NOT EXISTS bless_count INTEGER DEFAULT 0;
+
+      -- Notifications table
+      CREATE TABLE IF NOT EXISTS notifications (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+        type TEXT NOT NULL, -- 'resonance', 'system'
+        title_zh TEXT,
+        title_ja TEXT,
+        content_zh TEXT,
+        content_ja TEXT,
+        is_read BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -342,7 +375,7 @@ async function startServer() {
           category: 'format',
           status: 'active',
           content_zh: '妳必須嚴格遵守以下 JSON 輸出格式：{"content": "妳的引導文字", "energyUpdate": {"wood": 數值, "fire": 數值, "earth": 數值, "metal": 數值, "water": 數值}, "todayTheme": "一句話主題"}。數值範圍為 0 到 1。',
-          content_ja: '必ず以下のJSON形式で出力してください：{"content": "ガイダンス文", "energyUpdate": {"wood": 数値, "fire": 数値, "earth": 数値, "metal": 数値, "water": 数値}, "todayTheme": "一言テーマ"}。数値の範囲は0から1です。'
+          content_ja: '必ず以下のJSON形式で出力してください：{"content": "ガイダンス文", "energyUpdate": {"wood": 数値, "fire": 数値, "earth": 数値, "metal": 数値, "water": 数値}, "todayTheme": "一言テーマ"}。数値の範圍は0から1です。'
         }
       ];
 
@@ -408,6 +441,36 @@ async function startServer() {
   } catch (err) {
     console.error("Database initialization error:", err);
   }
+
+  const httpServer = createHttpServer(app);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+
+  const userSockets = new Map<string, string>(); // userId -> socketId
+
+  io.on("connection", (socket) => {
+    console.log("Socket connected:", socket.id);
+    
+    socket.on("authenticate", (userId) => {
+      if (userId) {
+        userSockets.set(userId, socket.id);
+        console.log(`User ${userId} authenticated on socket ${socket.id}`);
+      }
+    });
+
+    socket.on("disconnect", () => {
+      for (const [userId, socketId] of userSockets.entries()) {
+        if (socketId === socket.id) {
+          userSockets.delete(userId);
+          break;
+        }
+      }
+    });
+  });
 
   app.use((req, res, next) => {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
@@ -562,17 +625,18 @@ async function startServer() {
   });
 
   app.post(["/api/users", "/api/users/"], async (req, res) => {
-    const { uid, email, displayName, photoURL, role, subscription_status } = req.body;
+    const { uid, email, displayName, photoURL, role, subscription_status, ocean_nickname } = req.body;
     console.log("POST /api/users - Body:", req.body);
     try {
       const result = await pool.query(
-        `INSERT INTO users (uid, email, display_name, photo_url, role, subscription_status) 
-         VALUES ($1, $2, $3, $4, $5, $6) 
+        `INSERT INTO users (uid, email, display_name, photo_url, role, subscription_status, ocean_nickname) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7) 
          ON CONFLICT (uid) DO UPDATE SET 
            email = EXCLUDED.email, 
+           ocean_nickname = COALESCE(EXCLUDED.ocean_nickname, users.ocean_nickname),
            last_login = CURRENT_TIMESTAMP 
          RETURNING *`,
-        [uid, email, displayName, photoURL, role || 'free_member', subscription_status || 'none']
+        [uid, email, displayName, photoURL, role || 'free_member', subscription_status || 'none', ocean_nickname]
       );
       res.json(result.rows[0]);
     } catch (err) {
@@ -591,7 +655,9 @@ async function startServer() {
     if (fields.length === 0) return res.status(400).json({ error: "No fields to update" });
 
     const setClause = fields.map((f, i) => {
-      const colName = f === 'displayName' ? 'display_name' : f === 'photoURL' ? 'photo_url' : f;
+      const colName = f === 'displayName' ? 'display_name' : 
+                      f === 'photoURL' ? 'photo_url' : 
+                      f === 'oceanNickname' ? 'ocean_nickname' : f;
       return `${colName} = $${i + 2}`;
     }).join(", ");
     
@@ -842,6 +908,7 @@ async function startServer() {
           balanceScore: row.balance_score,
           todayTheme: row.today_theme,
           shareThumbnail: row.share_thumbnail,
+          shareableReflection: row.shareable_reflection,
           ...data
         };
       });
@@ -877,6 +944,7 @@ async function startServer() {
       balanceScore, 
       todayTheme,
       shareThumbnail,
+      shareableReflection,
       isAiComplete,
       ...otherData 
     } = req.body;
@@ -895,34 +963,35 @@ async function startServer() {
       // 2. UPSERT logic: Insert or Update if ID exists
       // If no ID provided, we let the database generate one
       let result;
-      if (id) {
-        result = await pool.query(
-          `INSERT INTO energy_reports (
-            id, user_id, lang, dominant_element, weak_element, balance_score, 
-            today_theme, share_thumbnail, is_ai_complete, report_data
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-          ON CONFLICT (id) DO UPDATE SET
-            user_id = COALESCE(EXCLUDED.user_id, energy_reports.user_id),
-            lang = COALESCE(EXCLUDED.lang, energy_reports.lang),
-            dominant_element = COALESCE(EXCLUDED.dominant_element, energy_reports.dominant_element),
-            weak_element = COALESCE(EXCLUDED.weak_element, energy_reports.weak_element),
-            balance_score = COALESCE(EXCLUDED.balance_score, energy_reports.balance_score),
-            today_theme = COALESCE(EXCLUDED.today_theme, energy_reports.today_theme),
-            share_thumbnail = COALESCE(EXCLUDED.share_thumbnail, energy_reports.share_thumbnail),
-            is_ai_complete = COALESCE(EXCLUDED.is_ai_complete, energy_reports.is_ai_complete),
-            report_data = energy_reports.report_data || EXCLUDED.report_data
-          RETURNING *`,
-          [id, userId, lang || 'zh', dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete || false, JSON.stringify(otherData)]
-        );
-      } else {
-        result = await pool.query(
-          `INSERT INTO energy_reports (
-            user_id, lang, dominant_element, weak_element, balance_score, 
-            today_theme, share_thumbnail, is_ai_complete, report_data
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-          [userId, lang || 'zh', dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, isAiComplete || false, JSON.stringify(otherData)]
-        );
-      }
+        if (id) {
+          result = await pool.query(
+            `INSERT INTO energy_reports (
+              id, user_id, lang, dominant_element, weak_element, balance_score, 
+              today_theme, share_thumbnail, shareable_reflection, is_ai_complete, report_data
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            ON CONFLICT (id) DO UPDATE SET
+              user_id = COALESCE(EXCLUDED.user_id, energy_reports.user_id),
+              lang = COALESCE(EXCLUDED.lang, energy_reports.lang),
+              dominant_element = COALESCE(EXCLUDED.dominant_element, energy_reports.dominant_element),
+              weak_element = COALESCE(EXCLUDED.weak_element, energy_reports.weak_element),
+              balance_score = COALESCE(EXCLUDED.balance_score, energy_reports.balance_score),
+              today_theme = COALESCE(EXCLUDED.today_theme, energy_reports.today_theme),
+              share_thumbnail = COALESCE(EXCLUDED.share_thumbnail, energy_reports.share_thumbnail),
+              shareable_reflection = COALESCE(EXCLUDED.shareable_reflection, energy_reports.shareable_reflection),
+              is_ai_complete = COALESCE(EXCLUDED.is_ai_complete, energy_reports.is_ai_complete),
+              report_data = energy_reports.report_data || EXCLUDED.report_data
+            RETURNING *`,
+            [id, userId, lang || 'zh', dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, shareableReflection, isAiComplete || false, JSON.stringify(otherData)]
+          );
+        } else {
+          result = await pool.query(
+            `INSERT INTO energy_reports (
+              user_id, lang, dominant_element, weak_element, balance_score, 
+              today_theme, share_thumbnail, shareable_reflection, is_ai_complete, report_data
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+            [userId, lang || 'zh', dominantElement, weakElement, balanceScore, todayTheme, shareThumbnail, shareableReflection, isAiComplete || false, JSON.stringify(otherData)]
+          );
+        }
       
       if (result.rows.length === 0) {
         throw new Error("Failed to save or update report - no rows returned");
@@ -940,6 +1009,7 @@ async function startServer() {
         balanceScore: row.balance_score,
         todayTheme: row.today_theme,
         shareThumbnail: row.share_thumbnail,
+        shareableReflection: row.shareable_reflection,
         ...data
       });
     } catch (err) {
@@ -978,7 +1048,7 @@ async function startServer() {
   });
 
   app.post("/api/bottles", async (req, res) => {
-    const { userId, content, element, lang, originLocale } = req.body;
+    const { userId, content, quote, cardImageUrl, element, lang, originLocale, nickname } = req.body;
     
     try {
       // 1. Check Premium Status
@@ -997,8 +1067,9 @@ async function startServer() {
       const sensitiveWordsResult = await pool.query("SELECT word FROM sensitive_words");
       const sensitiveWords = sensitiveWordsResult.rows.map(r => r.word);
       
+      const checkContent = (content || "") + (quote || "");
       for (const word of sensitiveWords) {
-        if (content.includes(word)) {
+        if (checkContent.includes(word)) {
           return res.status(400).json({ 
             error: "Content contains sensitive words.", 
             code: "SENSITIVE_CONTENT" 
@@ -1008,8 +1079,8 @@ async function startServer() {
 
       // 3. Save Bottle
       const result = await pool.query(
-        "INSERT INTO bottles (user_id, content, element, lang, origin_locale) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-        [userId, content, element, lang, originLocale]
+        "INSERT INTO bottles (user_id, content, quote, card_image_url, element, lang, origin_locale, nickname) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
+        [userId, content, quote, cardImageUrl, element, lang, originLocale, nickname]
       );
       
       res.json(result.rows[0]);
@@ -1024,7 +1095,7 @@ async function startServer() {
     try {
       // Pick a random bottle that is active and not from the current user
       const result = await pool.query(
-        "SELECT b.*, u.display_name FROM bottles b JOIN users u ON b.user_id = u.uid WHERE b.is_active = TRUE AND b.user_id != $1 ORDER BY RANDOM() LIMIT 1",
+        "SELECT b.*, u.display_name, u.ocean_nickname FROM bottles b JOIN users u ON b.user_id = u.uid WHERE b.is_active = TRUE AND b.user_id != $1 ORDER BY RANDOM() LIMIT 1",
         [userId || '']
       );
       
@@ -1033,6 +1104,9 @@ async function startServer() {
       }
       
       const bottle = result.rows[0];
+
+      // Increment view count
+      await pool.query("UPDATE bottles SET view_count = view_count + 1 WHERE id = $1", [bottle.id]);
       
       // Translation logic using Gemini
       if (targetLang && bottle.lang !== targetLang && process.env.GEMINI_API_KEY) {
@@ -1065,13 +1139,81 @@ async function startServer() {
     const { id } = req.params;
     const { userId, tagId } = req.body;
     try {
+      // 1. Record blessing
       await pool.query(
         "INSERT INTO bottle_blessings (bottle_id, user_id, tag_id) VALUES ($1, $2, $3)",
         [id, userId, tagId]
       );
+
+      // 2. Update bottle stats
+      const bottleResult = await pool.query(
+        "UPDATE bottles SET bless_count = bless_count + 1 WHERE id = $1 RETURNING user_id, content",
+        [id]
+      );
+
+      if (bottleResult.rows.length > 0) {
+        const bottle = bottleResult.rows[0];
+        const ownerId = bottle.user_id;
+
+        // 3. Create notification for owner
+        const notification = await pool.query(
+          `INSERT INTO notifications (user_id, type, title_zh, title_ja, content_zh, content_ja) 
+           VALUES ($1, 'resonance', '能量共鳴', 'エネルギー共鳴', '妳的瓶子在遠方收到了共鳴', 'あなたのボトルが遠くで共鳴を受け取りました') 
+           RETURNING *`,
+          [ownerId]
+        );
+
+        // 4. Emit real-time notification if owner is online
+        const ownerSocketId = userSockets.get(ownerId);
+        if (ownerSocketId) {
+          io.to(ownerSocketId).emit("notification:received", notification.rows[0]);
+        }
+      }
+
       res.json({ success: true });
     } catch (err) {
       console.error("Error blessing bottle:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Notifications API
+  app.get("/api/notifications/:userId", async (req, res) => {
+    const { userId } = req.params;
+    try {
+      const result = await pool.query(
+        "SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50",
+        [userId]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/notifications/:id/read", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query("UPDATE notifications SET is_read = TRUE WHERE id = $1", [id]);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // My Bottles API (Journey Tracker)
+  app.get("/api/bottles/my/:userId", async (req, res) => {
+    const { userId } = req.params;
+    try {
+      const result = await pool.query(
+        "SELECT * FROM bottles WHERE user_id = $1 ORDER BY created_at DESC",
+        [userId]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching my bottles:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -1632,7 +1774,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }

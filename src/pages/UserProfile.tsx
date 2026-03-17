@@ -19,11 +19,15 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
   const [isUpgrading, setIsUpgrading] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [editName, setEditName] = React.useState('');
+  const [editOceanNickname, setEditOceanNickname] = React.useState('');
   const [isSaving, setIsSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (profile?.displayName) {
       setEditName(profile.displayName);
+    }
+    if (profile?.ocean_nickname) {
+      setEditOceanNickname(profile.ocean_nickname);
     }
   }, [profile]);
 
@@ -31,7 +35,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
     if (!user || !profile) return;
     setIsSaving(true);
     try {
-      const updated = await userService.updateProfile(user.uid, { displayName: editName });
+      const updated = await userService.updateProfile(user.uid, { 
+        displayName: editName,
+        ocean_nickname: editOceanNickname 
+      });
       setProfile(updated);
       setIsEditing(false);
     } catch (error) {
@@ -106,15 +113,37 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <span className="text-[10px] uppercase tracking-[0.6em] text-ink-muted">{t('member_profile')}</span>
               <div className="flex items-center gap-4 justify-center md:justify-start">
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="font-serif tracking-widest bg-white/50 border-b border-ink/20 focus:border-wood outline-none px-2 py-1 text-xl md:text-2xl w-full max-w-[200px]"
-                    autoFocus
-                  />
+                  <div className="space-y-4 w-full max-w-md">
+                    <div className="space-y-1">
+                      <label className="text-[8px] uppercase tracking-[0.4em] text-ink-muted ml-1">{t('display_name')}</label>
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="font-serif tracking-widest bg-white/50 border-b border-ink/20 focus:border-wood outline-none px-2 py-1 text-xl md:text-2xl w-full"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] uppercase tracking-[0.4em] text-ink-muted ml-1">{t('ocean_nickname_label')}</label>
+                      <input
+                        type="text"
+                        value={editOceanNickname}
+                        onChange={(e) => setEditOceanNickname(e.target.value)}
+                        placeholder={t('ocean_nickname_placeholder')}
+                        className="font-serif tracking-widest bg-white/50 border-b border-ink/20 focus:border-wood outline-none px-2 py-1 text-lg w-full"
+                      />
+                    </div>
+                  </div>
                 ) : (
-                  <h1 className="font-serif tracking-widest">{profile?.displayName || user?.displayName || t('guest')}</h1>
+                  <div className="space-y-1">
+                    <h1 className="font-serif tracking-widest">{profile?.displayName || user?.displayName || t('guest')}</h1>
+                    {profile?.ocean_nickname && (
+                      <p className="text-[10px] text-ink-muted tracking-[0.3em] italic">
+                        Ocean: {profile.ocean_nickname}
+                      </p>
+                    )}
+                  </div>
                 )}
                 {user && !isEditing && (
                   <button 

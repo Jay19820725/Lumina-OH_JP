@@ -43,7 +43,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const startDraw = useCallback(async () => {
     setIsDrawing(true);
     try {
-      const user = auth.currentUser;
+      const user = auth?.currentUser;
       if (user) {
         // If user is logged in, use the new drawSession service to persist the draw
         const drawPromise = drawSession(user.uid, language);
@@ -115,7 +115,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       const analysis = EnergyEngine.analyze(selectedCards);
-      const user = auth.currentUser;
+      const user = auth?.currentUser;
       const userId = user?.uid || null;
 
       // 1. Create the initial report structure (Instant)
@@ -228,7 +228,7 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     console.log(`Syncing ${pendingIds.length} pending reports...`);
     const history = JSON.parse(localStorage.getItem('eunie_report_history') || '[]');
-    const user = auth.currentUser;
+    const user = auth?.currentUser;
     const userId = user?.uid || null;
 
     for (const id of pendingIds) {
@@ -278,11 +278,13 @@ export const TestProvider: React.FC<{ children: React.ReactNode }> = ({ children
     syncPendingReports();
     
     // Also sync when auth state changes
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) syncPendingReports();
-    });
-    
-    return () => unsubscribe();
+    if (auth) {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        if (user) syncPendingReports();
+      });
+      
+      return () => unsubscribe();
+    }
   }, [syncPendingReports]);
 
   return (

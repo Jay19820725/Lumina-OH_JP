@@ -1,0 +1,149 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId} (matches Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string
+    //   - display_name: string
+    //   - photo_url: string
+    //   - role: string (free_member, premium_member, admin)
+    //   - ocean_nickname: string
+    //   - register_date: timestamp
+    //   - subscription_status: string
+    //   - last_login: timestamp
+    //   - settings: map
+    //
+    // Collection: bottles
+    // Document ID: {bottleId}
+    // Fields:
+    //   - user_id: string (required)
+    //   - content: string (required, max 500 chars)
+    //   - element: string (required)
+    //   - lang: string
+    //   - view_count: int
+    //   - bless_count: int
+    //   - created_at: timestamp
+    //
+    // Collection: notifications
+    // Document ID: {notificationId}
+    // Fields:
+    //   - user_id: string (required)
+    //   - type: string
+    //   - is_read: bool
+    //   - created_at: timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "jsweb.jd@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasOnly(['uid', 'email', 'display_name', 'photo_url', 'role', 'ocean_nickname', 'register_date', 'subscription_status', 'last_login', 'settings']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             (!('email' in data) || data.email is string) &&
+             (!('role' in data) || data.role in ['free_member', 'premium_member', 'admin']);
+    }
+
+    function isValidBottle(data) {
+      return data.keys().hasAll(['user_id', 'content', 'element', 'lang', 'origin_locale', 'random_seed']) &&
+             data.user_id == request.auth.uid &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 500 &&
+             data.element in ['wood', 'fire', 'earth', 'metal', 'water'] &&
+             data.random_seed is number;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'free_member';
+      allow update: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role;
+      allow update: if isAdmin();
+    }
+
+    match /bottles/{bottleId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidBottle(request.resource.data);
+      allow update: if isAuthenticated() && (
+        // Owner can update everything except user_id
+        (request.auth.uid == resource.data.user_id && request.resource.data.user_id == resource.data.user_id) ||
+        // Non-owners can ONLY increment counts
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['view_count', 'bless_count']) &&
+         request.resource.data.view_count >= resource.data.view_count &&
+         request.resource.data.bless_count >= resource.data.bless_count) ||
+        isAdmin()
+      );
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+      allow create: if isAuthenticated(); 
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+    }
+
+    match /energy_reports/{reportId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+    }
+
+    match /energy_journal/{entryId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+    }
+
+    match /manifestations/{manifestationId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.user_id || isAdmin());
+    }
+
+    match /sensitive_words/{wordId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /bottle_tags/{tagId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /bottle_blessings/{blessingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+    }
+  }
+}

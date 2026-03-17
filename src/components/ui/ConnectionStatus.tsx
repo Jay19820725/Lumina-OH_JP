@@ -11,10 +11,16 @@ export const ConnectionStatus: React.FC = () => {
   const [showLabel, setShowLabel] = useState(false);
 
   useEffect(() => {
+    let unsubscribeAuth: (() => void) | undefined;
+
     // Monitor Auth Status
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      setIsAuthOk(!!user);
-    });
+    if (auth) {
+      unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+        setIsAuthOk(!!user);
+      });
+    } else {
+      setStatus('error');
+    }
 
     // Monitor Browser Online Status
     const handleOnline = () => setStatus('connected');
@@ -29,7 +35,7 @@ export const ConnectionStatus: React.FC = () => {
     }
 
     return () => {
-      unsubscribeAuth();
+      if (unsubscribeAuth) unsubscribeAuth();
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
