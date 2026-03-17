@@ -1087,11 +1087,13 @@ async function startServer() {
         `SELECT b.*, 
                 COALESCE(b.sender_nickname, u.display_name) as sender_name,
                 COALESCE(ci.image_url, cw.image_url) as card_image,
-                COALESCE(ci.name, cw.name) as card_name
+                COALESCE(ci.name, cw.name) as card_name,
+                er.report_data
          FROM bottles b 
          JOIN users u ON b.user_id = u.uid 
          LEFT JOIN cards_image ci ON b.card_id = ci.id
          LEFT JOIN cards_word cw ON b.card_id = cw.id
+         LEFT JOIN energy_reports er ON b.report_id = er.id
          WHERE b.is_active = TRUE AND b.user_id != $1 
          ORDER BY RANDOM() LIMIT 1`,
         [userId || '']
@@ -1157,11 +1159,13 @@ async function startServer() {
         `SELECT b.*, 
                 COALESCE(ci.image_url, cw.image_url) as card_image,
                 COALESCE(ci.name, cw.name) as card_name,
+                er.report_data,
                 (SELECT COUNT(*) FROM bottle_blessings WHERE bottle_id = b.id) as blessing_count,
                 (SELECT MAX(created_at) FROM bottle_blessings WHERE bottle_id = b.id) as last_blessing_at
          FROM bottles b 
          LEFT JOIN cards_image ci ON b.card_id = ci.id
          LEFT JOIN cards_word cw ON b.card_id = cw.id
+         LEFT JOIN energy_reports er ON b.report_id = er.id
          WHERE b.user_id = $1 
          ORDER BY b.created_at DESC`,
         [userId]

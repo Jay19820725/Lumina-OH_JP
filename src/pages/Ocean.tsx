@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../i18n/LanguageContext';
 import { aiService } from '../services/aiService';
 import { Bottle, BottleTag } from '../core/types';
+import { LUMINA_CARDS } from '../core/cards';
 import { CastBottleModal } from '../components/ocean/CastBottleModal';
 import { BottleDetailModal } from '../components/ocean/BottleDetailModal';
 
@@ -418,6 +419,19 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
                 {myBottles.map((bottle) => {
                   const hasNewBlessing = bottle.last_blessing_at && new Date(bottle.last_blessing_at) > new Date(bottle.last_checked_at);
                   
+                  // Find the card data from report_data or LUMINA_CARDS (Analysis Report style)
+                  const cardData = (() => {
+                    if (bottle.report_data?.pairs) {
+                      const pair = bottle.report_data.pairs.find((p: any) => Number(p.word?.id) === Number(bottle.card_id));
+                      if (pair?.word) return { imageUrl: pair.word.imageUrl };
+                    }
+                    const card = bottle.card_id ? LUMINA_CARDS.find(c => Number(c.id) === Number(bottle.card_id)) : null;
+                    if (card) return { imageUrl: card.wordCardUrl };
+                    return null;
+                  })();
+
+                  const thumbnail = cardData?.imageUrl || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=1000';
+
                   return (
                     <motion.div
                       key={bottle.id}
@@ -433,8 +447,8 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
                     >
                       <div className="flex gap-6">
                         <div className="w-20 aspect-[3/4] rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
-                          {bottle.card_image ? (
-                            <img src={bottle.card_image} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          {thumbnail ? (
+                            <img src={thumbnail} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Waves className="w-8 h-8 text-white/10" />
