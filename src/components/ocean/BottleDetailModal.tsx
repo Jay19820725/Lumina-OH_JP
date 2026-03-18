@@ -11,10 +11,13 @@ interface BottleDetailModalProps {
   onClose: () => void;
   onTranslate: () => void;
   onBless: (tagId: string) => void;
+  onSave?: (bottleId: string, reply: string) => void;
   translatedContent: string | null;
   isTranslating: boolean;
   isBlessing: boolean;
   tags: BottleTag[];
+  isSaved?: boolean;
+  isOwnBottle?: boolean;
 }
 
 export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
@@ -22,13 +25,18 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
   onClose,
   onTranslate,
   onBless,
+  onSave,
   translatedContent,
   isTranslating,
   isBlessing,
-  tags
+  tags,
+  isSaved = false,
+  isOwnBottle = false
 }) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [replyMessage, setReplyMessage] = useState('');
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
   // Calculate travel time
   const travelTime = useMemo(() => {
@@ -121,6 +129,22 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
   const displayImage = cardData?.imageUrl || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=1000';
   const cardName = cardData?.name || activeBottle.card_name;
 
+  const handleCloseAttempt = () => {
+    if (!isOwnBottle && !isSaved && bottle && onSave) {
+      setShowSaveConfirm(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleSave = () => {
+    if (onSave && activeBottle) {
+      onSave(activeBottle.id, replyMessage);
+    }
+    setShowSaveConfirm(false);
+    onClose();
+  };
+
   const modalContent = (
     <AnimatePresence>
       {bottle && (
@@ -130,7 +154,7 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={handleCloseAttempt}
             className="absolute inset-0 bg-ink/40 backdrop-blur-md"
           />
 
@@ -144,7 +168,7 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
           >
             {/* Close Button - Desktop */}
             <button
-              onClick={onClose}
+              onClick={handleCloseAttempt}
               className="absolute top-6 right-6 z-50 p-2 bg-black/5 hover:bg-black/10 rounded-full transition-all hidden md:block"
             >
               <X className="w-5 h-5 text-ink/40" />
@@ -170,7 +194,7 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
 
               {/* Close Button - Mobile */}
               <button
-                onClick={onClose}
+                onClick={handleCloseAttempt}
                 className="absolute top-4 right-4 z-50 p-2 bg-white/20 backdrop-blur-md rounded-full md:hidden"
               >
                 <X className="w-5 h-5 text-white" />
@@ -252,6 +276,40 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
                         )}
                       </div>
                     )}
+
+                    {/* Reply Section (New) */}
+                    {!isOwnBottle && !isSaved && (
+                      <div className="pt-8 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] tracking-[0.2em] text-ink/30 uppercase font-semibold">
+                            {t('ocean_reply_label')}
+                          </label>
+                          <span className={`text-[10px] ${replyMessage.length > 90 ? 'text-red-400' : 'text-ink/20'}`}>
+                            {replyMessage.length}/100
+                          </span>
+                        </div>
+                        <textarea
+                          value={replyMessage}
+                          onChange={(e) => setReplyMessage(e.target.value.slice(0, 100))}
+                          placeholder={t('ocean_reply_placeholder')}
+                          className="w-full bg-white/50 border border-ink/5 rounded-2xl p-4 text-sm text-ink/70 focus:outline-none focus:border-water/30 transition-colors min-h-[100px] resize-none font-serif"
+                        />
+                      </div>
+                    )}
+
+                    {/* Display Saved Reply (New) */}
+                    {isSaved && activeBottle.reply_message && (
+                      <div className="pt-8 space-y-4">
+                        <label className="text-[10px] tracking-[0.2em] text-water/60 uppercase font-semibold">
+                          {t('ocean_saved_reply_label')}
+                        </label>
+                        <div className="bg-water/5 p-6 rounded-2xl border border-water/10">
+                          <p className="text-base text-ink/60 leading-relaxed font-serif italic">
+                            「{activeBottle.reply_message}」
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -265,9 +323,9 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    {tags.slice(0, 4).map((tag) => (
+                    {tags.slice(0, 4).map((tag, index) => (
                       <button
-                        key={tag.id}
+                        key={tag.id || index}
                         onClick={() => onBless(tag.id)}
                         disabled={isBlessing}
                         className="group py-2.5 px-5 rounded-full border border-ink/10 text-[11px] text-ink/40 hover:bg-water hover:text-white hover:border-water transition-all flex items-center gap-2 uppercase tracking-[0.1em] font-medium"
@@ -283,6 +341,52 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
           </motion.div>
         </div>
       )}
+      {/* Save Confirmation Modal (New) */}
+      <AnimatePresence>
+        {showSaveConfirm && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSaveConfirm(false)}
+              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative bg-[#FDFCF8] p-8 md:p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center space-y-8"
+            >
+              <div className="w-16 h-16 bg-water/10 rounded-full flex items-center justify-center mx-auto text-water">
+                <Heart size={32} />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-xl font-serif italic text-ink">
+                  {t('ocean_save_confirm_title')}
+                </h3>
+                <p className="text-sm text-ink/40 leading-relaxed">
+                  {t('ocean_save_confirm_desc')}
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleSave}
+                  className="w-full py-4 bg-water text-white rounded-full text-xs tracking-[0.2em] font-bold uppercase hover:bg-water/90 transition-colors"
+                >
+                  {t('ocean_save_confirm_btn')}
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-full py-4 bg-ink/5 text-ink/40 rounded-full text-xs tracking-[0.2em] font-bold uppercase hover:bg-ink/10 transition-colors"
+                >
+                  {t('ocean_save_close_btn')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 

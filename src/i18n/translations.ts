@@ -238,6 +238,18 @@ export const translations = {
     journal_emotion_anxious: "不安",
     journal_emotion_inspired: "靈感",
     journal_emotion_tired: "疲憊",
+
+    // Ocean Collection
+    ocean_my_thrown: "我投擲的",
+    ocean_my_saved: "我收藏的",
+    ocean_save_confirm_title: "收藏這份共鳴？",
+    ocean_save_confirm_desc: "這份訊息將保存在妳的海洋中，妳的回應也將傳遞給對方。",
+    ocean_save_confirm_btn: "確認收藏",
+    ocean_save_close_btn: "直接關閉",
+    ocean_reply_label: "留下妳的回應 (將傳遞給原作者)",
+    ocean_reply_placeholder: "寫下妳的共鳴...",
+    ocean_saved_reply_label: "妳的共鳴筆記",
+    ocean_save_limit_error: "收藏數量已達上限 (20 封)",
   },
   ja: {
     // General
@@ -479,6 +491,18 @@ export const translations = {
     journal_emotion_anxious: "不安",
     journal_emotion_inspired: "インスピレーション",
     journal_emotion_tired: "お疲れ",
+
+    // Ocean Collection
+    ocean_my_thrown: "投げた瓶中信",
+    ocean_my_saved: "コレクション",
+    ocean_save_confirm_title: "この共鳴をコレクションしますか？",
+    ocean_save_confirm_desc: "このメッセージはあなたの海に保存され、返信も相手に届きます。",
+    ocean_save_confirm_btn: "コレクションする",
+    ocean_save_close_btn: "そのまま閉じる",
+    ocean_reply_label: "返信を残す (作者に送信されます)",
+    ocean_reply_placeholder: "あなたの共鳴を書いてください...",
+    ocean_saved_reply_label: "あなたの共鳴ノート",
+    ocean_save_limit_error: "コレクションの上限（20通）に達しました",
   }
 };
 

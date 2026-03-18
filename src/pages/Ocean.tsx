@@ -21,9 +21,12 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
   const { profile } = useAuth();
   const { t, language } = useLanguage();
   const [viewMode, setViewMode] = useState<'explore' | 'voyage'>('explore');
+  const [voyageSubMode, setVoyageSubMode] = useState<'thrown' | 'saved'>('thrown');
   const [pickedBottle, setPickedBottle] = useState<Bottle | null>(null);
   const [myBottles, setMyBottles] = useState<MyBottle[]>([]);
+  const [savedBottles, setSavedBottles] = useState<Bottle[]>([]);
   const [isFetchingMyBottles, setIsFetchingMyBottles] = useState(false);
+  const [isFetchingSavedBottles, setIsFetchingSavedBottles] = useState(false);
   const [translatedContent, setTranslatedContent] = useState<string | null>(null);
   const [tags, setTags] = useState<BottleTag[]>([]);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -115,9 +118,13 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
 
   useEffect(() => {
     if (viewMode === 'voyage' && profile) {
-      fetchMyBottles();
+      if (voyageSubMode === 'thrown') {
+        fetchMyBottles();
+      } else {
+        fetchSavedBottles();
+      }
     }
-  }, [viewMode, profile]);
+  }, [viewMode, voyageSubMode, profile]);
 
   const fetchMyBottles = async () => {
     if (!profile) return;
@@ -125,13 +132,77 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
     try {
       const res = await fetch(`/api/bottles/my/${profile.uid}`);
       if (res.ok) {
-        const data = await res.json();
-        setMyBottles(data);
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const data = await res.json();
+          setMyBottles(Array.isArray(data) ? data : []);
+        }
       }
     } catch (err) {
       console.error(err);
     } finally {
       setIsFetchingMyBottles(false);
+    }
+  };
+
+  const fetchSavedBottles = async () => {
+    if (!profile) return;
+    setIsFetchingSavedBottles(true);
+    try {
+      const res = await fetch(`/api/bottles/saved/${profile.uid}`);
+      if (res.ok) {
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const data = await res.json();
+          setSavedBottles(Array.isArray(data) ? data : []);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsFetchingSavedBottles(false);
+    }
+  };
+
+  const handleSaveBottle = async (bottleId: string, replyMessage: string) => {
+    if (!profile) return;
+    try {
+      const res = await fetch(`/api/bottles/${bottleId}/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: profile.uid, replyMessage })
+      });
+      
+      if (!res.ok) {
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch (e) {
+          errorData = { error: 'Unknown server error' };
+        }
+        
+        if (errorData.code === 'LIMIT_EXCEEDED' || errorData.error?.includes('limit')) {
+          alert(t('ocean_save_limit_error'));
+        } else {
+          throw new Error(errorData.error || 'Failed to save');
+        }
+      } else {
+        // Refresh saved bottles
+        fetchSavedBottles();
+      }
+    } catch (err) {
+      console.error('Failed to save bottle:', err);
+    }
+  };
+
+  const handleDeleteSavedBottle = async (savedId: string) => {
+    try {
+      const res = await fetch(`/api/bottles/saved/${savedId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setSavedBottles(prev => prev.filter(b => b.saved_id !== savedId));
+      }
+    } catch (err) {
+      console.error('Failed to delete saved bottle:', err);
     }
   };
 
@@ -159,9 +230,12 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
     try {
       const res = await fetch(`/api/bottles/random?userId=${profile.uid}&targetLang=${language}`);
       if (res.ok) {
-        const bottle = await res.json();
-        setPickedBottle(bottle);
-        setTranslatedContent(bottle.translatedContent || null);
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const bottle = await res.json();
+          setPickedBottle(bottle);
+          setTranslatedContent(bottle.translatedContent || null);
+        }
       } else {
         // No bottles found or error
         alert(t('ocean.no_bottles') || 'Ocean is calm today...');
@@ -274,7 +348,7 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center"
+              className="flex flex-col items-center mb-[100px] md:mt-0 md:mb-[200px]"
             >
               <div className="w-24 h-24 mb-8 relative">
                 <motion.div
@@ -326,130 +400,250 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="w-full max-w-2xl mx-auto space-y-8"
+            className="w-full max-w-2xl mx-auto space-y-8 mb-[100px] md:mt-0 md:mb-[200px]"
           >
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-serif italic text-white">
-                {language === 'zh' ? '海洋航行日誌' : '海洋航行日誌'}
-              </h2>
-              <p className="text-xs text-white/40 tracking-widest uppercase">
-                {language === 'zh' ? '追蹤妳投擲出的每一份能量' : 'あなたが投げ出したエネルギーを追跡する'}
-              </p>
-            </div>
-
-            {isFetchingMyBottles ? (
-              <div className="py-20 flex justify-center">
-                <div className="w-8 h-8 border-2 border-white/10 border-t-water rounded-full animate-spin" />
-              </div>
-            ) : myBottles.length === 0 ? (
-              <div className="py-20 text-center space-y-6">
-                <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto border border-white/20">
-                  <Navigation className="w-8 h-8 text-white/20" />
-                </div>
-                <p className="text-sm text-white/40 italic">
-                  {language === 'zh' ? '妳的航程尚未開始，去投擲第一封瓶中信吧。' : 'あなたの航海はまだ始まっていません。最初の瓶中信を投げに行きましょう。'}
+            <div className="text-center space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-serif italic text-white">
+                  {language === 'zh' ? '海洋航行日誌' : '海洋航行日誌'}
+                </h2>
+                <p className="text-xs text-white/40 tracking-widest uppercase">
+                  {language === 'zh' ? '追蹤妳投擲出的每一份能量' : 'あなたが投げ出したエネルギーを追跡する'}
                 </p>
+              </div>
+
+              {/* Voyage Tabs */}
+              <div className="flex justify-center p-1 bg-white/5 backdrop-blur-md rounded-full border border-white/10 w-fit mx-auto">
                 <button
-                  onClick={() => setViewMode('explore')}
-                  className="px-8 py-3 bg-white/10 text-white border border-white/20 rounded-full hover:bg-white/20 transition-all text-sm"
+                  onClick={() => setVoyageSubMode('thrown')}
+                  className={`px-6 py-2 rounded-full text-[10px] tracking-[0.2em] uppercase transition-all ${
+                    voyageSubMode === 'thrown' ? 'bg-white/10 text-white shadow-sm' : 'text-white/30 hover:text-white/50'
+                  }`}
                 >
-                  {language === 'zh' ? '前往探索海洋' : '海を探索しに行く'}
+                  {t('ocean_my_thrown')}
+                </button>
+                <button
+                  onClick={() => setVoyageSubMode('saved')}
+                  className={`px-6 py-2 rounded-full text-[10px] tracking-[0.2em] uppercase transition-all ${
+                    voyageSubMode === 'saved' ? 'bg-white/10 text-white shadow-sm' : 'text-white/30 hover:text-white/50'
+                  }`}
+                >
+                  {t('ocean_my_saved')}
                 </button>
               </div>
-            ) : (
-              <div className="grid gap-4">
-                {myBottles.map((bottle) => {
-                  const hasNewBlessing = bottle.last_blessing_at && new Date(bottle.last_blessing_at) > new Date(bottle.last_checked_at);
-                  
-                  // Determine the thumbnail URL
-                  const thumbnail = bottle.card_image_url || (() => {
-                    if (!bottle.card_id) return null;
-                    
-                    const cardIdStr = String(bottle.card_id);
-                    const isWord = cardIdStr.startsWith('word_');
-                    const isImg = cardIdStr.startsWith('img_');
-                    const numericId = Number(cardIdStr.replace(/^(word_|img_)/, ''));
-                    
-                    if (isWord || isImg) {
-                      const card = LUMINA_CARDS.find(c => Number(c.id) === numericId);
-                      if (card) return isWord ? card.wordCardUrl : card.imageCardUrl;
-                    }
-                    
-                    // Legacy fallback: try report_data first
-                    if (bottle.report_data?.pairs) {
-                      const pair = bottle.report_data.pairs.find((p: any) => Number(p.word?.id) === Number(bottle.card_id));
-                      if (pair?.word) return pair.word.imageUrl;
-                    }
-                    
-                    const card = LUMINA_CARDS.find(c => Number(c.id) === Number(bottle.card_id));
-                    if (card) return card.wordCardUrl;
-                    return null;
-                  })() || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=1000';
+            </div>
 
-                  return (
-                    <motion.div
-                      key={bottle.id}
-                      layout
-                      onClick={() => {
-                        markAsRead(bottle.id);
-                        setPickedBottle(bottle);
-                        setTranslatedContent(bottle.translatedContent || null);
-                      }}
-                      className={`group relative bg-white/10 backdrop-blur-md border rounded-3xl p-6 transition-all cursor-pointer ${
-                        hasNewBlessing ? 'border-water/60 shadow-[0_10px_30px_rgba(51,166,184,0.2)]' : 'border-white/10 hover:border-white/20 shadow-lg'
-                      }`}
-                    >
-                      <div className="flex gap-6">
-                        <div className="w-20 aspect-[3/4] rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
-                          {thumbnail ? (
-                            <img src={thumbnail} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Waves className="w-8 h-8 text-white/10" />
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex-1 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <p className="text-[10px] tracking-widest text-white/40 uppercase">
-                              {new Date(bottle.created_at).toLocaleDateString()}
-                            </p>
-                            {hasNewBlessing && (
-                              <motion.span
-                                animate={{ opacity: [0.6, 1, 0.6] }}
-                                transition={{ duration: 2, repeat: Infinity }}
-                                className="text-[10px] text-water font-bold uppercase tracking-tighter"
-                              >
-                                {language === 'zh' ? '✨ 收到了一份共鳴' : '✨ 共鳴を受け取りました'}
-                              </motion.span>
+            {voyageSubMode === 'thrown' ? (
+              isFetchingMyBottles ? (
+                <div className="py-20 flex justify-center">
+                  <div className="w-8 h-8 border-2 border-white/10 border-t-water rounded-full animate-spin" />
+                </div>
+              ) : myBottles.length === 0 ? (
+                <div className="py-20 text-center space-y-6">
+                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto border border-white/20">
+                    <Navigation className="w-8 h-8 text-white/20" />
+                  </div>
+                  <p className="text-sm text-white/40 italic">
+                    {language === 'zh' ? '妳的航程尚未開始，去投擲第一封瓶中信吧。' : 'あなたの航海はまだ始まっていません。最初の瓶中信を投げに行きましょう。'}
+                  </p>
+                  <button
+                    onClick={() => setViewMode('explore')}
+                    className="px-8 py-3 bg-white/10 text-white border border-white/20 rounded-full hover:bg-white/20 transition-all text-sm"
+                  >
+                    {language === 'zh' ? '前往探索海洋' : '海を探索しに行く'}
+                  </button>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {myBottles.map((bottle, index) => {
+                    const hasNewBlessing = bottle.last_blessing_at && new Date(bottle.last_blessing_at) > new Date(bottle.last_checked_at);
+                    
+                    // Determine the thumbnail URL
+                    const thumbnail = bottle.card_image_url || (() => {
+                      if (!bottle.card_id) return null;
+                      
+                      const cardIdStr = String(bottle.card_id);
+                      const isWord = cardIdStr.startsWith('word_');
+                      const isImg = cardIdStr.startsWith('img_');
+                      const numericId = Number(cardIdStr.replace(/^(word_|img_)/, ''));
+                      
+                      if (isWord || isImg) {
+                        const card = LUMINA_CARDS.find(c => Number(c.id) === numericId);
+                        if (card) return isWord ? card.wordCardUrl : card.imageCardUrl;
+                      }
+                      
+                      // Legacy fallback: try report_data first
+                      if (bottle.report_data?.pairs) {
+                        const pair = bottle.report_data.pairs.find((p: any) => Number(p.word?.id) === Number(bottle.card_id));
+                        if (pair?.word) return pair.word.imageUrl;
+                      }
+                      
+                      const card = LUMINA_CARDS.find(c => Number(c.id) === Number(bottle.card_id));
+                      if (card) return card.wordCardUrl;
+                      return null;
+                    })() || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=1000';
+
+                    return (
+                      <motion.div
+                        key={bottle.id || index}
+                        layout
+                        onClick={() => {
+                          markAsRead(bottle.id);
+                          setPickedBottle(bottle);
+                          setTranslatedContent(bottle.translatedContent || null);
+                        }}
+                        className={`group relative bg-white/10 backdrop-blur-md border rounded-3xl p-6 transition-all cursor-pointer ${
+                          hasNewBlessing ? 'border-water/60 shadow-[0_10px_30px_rgba(51,166,184,0.2)]' : 'border-white/10 hover:border-white/20 shadow-lg'
+                        }`}
+                      >
+                        <div className="flex gap-6">
+                          <div className="w-20 aspect-[3/4] rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
+                            {thumbnail ? (
+                              <img src={thumbnail} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Waves className="w-8 h-8 text-white/10" />
+                              </div>
                             )}
                           </div>
-
-                          <p className="text-sm text-white/80 line-clamp-2 leading-relaxed">
-                            {bottle.content}
-                          </p>
-
-                          <div className="flex items-center gap-6 pt-2">
-                            <div className="flex items-center gap-2 text-white/40">
-                              <Waves size={12} className="text-water" />
-                              <span className="text-[10px] font-mono">{calculateDrift(bottle.created_at)} nm</span>
+                          
+                          <div className="flex-1 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <p className="text-[10px] tracking-widest text-white/40 uppercase">
+                                {new Date(bottle.created_at).toLocaleDateString()}
+                              </p>
+                              {hasNewBlessing && (
+                                <motion.span
+                                  animate={{ opacity: [0.6, 1, 0.6] }}
+                                  transition={{ duration: 2, repeat: Infinity }}
+                                  className="text-[10px] text-water font-bold uppercase tracking-tighter"
+                                >
+                                  {language === 'zh' ? '✨ 收到了一份共鳴' : '✨ 共鳴を受け取りました'}
+                                </motion.span>
+                              )}
                             </div>
-                            <div className="flex items-center gap-2 text-white/40">
-                              <Eye size={12} />
-                              <span className="text-[10px] font-mono">{bottle.view_count}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-white/40">
-                              <Heart size={12} className={bottle.blessing_count > 0 ? 'text-fire' : ''} />
-                              <span className="text-[10px] font-mono">{bottle.blessing_count}</span>
+
+                            <p className="text-sm text-white/80 line-clamp-2 leading-relaxed">
+                              {bottle.content}
+                            </p>
+
+                            <div className="flex items-center gap-6 pt-2">
+                              <div className="flex items-center gap-2 text-white/40">
+                                <Waves size={12} className="text-water" />
+                                <span className="text-[10px] font-mono">{calculateDrift(bottle.created_at)} nm</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-white/40">
+                                <Eye size={12} />
+                                <span className="text-[10px] font-mono">{bottle.view_count}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-white/40">
+                                <Heart size={12} className={bottle.blessing_count > 0 ? 'text-fire' : ''} />
+                                <span className="text-[10px] font-mono">{bottle.blessing_count}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )
+            ) : (
+              isFetchingSavedBottles ? (
+                <div className="py-20 flex justify-center">
+                  <div className="w-8 h-8 border-2 border-white/10 border-t-water rounded-full animate-spin" />
+                </div>
+              ) : savedBottles.length === 0 ? (
+                <div className="py-20 text-center space-y-6">
+                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto border border-white/20">
+                    <Heart className="w-8 h-8 text-white/20" />
+                  </div>
+                  <p className="text-sm text-white/40 italic">
+                    {language === 'zh' ? '妳尚未收藏任何共鳴，去探索海洋吧。' : 'あなたはまだ共鳴をコレクションしていません。海を探索しに行きましょう。'}
+                  </p>
+                  <button
+                    onClick={() => setViewMode('explore')}
+                    className="px-8 py-3 bg-white/10 text-white border border-white/20 rounded-full hover:bg-white/20 transition-all text-sm"
+                  >
+                    {language === 'zh' ? '前往探索海洋' : '海を探索しに行く'}
+                  </button>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {savedBottles.map((bottle, index) => {
+                    const thumbnail = bottle.card_image || bottle.card_image_url || (() => {
+                      if (!bottle.card_id) return null;
+                      const cardIdStr = String(bottle.card_id);
+                      const isWord = cardIdStr.startsWith('word_');
+                      const isImg = cardIdStr.startsWith('img_');
+                      const numericId = Number(cardIdStr.replace(/^(word_|img_)/, ''));
+                      if (isWord || isImg) {
+                        const card = LUMINA_CARDS.find(c => Number(c.id) === numericId);
+                        if (card) return isWord ? card.wordCardUrl : card.imageCardUrl;
+                      }
+                      const card = LUMINA_CARDS.find(c => Number(c.id) === Number(bottle.card_id));
+                      if (card) return card.wordCardUrl;
+                      return null;
+                    })() || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=1000';
+
+                    return (
+                      <motion.div
+                        key={bottle.saved_id || `${bottle.id}-${index}`}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="group relative bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-6 transition-all hover:border-white/20 shadow-lg"
+                      >
+                        <div className="flex gap-6">
+                          <button
+                            onClick={() => setPickedBottle(bottle)}
+                            className="flex-1 flex gap-6 text-left"
+                          >
+                            <div className="w-20 aspect-[3/4] rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
+                              {thumbnail ? (
+                                <img src={thumbnail} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Waves className="w-8 h-8 text-white/10" />
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex-1 space-y-4">
+                              <div className="flex items-center justify-between">
+                                <p className="text-[10px] tracking-widest text-white/40 uppercase">
+                                  {new Date(bottle.saved_at!).toLocaleDateString(language === 'zh' ? 'zh-TW' : 'ja-JP')}
+                                </p>
+                                <span className="text-[10px] text-water/60 font-bold uppercase tracking-widest">
+                                  Saved Resonance
+                                </span>
+                              </div>
+
+                              <p className="text-sm text-white/80 line-clamp-2 leading-relaxed italic font-serif">
+                                「{bottle.content}」
+                              </p>
+
+                              {bottle.reply_message && (
+                                <div className="pt-2 border-t border-white/5">
+                                  <p className="text-[10px] text-white/30 italic line-clamp-1">
+                                    Re: {bottle.reply_message}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteSavedBottle(bottle.saved_id!)}
+                            className="self-start p-2 text-white/20 hover:text-red-400 transition-colors"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )
             )}
           </motion.div>
         )}
@@ -471,10 +665,13 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
             }}
             onTranslate={handleTranslate}
             onBless={sendBlessing}
+            onSave={handleSaveBottle}
             translatedContent={translatedContent}
             isTranslating={isTranslating}
             isBlessing={isBlessing}
             tags={tags}
+            isSaved={!!pickedBottle.saved_id}
+            isOwnBottle={profile?.uid === pickedBottle.user_id}
           />
         )}
       </AnimatePresence>

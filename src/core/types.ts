@@ -249,6 +249,9 @@ export interface Bottle {
   word_name?: string;
   translatedContent?: string; // For frontend translation
   report_data?: any; // JSON data from energy_reports
+  reply_message?: string; // For saved bottles
+  saved_id?: string; // For saved bottles
+  saved_at?: string; // For saved bottles
 }
 
 export interface BottleTag {

@@ -340,6 +340,25 @@ async function startServer() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Ocean of Resonance: Saved Bottles table
+      CREATE TABLE IF NOT EXISTS saved_bottles (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+        bottle_id UUID NOT NULL REFERENCES bottles(id) ON DELETE CASCADE,
+        reply_message TEXT,
+        saved_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, bottle_id)
+      );
+
+      -- Ocean of Resonance: Bottle Replies table
+      CREATE TABLE IF NOT EXISTS bottle_replies (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        bottle_id UUID NOT NULL REFERENCES bottles(id) ON DELETE CASCADE,
+        sender_id TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
       -- Ocean of Resonance: Sensitive Words table
       CREATE TABLE IF NOT EXISTS sensitive_words (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1222,6 +1241,96 @@ async function startServer() {
       res.json({ success: true });
     } catch (err) {
       console.error("Error marking bottle as read:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Saved Bottles API
+  app.get("/api/bottles/saved/:userId", async (req, res) => {
+    const { userId } = req.params;
+    try {
+      const result = await pool.query(
+        `SELECT sb.id as saved_id, sb.reply_message, sb.saved_at,
+                b.*, 
+                COALESCE(b.card_image_url, ci.image_url, cw.image_url) as card_image,
+                COALESCE(b.card_name_saved, ci.name, cw.name) as card_name,
+                er.report_data
+         FROM saved_bottles sb
+         JOIN bottles b ON sb.bottle_id = b.id
+         LEFT JOIN cards_image ci ON b.card_id = ci.id
+         LEFT JOIN cards_word cw ON b.card_id = cw.id
+         LEFT JOIN energy_reports er ON b.report_id = er.id
+         WHERE sb.user_id = $1 
+         ORDER BY sb.saved_at DESC`,
+        [userId]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching saved bottles:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/bottles/:id/save", async (req, res) => {
+    const { id } = req.params;
+    const { userId, replyMessage } = req.body;
+    try {
+      // Check limit (20)
+      const countResult = await pool.query("SELECT COUNT(*) FROM saved_bottles WHERE user_id = $1", [userId]);
+      if (parseInt(countResult.rows[0].count) >= 20) {
+        return res.status(400).json({ 
+          error: "You have reached the maximum limit of 20 saved bottles.",
+          code: "LIMIT_EXCEEDED"
+        });
+      }
+
+      await pool.query(
+        `INSERT INTO saved_bottles (user_id, bottle_id, reply_message) 
+         VALUES ($1, $2, $3)
+         ON CONFLICT (user_id, bottle_id) DO UPDATE SET reply_message = EXCLUDED.reply_message`,
+        [userId, id, replyMessage]
+      );
+
+      // If there's a reply message, also add it to bottle_replies for the author
+      if (replyMessage && replyMessage.trim()) {
+        await pool.query(
+          "INSERT INTO bottle_replies (bottle_id, sender_id, content) VALUES ($1, $2, $3)",
+          [id, userId, replyMessage]
+        );
+      }
+
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error saving bottle:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/bottles/saved/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query("DELETE FROM saved_bottles WHERE id = $1", [id]);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error deleting saved bottle:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/bottles/:id/replies", async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await pool.query(
+        `SELECT br.*, u.display_name as sender_name, u.photo_url as sender_photo
+         FROM bottle_replies br
+         JOIN users u ON br.sender_id = u.uid
+         WHERE br.bottle_id = $1
+         ORDER BY br.created_at DESC`,
+        [id]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching bottle replies:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });
