@@ -519,16 +519,23 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
         onNavigate={onNavigate}
       />
 
-      <BottleDetailModal
-        bottle={pickedBottle}
-        onClose={() => setPickedBottle(null)}
-        onTranslate={handleTranslate}
-        onBless={sendBlessing}
-        translatedContent={translatedContent}
-        isTranslating={isTranslating}
-        isBlessing={isBlessing}
-        tags={tags}
-      />
+      <AnimatePresence>
+        {pickedBottle && (
+          <BottleDetailModal
+            bottle={pickedBottle}
+            onClose={() => {
+              setPickedBottle(null);
+              setTranslatedContent(null);
+            }}
+            onTranslate={handleTranslate}
+            onBless={sendBlessing}
+            translatedContent={translatedContent}
+            isTranslating={isTranslating}
+            isBlessing={isBlessing}
+            tags={tags}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Ambient Sound Prompt Toast */}
       <AnimatePresence>

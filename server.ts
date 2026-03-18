@@ -304,11 +304,32 @@ async function startServer() {
       -- Ocean of Resonance: Blessing Tags table
       CREATE TABLE IF NOT EXISTS bottle_tags (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        text_zh TEXT NOT NULL,
-        text_ja TEXT NOT NULL,
+        name_zh TEXT NOT NULL,
+        name_ja TEXT NOT NULL,
+        color TEXT DEFAULT '#8E9299',
         category TEXT DEFAULT 'blessing',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Ensure color and name columns exist if table was created earlier
+      DO $$ 
+      BEGIN 
+        BEGIN
+          ALTER TABLE bottle_tags ADD COLUMN color TEXT DEFAULT '#8E9299';
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE bottle_tags RENAME COLUMN text_zh TO name_zh;
+        EXCEPTION
+          WHEN undefined_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE bottle_tags RENAME COLUMN text_ja TO name_ja;
+        EXCEPTION
+          WHEN undefined_column THEN NULL;
+        END;
+      END $$;
 
       -- Ocean of Resonance: Blessings table
       CREATE TABLE IF NOT EXISTS bottle_blessings (
@@ -364,6 +385,38 @@ async function startServer() {
         }
       }')
       ON CONFLICT (key) DO NOTHING;
+
+      -- Seed default Blessing Tags
+      const tagCount = await pool.query("SELECT COUNT(*) FROM bottle_tags");
+      if (parseInt(tagCount.rows[0].count) === 0) {
+        console.log("Seeding default blessing tags...");
+        const defaultTags = [
+          { name_zh: '溫暖共鳴', name_ja: '温かい共鳴', color: '#F27D26' },
+          { name_zh: '療癒之光', name_ja: '癒やしの光', color: '#8BA889' },
+          { name_zh: '勇氣泉源', name_ja: '勇気の源', color: '#D98B73' },
+          { name_zh: '平靜之海', name_ja: '平穏の海', color: '#6B7B8C' },
+          { name_zh: '智慧流動', name_ja: '知恵の流動', color: '#A88B89' }
+        ];
+        for (const tag of defaultTags) {
+          await pool.query(
+            "INSERT INTO bottle_tags (name_zh, name_ja, color) VALUES ($1, $2, $3)",
+            [tag.name_zh, tag.name_ja, tag.color]
+          );
+        }
+      }
+
+      -- Seed default Sensitive Words
+      const wordCount = await pool.query("SELECT COUNT(*) FROM sensitive_words");
+      if (parseInt(wordCount.rows[0].count) === 0) {
+        console.log("Seeding default sensitive words...");
+        const defaultWords = ['暴力', '色情', '賭博', '毒品', '詐騙', '自殺', '殺人'];
+        for (const word of defaultWords) {
+          await pool.query(
+            "INSERT INTO sensitive_words (word, category) VALUES ($1, $2) ON CONFLICT (word) DO NOTHING",
+            [word, 'general']
+          );
+        }
+      }
     `);
     client.release();
     console.log("Database tables initialized");
@@ -1518,14 +1571,22 @@ async function startServer() {
 
   // Admin: Ocean of Resonance Management
   app.get("/api/admin/bottles", async (req, res) => {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = parseInt(req.query.offset as string) || 0;
     try {
+      const totalResult = await pool.query("SELECT COUNT(*) FROM bottles");
       const result = await pool.query(`
         SELECT b.*, u.display_name, u.email 
         FROM bottles b 
         JOIN users u ON b.user_id = u.uid 
         ORDER BY b.created_at DESC
-      `);
-      res.json(result.rows);
+        LIMIT $1 OFFSET $2
+      `, [limit, offset]);
+      
+      res.json({
+        bottles: result.rows,
+        total: parseInt(totalResult.rows[0].count)
+      });
     } catch (err) {
       console.error("Error fetching admin bottles:", err);
       res.status(500).json({ error: "Internal server error" });
@@ -1554,17 +1615,17 @@ async function startServer() {
   });
 
   app.post("/api/admin/bottles/tags", async (req, res) => {
-    const { id, text_zh, text_ja, category } = req.body;
+    const { id, name_zh, name_ja, color, category } = req.body;
     try {
       if (id) {
         await pool.query(
-          "UPDATE bottle_tags SET text_zh = $1, text_ja = $2, category = $3 WHERE id = $4",
-          [text_zh, text_ja, category, id]
+          "UPDATE bottle_tags SET name_zh = $1, name_ja = $2, color = $3, category = $4 WHERE id = $5",
+          [name_zh, name_ja, color, category || 'blessing', id]
         );
       } else {
         await pool.query(
-          "INSERT INTO bottle_tags (text_zh, text_ja, category) VALUES ($1, $2, $3)",
-          [text_zh, text_ja, category]
+          "INSERT INTO bottle_tags (name_zh, name_ja, color, category) VALUES ($1, $2, $3, $4)",
+          [name_zh, name_ja, color, category || 'blessing']
         );
       }
       res.json({ success: true });
@@ -1581,6 +1642,49 @@ async function startServer() {
       res.status(204).send();
     } catch (err) {
       console.error("Error deleting bottle tag:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Sensitive Words API
+  app.get("/api/admin/sensitive-words", async (req, res) => {
+    try {
+      const result = await pool.query("SELECT * FROM sensitive_words ORDER BY created_at DESC");
+      res.json(result.rows);
+    } catch (err) {
+      console.error("Error fetching sensitive words:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/sensitive-words", async (req, res) => {
+    const { id, word, category } = req.body;
+    try {
+      if (id) {
+        await pool.query(
+          "UPDATE sensitive_words SET word = $1, category = $2 WHERE id = $3",
+          [word, category || 'general', id]
+        );
+      } else {
+        await pool.query(
+          "INSERT INTO sensitive_words (word, category) VALUES ($1, $2)",
+          [word, category || 'general']
+        );
+      }
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Error saving sensitive word:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/sensitive-words/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query("DELETE FROM sensitive_words WHERE id = $1", [id]);
+      res.status(204).send();
+    } catch (err) {
+      console.error("Error deleting sensitive word:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   });
