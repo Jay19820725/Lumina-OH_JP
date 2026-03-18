@@ -240,6 +240,8 @@ async function startServer() {
         quote TEXT,
         report_id UUID,
         sender_nickname TEXT,
+        card_image_url TEXT,
+        card_name_saved TEXT,
         is_active BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
@@ -247,6 +249,16 @@ async function startServer() {
       -- Ensure new columns exist if table was created earlier
       DO $$ 
       BEGIN 
+        BEGIN
+          ALTER TABLE bottles ADD COLUMN card_image_url TEXT;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
+        BEGIN
+          ALTER TABLE bottles ADD COLUMN card_name_saved TEXT;
+        EXCEPTION
+          WHEN duplicate_column THEN NULL;
+        END;
         BEGIN
           ALTER TABLE bottles ADD COLUMN card_id TEXT;
         EXCEPTION
@@ -1027,7 +1039,7 @@ async function startServer() {
   });
 
   app.post("/api/bottles", async (req, res) => {
-    const { userId, content, element, lang, originLocale, cardId, quote, reportId, nickname } = req.body;
+    const { userId, content, element, lang, originLocale, cardId, quote, reportId, nickname, cardImageUrl, cardName } = req.body;
     
     try {
       // 1. Check if user has at least one report
@@ -1068,8 +1080,8 @@ async function startServer() {
 
       // 5. Save Bottle
       const result = await pool.query(
-        "INSERT INTO bottles (user_id, content, element, lang, origin_locale, card_id, quote, report_id, sender_nickname) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
-        [userId, content, element, lang, originLocale, cardId, quote, reportId, nickname]
+        "INSERT INTO bottles (user_id, content, element, lang, origin_locale, card_id, quote, report_id, sender_nickname, card_image_url, card_name_saved) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *",
+        [userId, content, element, lang, originLocale, cardId, quote, reportId, nickname, cardImageUrl, cardName]
       );
       
       res.json(result.rows[0]);
@@ -1086,8 +1098,8 @@ async function startServer() {
       const result = await pool.query(
         `SELECT b.*, 
                 COALESCE(b.sender_nickname, u.display_name) as sender_name,
-                COALESCE(ci.image_url, cw.image_url) as card_image,
-                COALESCE(ci.name, cw.name) as card_name,
+                COALESCE(b.card_image_url, ci.image_url, cw.image_url) as card_image,
+                COALESCE(b.card_name_saved, ci.name, cw.name) as card_name,
                 er.report_data
          FROM bottles b 
          JOIN users u ON b.user_id = u.uid 
@@ -1157,8 +1169,8 @@ async function startServer() {
     try {
       const result = await pool.query(
         `SELECT b.*, 
-                COALESCE(ci.image_url, cw.image_url) as card_image,
-                COALESCE(ci.name, cw.name) as card_name,
+                COALESCE(b.card_image_url, ci.image_url, cw.image_url) as card_image,
+                COALESCE(b.card_name_saved, ci.name, cw.name) as card_name,
                 er.report_data,
                 (SELECT COUNT(*) FROM bottle_blessings WHERE bottle_id = b.id) as blessing_count,
                 (SELECT MAX(created_at) FROM bottle_blessings WHERE bottle_id = b.id) as last_blessing_at

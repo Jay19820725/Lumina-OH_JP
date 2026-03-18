@@ -419,18 +419,30 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
                 {myBottles.map((bottle) => {
                   const hasNewBlessing = bottle.last_blessing_at && new Date(bottle.last_blessing_at) > new Date(bottle.last_checked_at);
                   
-                  // Find the card data from report_data or LUMINA_CARDS (Analysis Report style)
-                  const cardData = (() => {
+                  // Determine the thumbnail URL
+                  const thumbnail = bottle.card_image_url || (() => {
+                    if (!bottle.card_id) return null;
+                    
+                    const cardIdStr = String(bottle.card_id);
+                    const isWord = cardIdStr.startsWith('word_');
+                    const isImg = cardIdStr.startsWith('img_');
+                    const numericId = Number(cardIdStr.replace(/^(word_|img_)/, ''));
+                    
+                    if (isWord || isImg) {
+                      const card = LUMINA_CARDS.find(c => Number(c.id) === numericId);
+                      if (card) return isWord ? card.wordCardUrl : card.imageCardUrl;
+                    }
+                    
+                    // Legacy fallback: try report_data first
                     if (bottle.report_data?.pairs) {
                       const pair = bottle.report_data.pairs.find((p: any) => Number(p.word?.id) === Number(bottle.card_id));
-                      if (pair?.word) return { imageUrl: pair.word.imageUrl };
+                      if (pair?.word) return pair.word.imageUrl;
                     }
-                    const card = bottle.card_id ? LUMINA_CARDS.find(c => Number(c.id) === Number(bottle.card_id)) : null;
-                    if (card) return { imageUrl: card.wordCardUrl };
+                    
+                    const card = LUMINA_CARDS.find(c => Number(c.id) === Number(bottle.card_id));
+                    if (card) return card.wordCardUrl;
                     return null;
-                  })();
-
-                  const thumbnail = cardData?.imageUrl || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=1000';
+                  })() || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=1000';
 
                   return (
                     <motion.div

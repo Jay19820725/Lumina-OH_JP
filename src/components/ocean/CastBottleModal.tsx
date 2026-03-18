@@ -116,7 +116,9 @@ export const CastBottleModal: React.FC<CastBottleModalProps> = ({ isOpen, onClos
           element: selectedReport.dominantElement || 'none',
           lang: language,
           originLocale: language === 'zh' ? 'Taiwan' : 'Japan',
-          cardId: selectedCard.id,
+          cardId: `${selectedCard.type}_${selectedCard.id}`,
+          cardImageUrl: selectedCard.url,
+          cardName: selectedCard.name,
           quote: quote.trim(),
           reportId: selectedReport.id,
           nickname: nickname.trim()

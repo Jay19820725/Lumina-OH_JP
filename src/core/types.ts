@@ -243,6 +243,8 @@ export interface Bottle {
   sender_name?: string; // COALESCE(sender_nickname, display_name)
   card_image?: string;
   card_name?: string;
+  card_image_url?: string;
+  card_name_saved?: string;
   word_text?: string;
   word_name?: string;
   translatedContent?: string; // For frontend translation

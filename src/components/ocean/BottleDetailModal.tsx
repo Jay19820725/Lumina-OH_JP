@@ -60,11 +60,33 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
     setIsScrolled(scrollTop > 50);
   };
 
-  // Find the card data from report_data or LUMINA_CARDS (Analysis Report style)
+  // Find the card data directly from LUMINA_CARDS (Direct source lookup)
   const cardData = useMemo(() => {
-    if (!bottle) return null;
+    if (bottle?.card_image_url) {
+      return {
+        imageUrl: bottle.card_image_url,
+        name: bottle.card_name_saved || bottle.card_name || ''
+      };
+    }
     
-    // 1. Try to find in report_data (JSON from analysis report)
+    if (!bottle?.card_id) return null;
+    
+    const cardIdStr = String(bottle.card_id);
+    const isWord = cardIdStr.startsWith('word_');
+    const isImg = cardIdStr.startsWith('img_');
+    const numericId = Number(cardIdStr.replace(/^(word_|img_)/, ''));
+    
+    if (isWord || isImg) {
+      const card = LUMINA_CARDS.find(c => Number(c.id) === numericId);
+      if (card) {
+        return {
+          imageUrl: isWord ? card.wordCardUrl : card.imageCardUrl,
+          name: isWord ? card.textCardContent : (bottle.card_name || '')
+        };
+      }
+    }
+    
+    // Legacy fallback: try report_data first, then LUMINA_CARDS default
     if (bottle.report_data?.pairs) {
       const pair = bottle.report_data.pairs.find((p: any) => 
         Number(p.word?.id) === Number(bottle.card_id)
@@ -77,8 +99,7 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
       }
     }
     
-    // 2. Fallback to LUMINA_CARDS
-    const card = bottle.card_id ? LUMINA_CARDS.find(c => Number(c.id) === Number(bottle.card_id)) : null;
+    const card = LUMINA_CARDS.find(c => Number(c.id) === Number(bottle.card_id));
     if (card) {
       return {
         imageUrl: card.wordCardUrl,
