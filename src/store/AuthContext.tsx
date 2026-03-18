@@ -36,6 +36,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    if (!auth || typeof auth.onAuthStateChanged !== 'function') {
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       
@@ -58,6 +63,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async () => {
+    if (!auth || typeof auth.onAuthStateChanged !== 'function') {
+      alert("Firebase 尚未配置，無法登入。");
+      return;
+    }
     const provider = new GoogleAuthProvider();
     // Prompt the user to select an account
     provider.setCustomParameters({ prompt: 'select_account' });
@@ -86,6 +95,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    if (!auth || typeof auth.onAuthStateChanged !== 'function') {
+      setUser(null);
+      setProfile(null);
+      return;
+    }
     try {
       await signOut(auth);
       setUser(null);

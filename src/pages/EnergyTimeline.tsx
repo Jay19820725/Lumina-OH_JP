@@ -33,17 +33,18 @@ type TimelineItem =
   | { type: 'report'; data: AnalysisReport; timestamp: number }
   | { type: 'journal'; data: EnergyJournalEntry; timestamp: number };
 
-const EMOTIONS: { tag: EmotionTag; label: string; icon: React.ReactNode; color: string }[] = [
-  { tag: 'calm', label: '穏やか', icon: <Smile size={18} />, color: 'bg-emerald-100 text-emerald-600' },
-  { tag: 'anxious', label: '不安', icon: <AlertCircle size={18} />, color: 'bg-rose-100 text-rose-600' },
-  { tag: 'inspired', label: 'インスピレーション', icon: <Sparkles size={18} />, color: 'bg-indigo-100 text-indigo-600' },
-  { tag: 'tired', label: 'お疲れ', icon: <Coffee size={18} />, color: 'bg-amber-100 text-amber-600' },
-];
-
 export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) => {
   const { user, profile, isPremium } = useAuth();
   const { setReport } = useTest();
   const { language, t } = useLanguage();
+
+  const EMOTIONS = useMemo(() => [
+    { tag: 'calm' as EmotionTag, label: t('journal_emotion_calm'), icon: <Smile size={18} />, color: 'bg-emerald-100 text-emerald-600' },
+    { tag: 'anxious' as EmotionTag, label: t('journal_emotion_anxious'), icon: <AlertCircle size={18} />, color: 'bg-rose-100 text-rose-600' },
+    { tag: 'inspired' as EmotionTag, label: t('journal_emotion_inspired'), icon: <Sparkles size={18} />, color: 'bg-indigo-100 text-indigo-600' },
+    { tag: 'tired' as EmotionTag, label: t('journal_emotion_tired'), icon: <Coffee size={18} />, color: 'bg-amber-100 text-amber-600' },
+  ], [t]);
+
   const [reports, setReports] = useState<AnalysisReport[]>([]);
   const [hasOtherLang, setHasOtherLang] = useState(false);
   const [journals, setJournals] = useState<EnergyJournalEntry[]>([]);
@@ -136,7 +137,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
   };
 
   const handleDeleteJournal = async (id: string) => {
-    if (!window.confirm('この日誌を削除してもよろしいですか？')) return;
+    if (!window.confirm(t('journal_delete_confirm'))) return;
     try {
       await journalService.deleteEntry(id);
       setJournals(prev => prev.filter(j => j.id !== id));
@@ -146,26 +147,9 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
   };
 
   const translateElement = (el: string) => {
-    const map: Record<string, Record<string, string>> = {
-      'ja': {
-        wood: '木',
-        fire: '火',
-        earth: '土',
-        metal: '金',
-        water: '水',
-        None: 'なし'
-      },
-      'zh': {
-        wood: '木',
-        fire: '火',
-        earth: '土',
-        metal: '金',
-        water: '水',
-        None: '無'
-      }
-    };
-    const currentMap = map[language] || map['zh'];
-    return currentMap[el] || el;
+    const key = `element_${el.toLowerCase()}` as any;
+    // Check if the key exists in translations, otherwise return original
+    return t(key) || el;
   };
 
   const formatDate = (timestamp: number) => {
@@ -189,8 +173,8 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
     <div className="ma-container py-12 md:py-20 min-h-screen px-4">
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-16 md:mb-24 space-y-6">
-          <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted block">Energy Timeline</span>
-          <h1 className="font-serif tracking-widest text-3xl md:text-4xl">{t('timeline_title')}</h1>
+          <span className="text-[10px] uppercase tracking-[0.8em] text-ink-muted block">{t('timeline_title')}</span>
+          <h1 className="font-serif tracking-widest text-3xl md:text-4xl">{t('nav_history')}</h1>
           <div className="w-12 h-px bg-ink/10 mx-auto" />
           <p className="text-sm md:text-lg text-ink-muted font-light tracking-widest leading-relaxed">
             {t('timeline_description')}
@@ -201,9 +185,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
           <div className="mb-12 p-4 bg-ink/5 border border-ink/10 rounded-2xl flex items-center gap-4 text-ink-muted">
             <Info size={18} className="shrink-0" />
             <p className="text-xs tracking-widest leading-relaxed">
-              {language === 'zh' 
-                ? '妳還有其他語言的成長軌跡，切換語系即可查看。' 
-                : '他の言語での成長軌跡もあります。言語を切り替えると表示されます。'}
+              {t('timeline_other_lang_notice')}
             </p>
           </div>
         )}
@@ -215,25 +197,25 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
               <div className="w-10 h-10 rounded-full bg-wood/10 flex items-center justify-center text-wood">
                 <BarChart3 size={20} />
               </div>
-              <h2 className="text-lg font-serif tracking-widest">今週のエネルギー概況</h2>
+              <h2 className="text-lg font-serif tracking-widest">{t('timeline_weekly_insight')}</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-ink-muted">
                   <TrendingUp size={14} className="text-emerald-500" />
-                  <span>上昇傾向のエネルギー</span>
+                  <span>{t('timeline_trending_up')}</span>
                 </div>
                 <p className="text-sm leading-relaxed text-ink-muted">
-                  最近の診断では「木」のエネルギーが活発です。新しいアイデアやプロジェクトを始めるのに最適な時期かもしれません。
+                  {t('timeline_insight_wood')}
                 </p>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-ink-muted">
                   <Activity size={14} className="text-indigo-500" />
-                  <span>情緒とエネルギーの相関</span>
+                  <span>{t('timeline_emotional_correlation')}</span>
                 </div>
                 <p className="text-sm leading-relaxed text-ink-muted">
-                  「穏やか」な気分の日は、エネルギーバランスが平均して 85% 以上と非常に安定しています。
+                  {t('timeline_insight_calm')}
                 </p>
               </div>
             </div>
@@ -241,14 +223,14 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
         )}
 
         <div className="flex justify-between items-center mb-12">
-          <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted">Timeline</h3>
+          <h3 className="text-[10px] uppercase tracking-[0.4em] text-ink-muted">{t('nav_history')}</h3>
           {isPremium && (
             <Button 
               onClick={() => setIsAddingJournal(!isAddingJournal)}
               variant={isAddingJournal ? 'outline' : 'primary'}
               className="h-10 px-4 gap-2 text-[10px] tracking-widest"
             >
-              {isAddingJournal ? 'キャンセル' : <><Plus size={14} /> 日誌を記す</>}
+              {isAddingJournal ? t('cancel') : <><Plus size={14} /> {t('timeline_write_journal')}</>}
             </Button>
           )}
         </div>
@@ -264,7 +246,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
               <GlassCard className="p-8 md:p-12">
                 <form onSubmit={handleAddJournal} className="space-y-8">
                   <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">今の気分</label>
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">{t('journal_label_emotion')}</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {EMOTIONS.map((em) => (
                         <button
@@ -285,30 +267,30 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">今日の洞察</label>
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">{t('journal_label_insight')}</label>
                     <textarea
                       value={insight}
                       onChange={(e) => setInsight(e.target.value)}
-                      placeholder="今日、あなたの心に浮かんだ気づきは何ですか？"
+                      placeholder={t('journal_placeholder_insight')}
                       className="w-full h-32 bg-white/50 border border-ink/5 rounded-2xl p-6 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-all resize-none"
                       required
                     />
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">明日の意圖</label>
+                    <label className="text-[10px] uppercase tracking-widest text-ink-muted block">{t('journal_label_intention')}</label>
                     <input
                       type="text"
                       value={intention}
                       onChange={(e) => setIntention(e.target.value)}
-                      placeholder="明日、どのようなエネルギーで過ごしたいですか？"
+                      placeholder={t('journal_placeholder_intention')}
                       className="w-full bg-white/50 border border-ink/5 rounded-2xl p-6 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-all"
                       required
                     />
                   </div>
 
                   <Button type="submit" disabled={submitting} className="w-full h-14">
-                    {submitting ? '保存中...' : '日誌を保存する'}
+                    {submitting ? t('saving') : t('save')}
                   </Button>
                 </form>
               </GlassCard>
@@ -354,7 +336,7 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                     <span className={`text-[8px] uppercase tracking-[0.4em] font-medium mt-1 ${
                       item.type === 'report' ? 'text-emerald-500' : 'text-indigo-500'
                     }`}>
-                      {item.type === 'report' ? 'Energy Report' : 'Energy Journal'}
+                      {item.type === 'report' ? t('test_title_revealed') : t('journal_title')}
                     </span>
                   </div>
 
@@ -396,11 +378,11 @@ export const EnergyTimeline: React.FC<EnergyTimelineProps> = ({ onNavigate }) =>
                         </div>
                         <div className="space-y-4 w-full">
                           <div className="space-y-1">
-                            <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted">洞察</span>
+                            <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted">{t('journal_label_insight')}</span>
                             <p className="text-sm leading-relaxed text-ink font-light line-clamp-3">{item.data.insight}</p>
                           </div>
                           <div className="space-y-1">
-                            <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted">意圖</span>
+                            <span className="text-[8px] uppercase tracking-[0.4em] text-ink-muted">{t('journal_label_intention')}</span>
                             <p className="text-sm leading-relaxed text-ink-muted italic">「{item.data.intention}」</p>
                           </div>
                         </div>

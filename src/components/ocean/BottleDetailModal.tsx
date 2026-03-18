@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Globe, Languages, Heart, Clock, MapPin } from 'lucide-react';
 import { Bottle, BottleTag } from '../../core/types';
@@ -120,164 +121,170 @@ export const BottleDetailModal: React.FC<BottleDetailModalProps> = ({
   const displayImage = cardData?.imageUrl || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=1000';
   const cardName = cardData?.name || activeBottle.card_name;
 
-  return (
-    <div className="fixed inset-0 z-[100000] flex justify-center items-start p-4 md:p-8 pt-5 md:pt-16 overflow-hidden">
-      {/* Backdrop - Click to close */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
-      />
-
-      {/* Lightbox Container */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="relative w-full max-w-5xl h-[90vh] md:h-[80vh] bg-[#FDFCF8] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row"
-      >
-        {/* Close Button - Desktop */}
-        <button
-          onClick={onClose}
-          className="absolute top-6 right-6 z-50 p-2 bg-black/5 hover:bg-black/10 rounded-full transition-all hidden md:block"
-        >
-          <X className="w-5 h-5 text-slate-600" />
-        </button>
-
-        {/* Left Side: Card Image (Fixed on desktop) */}
-        <div className="w-full md:w-[42%] h-48 md:h-full relative bg-slate-100 flex-shrink-0">
-          <img
-            src={displayImage}
-            alt={cardName}
-            onLoad={() => setImageLoaded(true)}
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#FDFCF8]/20 md:to-transparent" />
-          
-          {/* Card Name Overlay (Mobile only) */}
-          <div className="absolute bottom-4 left-6 md:hidden">
-            <h2 className="text-white text-lg font-serif italic drop-shadow-md">
-              {cardName}
-            </h2>
-          </div>
-
-          {/* Close Button - Mobile */}
-          <button
+  const modalContent = (
+    <AnimatePresence>
+      {bottle && (
+        <div className="fixed inset-0 z-[9999] flex justify-center items-start p-4 md:p-8 pt-5 md:pt-16 overflow-hidden">
+          {/* Backdrop - Click to close */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute top-4 right-4 z-50 p-2 bg-white/20 backdrop-blur-md rounded-full md:hidden"
-          >
-            <X className="w-5 h-5 text-white" />
-          </button>
-        </div>
+            className="absolute inset-0 bg-ink/40 backdrop-blur-md"
+          />
 
-        {/* Right Side: Content (Scrollable) */}
-        <div className="flex-1 h-full overflow-y-auto no-scrollbar bg-[#FDFCF8]">
-          <div className="px-8 md:px-12 py-10 md:py-16 space-y-12">
-            {/* Header Info */}
-            <div className="space-y-6">
-              <div className="hidden md:block">
-                <h2 className="text-3xl font-serif italic text-slate-800 tracking-wide">
+          {/* Lightbox Container */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="relative w-full max-w-5xl h-[90vh] md:h-[80vh] bg-[#FDFCF8] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col md:flex-row"
+          >
+            {/* Close Button - Desktop */}
+            <button
+              onClick={onClose}
+              className="absolute top-6 right-6 z-50 p-2 bg-black/5 hover:bg-black/10 rounded-full transition-all hidden md:block"
+            >
+              <X className="w-5 h-5 text-ink/40" />
+            </button>
+
+            {/* Left Side: Card Image (Fixed on desktop) */}
+            <div className="w-full md:w-[42%] h-48 md:h-full relative bg-ink/[0.02] flex-shrink-0">
+              <img
+                src={displayImage}
+                alt={cardName}
+                onLoad={() => setImageLoaded(true)}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#FDFCF8]/20 md:to-transparent" />
+              
+              {/* Card Name Overlay (Mobile only) */}
+              <div className="absolute bottom-4 left-6 md:hidden">
+                <h2 className="text-white text-lg font-serif italic drop-shadow-md">
                   {cardName}
                 </h2>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 py-4 border-y border-slate-100/60">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <MapPin size={14} className="text-water/60" />
-                  <span className="text-[10px] tracking-[0.2em] uppercase font-medium">
-                    {activeBottle.origin_locale || 'Ocean'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-400">
-                  <Clock size={14} className="text-water/60" />
-                  <span className="text-[10px] tracking-[0.2em] uppercase font-medium">
-                    {travelTime}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-400">
-                  <Globe size={14} className="text-water/60" />
-                  <span className="text-[10px] tracking-[0.2em] uppercase font-medium">
-                    {activeBottle.sender_name || 'Anonymous'}
-                  </span>
-                </div>
-              </div>
+              {/* Close Button - Mobile */}
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 z-50 p-2 bg-white/20 backdrop-blur-md rounded-full md:hidden"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
             </div>
 
-            {/* Message Body */}
-            <div className="space-y-10">
-              {activeBottle.quote && (
-                <div className="italic text-slate-400 font-serif text-lg leading-relaxed border-l-2 border-water/20 pl-6 py-2">
-                  「{activeBottle.quote}」
+            {/* Right Side: Content (Scrollable) */}
+            <div className="flex-1 h-full overflow-y-auto no-scrollbar bg-[#FDFCF8]">
+              <div className="px-8 md:px-12 py-10 md:py-16 space-y-12">
+                {/* Header Info */}
+                <div className="space-y-6">
+                  <div className="hidden md:block">
+                    <h2 className="text-3xl font-serif italic text-ink tracking-wide">
+                      {cardName}
+                    </h2>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-6 py-4 border-y border-ink/[0.05]">
+                    <div className="flex items-center gap-2 text-ink/40">
+                      <MapPin size={14} className="text-water/60" />
+                      <span className="text-[10px] tracking-[0.2em] uppercase font-medium">
+                        {activeBottle.origin_locale || 'Ocean'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-ink/40">
+                      <Clock size={14} className="text-water/60" />
+                      <span className="text-[10px] tracking-[0.2em] uppercase font-medium">
+                        {travelTime}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-ink/40">
+                      <Globe size={14} className="text-water/60" />
+                      <span className="text-[10px] tracking-[0.2em] uppercase font-medium">
+                        {activeBottle.sender_name || 'Anonymous'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              )}
 
-              <div className="space-y-8">
-                <p className="text-lg md:text-xl text-slate-700 leading-[2] font-serif">
-                  {activeBottle.content}
-                </p>
+                {/* Message Body */}
+                <div className="space-y-10">
+                  {activeBottle.quote && (
+                    <div className="italic text-ink/40 font-serif text-lg leading-relaxed border-l-2 border-water/20 pl-6 py-2">
+                      「{activeBottle.quote}」
+                    </div>
+                  )}
 
-                {/* Translation Section */}
-                {needsTranslation && (
-                  <div className="pt-8 border-t border-slate-50">
-                    {!translatedContent ? (
-                      <button
-                        onClick={onTranslate}
-                        disabled={isTranslating}
-                        className="flex items-center gap-2 text-[11px] text-slate-400 hover:text-water transition-colors tracking-[0.2em] uppercase font-medium"
-                      >
-                        <Languages className={`w-3.5 h-3.5 ${isTranslating ? 'animate-spin' : ''}`} />
-                        {language === 'ja' ? '翻訳を表示' : '顯示翻譯'}
-                      </button>
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="space-y-4 bg-water/5 p-6 rounded-2xl"
-                      >
-                        <div className="flex items-center gap-2 text-[10px] text-water/60 uppercase tracking-widest">
-                          <Languages size={12} />
-                          {language === 'ja' ? '翻訳' : '翻譯內容'}
-                        </div>
-                        <p className="text-base md:text-lg text-slate-500 leading-[1.8] font-serif italic">
-                          {translatedContent}
-                        </p>
-                      </motion.div>
+                  <div className="space-y-8">
+                    <p className="text-lg md:text-xl text-ink/80 leading-[2] font-serif">
+                      {activeBottle.content}
+                    </p>
+
+                    {/* Translation Section */}
+                    {needsTranslation && (
+                      <div className="pt-8 border-t border-ink/[0.02]">
+                        {!translatedContent ? (
+                          <button
+                            onClick={onTranslate}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 text-[11px] text-ink/40 hover:text-water transition-colors tracking-[0.2em] uppercase font-medium"
+                          >
+                            <Languages className={`w-3.5 h-3.5 ${isTranslating ? 'animate-spin' : ''}`} />
+                            {language === 'ja' ? '翻訳を表示' : '顯示翻譯'}
+                          </button>
+                        ) : (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-4 bg-water/5 p-6 rounded-2xl"
+                          >
+                            <div className="flex items-center gap-2 text-[10px] text-water/60 uppercase tracking-widest">
+                              <Languages size={12} />
+                              {language === 'ja' ? '翻訳' : '翻譯內容'}
+                            </div>
+                            <p className="text-base md:text-lg text-ink/50 leading-[1.8] font-serif italic">
+                              {translatedContent}
+                            </p>
+                          </motion.div>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
+                </div>
+
+                {/* Blessing Section */}
+                <div className="pt-12 pb-8 space-y-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-[1px] bg-water/20" />
+                    <p className="text-[10px] tracking-[0.3em] text-ink/30 uppercase font-semibold">
+                      {language === 'zh' ? '送上祝福共鳴' : '祝福の共鳴を送る'}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    {tags.slice(0, 4).map((tag) => (
+                      <button
+                        key={tag.id}
+                        onClick={() => onBless(tag.id)}
+                        disabled={isBlessing}
+                        className="group py-2.5 px-5 rounded-full border border-ink/10 text-[11px] text-ink/40 hover:bg-water hover:text-white hover:border-water transition-all flex items-center gap-2 uppercase tracking-[0.1em] font-medium"
+                      >
+                        <Heart size={12} className="group-hover:scale-110 transition-transform" />
+                        {language === 'ja' ? tag.text_ja : tag.text_zh}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Blessing Section */}
-            <div className="pt-12 pb-8 space-y-8">
-              <div className="flex items-center gap-4">
-                <div className="w-8 h-[1px] bg-water/20" />
-                <p className="text-[10px] tracking-[0.3em] text-slate-300 uppercase font-semibold">
-                  {language === 'zh' ? '送上祝福共鳴' : '祝福の共鳴を送る'}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {tags.slice(0, 4).map((tag) => (
-                  <button
-                    key={tag.id}
-                    onClick={() => onBless(tag.id)}
-                    disabled={isBlessing}
-                    className="group py-2.5 px-5 rounded-full border border-slate-200 text-[11px] text-slate-400 hover:bg-water hover:text-white hover:border-water transition-all flex items-center gap-2 uppercase tracking-[0.1em] font-medium"
-                  >
-                    <Heart size={12} className="group-hover:scale-110 transition-transform" />
-                    {language === 'ja' ? tag.text_ja : tag.text_zh}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          </motion.div>
         </div>
-      </motion.div>
-    </div>
+      )}
+    </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 };

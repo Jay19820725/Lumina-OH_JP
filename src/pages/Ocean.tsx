@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Waves, Send, Sparkles, X, Globe, Languages, Heart, Eye, Navigation, Volume2, VolumeX } from 'lucide-react';
+import { Waves, Send, Sparkles, X, Heart, Eye, Navigation, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../i18n/LanguageContext';
 import { aiService } from '../services/aiService';
@@ -8,6 +8,7 @@ import { Bottle, BottleTag } from '../core/types';
 import { LUMINA_CARDS } from '../core/cards';
 import { CastBottleModal } from '../components/ocean/CastBottleModal';
 import { BottleDetailModal } from '../components/ocean/BottleDetailModal';
+import { OceanBackground } from '../components/ocean/OceanBackground';
 
 interface MyBottle extends Bottle {
   blessing_count: number;
@@ -204,22 +205,22 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
 
   if (showPremiumModal) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-washi p-6">
-        <div className="max-w-md w-full bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-soft text-center border border-ink/5">
-          <div className="w-16 h-16 bg-water/10 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#0A1128] p-6">
+        <div className="max-w-md w-full bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-2xl text-center border border-white/10">
+          <div className="w-16 h-16 bg-water/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <Sparkles className="w-8 h-8 text-water" />
           </div>
-          <h2 className="text-2xl font-display font-bold text-ink mb-4">
+          <h2 className="text-2xl font-display font-bold text-white mb-4">
             {language === 'ja' ? '共鳴の海へようこそ' : '歡迎來到共鳴之海'}
           </h2>
-          <p className="text-ink/60 mb-8 leading-relaxed">
+          <p className="text-white/60 mb-8 leading-relaxed">
             {language === 'ja' 
               ? 'ここはプレミアム会員専用の空間です。あなたのエネルギーを世界に届け、誰かの心と共鳴しましょう。' 
               : '這裡是 Premium 會員專屬的空間。讓妳的能量在海洋中流動，與遠方的靈魂產生共鳴。'}
           </p>
           <button 
             onClick={() => onNavigate?.('profile')}
-            className="w-full py-4 bg-ink text-white rounded-full font-medium hover:bg-ink/90 transition-all"
+            className="w-full py-4 bg-white text-ink rounded-full font-medium hover:bg-white/90 transition-all"
           >
             {language === 'ja' ? 'プランを確認する' : '查看訂閱方案'}
           </button>
@@ -229,14 +230,16 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0A192F] overflow-hidden flex flex-col items-center">
+    <div className="relative min-h-screen bg-[#0A1128] overflow-hidden flex flex-col items-center">
+      <OceanBackground />
+
       {/* Top Navigation Toggle */}
       <div className="z-20 mt-12 mb-8 flex items-center gap-4">
-        <div className="bg-white/5 backdrop-blur-md p-1 rounded-full border border-white/10 flex items-center">
+        <div className="bg-white/10 backdrop-blur-md p-1 rounded-full border border-white/10 flex items-center shadow-lg">
           <button
             onClick={() => setViewMode('explore')}
             className={`px-8 py-2.5 rounded-full text-xs tracking-widest uppercase transition-all ${
-              viewMode === 'explore' ? 'bg-water/20 text-white shadow-lg shadow-water/10' : 'text-white/40 hover:text-white/60'
+              viewMode === 'explore' ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white/60'
             }`}
           >
             {language === 'zh' ? '探索海洋' : '海を探索'}
@@ -244,7 +247,7 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
           <button
             onClick={() => setViewMode('voyage')}
             className={`px-8 py-2.5 rounded-full text-xs tracking-widest uppercase transition-all ${
-              viewMode === 'voyage' ? 'bg-water/20 text-white shadow-lg shadow-water/10' : 'text-white/40 hover:text-white/60'
+              viewMode === 'voyage' ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white/60'
             }`}
           >
             {language === 'zh' ? '我的航程' : '私の航海'}
@@ -256,8 +259,8 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
           onClick={() => setIsAmbientPlaying(!isAmbientPlaying)}
           className={`p-3 rounded-full backdrop-blur-md border transition-all ${
             isAmbientPlaying 
-              ? 'bg-water/20 border-water/40 text-white shadow-lg shadow-water/10' 
-              : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'
+              ? 'bg-water/20 border-water/40 text-water shadow-lg' 
+              : 'bg-white/10 border-white/10 text-white/40 hover:text-white/60'
           }`}
           title={language === 'zh' ? '海浪聲' : '波の音'}
         >
@@ -265,67 +268,6 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
         </button>
       </div>
 
-      {/* Deep Ocean Background with New Assets */}
-      <div className="absolute inset-0 z-0">
-        {/* Desktop Background */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2 }}
-          className="hidden md:block absolute inset-0"
-        >
-          <img 
-            src="https://firebasestorage.googleapis.com/v0/b/yuni-8f439.firebasestorage.app/o/eunie-assets%2Faudio%2Feunie_message_p.jpeg?alt=media&token=a4a4ef6f-f6d6-43f8-9071-2e4ba6b761aa"
-            alt=""
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-black/20" />
-        </motion.div>
-
-        {/* Mobile Background */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2 }}
-          className="block md:hidden absolute inset-0"
-        >
-          <img 
-            src="https://firebasestorage.googleapis.com/v0/b/yuni-8f439.firebasestorage.app/o/eunie-assets%2Faudio%2Feunie_message_m.jpeg?alt=media&token=f800adbb-1027-4513-a168-b565ff353683"
-            alt=""
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-black/30" />
-        </motion.div>
-
-        {/* Deep Ocean Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0A192F]/60" />
-      </div>
-
-      {/* Floating Particles */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ 
-              x: Math.random() * 100 + "%", 
-              y: "110%",
-              opacity: 0 
-            }}
-            animate={{ 
-              y: "-10%",
-              opacity: [0, 0.4, 0],
-            }}
-            transition={{ 
-              duration: 15 + Math.random() * 20, 
-              repeat: Infinity,
-              delay: Math.random() * 10
-            }}
-            className="absolute w-1 h-1 bg-white rounded-full blur-[1px]"
-          />
-        ))}
-      </div>
       <div className="z-10 text-center px-6 w-full max-w-4xl flex-1 flex flex-col justify-center">
         {viewMode === 'explore' ? (
           !pickedBottle ? (
@@ -336,19 +278,19 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
             >
               <div className="w-24 h-24 mb-8 relative">
                 <motion.div
-                  animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+                  animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }}
                   transition={{ duration: 4, repeat: Infinity }}
                   className="absolute inset-0 bg-water/20 rounded-full blur-2xl"
                 />
-                <div className="relative z-10 w-full h-full flex items-center justify-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-full">
-                  <Waves className="w-10 h-10 text-water" />
+                <div className="relative z-10 w-full h-full flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full shadow-lg">
+                  <Waves className="w-10 h-10 text-white" />
                 </div>
               </div>
               
-              <h1 className="text-3xl font-display font-bold text-white mb-4 tracking-widest">
+              <h1 className="text-3xl font-serif font-bold text-white mb-4 tracking-widest">
                 {language === 'zh' ? '共鳴之海' : '共鳴の海'}
               </h1>
-              <p className="text-white/40 mb-12 max-w-xs mx-auto leading-relaxed italic">
+              <p className="text-white/60 mb-12 max-w-xs mx-auto leading-relaxed italic">
                 {language === 'ja' 
                   ? '静かな波の音に耳を澄ませて、漂うメッセージを探してみましょう。' 
                   : '靜下心來，聽聽海浪的聲音，尋找那些漂流在時光中的訊息。'}
@@ -357,20 +299,20 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={pickupBottle}
-                  className="group relative px-10 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full border border-white/20 transition-all overflow-hidden"
+                  className="group relative px-10 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full border border-white/20 transition-all overflow-hidden shadow-lg"
                 >
                   <span className="relative z-10 flex items-center gap-3">
                     <Sparkles className="w-5 h-5 text-water" />
-                    {language === 'ja' ? 'メッセージを拾う' : '拾取共鳴'}
+                    {language === 'ja' ? 'ボトルレターを拾う' : '拾取瓶中信'}
                   </span>
                   <motion.div 
-                    className="absolute inset-0 bg-gradient-to-r from-water/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute inset-0 bg-gradient-to-r from-water/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
                   />
                 </button>
 
                 <button
                   onClick={() => setIsCastModalOpen(true)}
-                  className="group relative px-10 py-4 bg-water/20 hover:bg-water/30 text-white rounded-full border border-water/30 transition-all overflow-hidden"
+                  className="group relative px-10 py-4 bg-water/20 hover:bg-water/30 text-white rounded-full border border-water/40 transition-all overflow-hidden shadow-lg"
                 >
                   <span className="relative z-10 flex items-center gap-3">
                     <Send className="w-5 h-5 text-white" />
@@ -397,11 +339,11 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
 
             {isFetchingMyBottles ? (
               <div className="py-20 flex justify-center">
-                <div className="w-8 h-8 border-2 border-water/20 border-t-water rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-white/10 border-t-water rounded-full animate-spin" />
               </div>
             ) : myBottles.length === 0 ? (
               <div className="py-20 text-center space-y-6">
-                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto border border-white/20">
                   <Navigation className="w-8 h-8 text-white/20" />
                 </div>
                 <p className="text-sm text-white/40 italic">
@@ -409,7 +351,7 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
                 </p>
                 <button
                   onClick={() => setViewMode('explore')}
-                  className="px-8 py-3 bg-water/20 text-white border border-water/30 rounded-full hover:bg-water/30 transition-all text-sm"
+                  className="px-8 py-3 bg-white/10 text-white border border-white/20 rounded-full hover:bg-white/20 transition-all text-sm"
                 >
                   {language === 'zh' ? '前往探索海洋' : '海を探索しに行く'}
                 </button>
@@ -453,8 +395,8 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
                         setPickedBottle(bottle);
                         setTranslatedContent(bottle.translatedContent || null);
                       }}
-                      className={`group relative bg-white/5 backdrop-blur-md border rounded-3xl p-6 transition-all cursor-pointer ${
-                        hasNewBlessing ? 'border-water/40 shadow-[0_0_30px_rgba(51,166,184,0.2)]' : 'border-white/10 hover:border-white/20'
+                      className={`group relative bg-white/10 backdrop-blur-md border rounded-3xl p-6 transition-all cursor-pointer ${
+                        hasNewBlessing ? 'border-water/60 shadow-[0_10px_30px_rgba(51,166,184,0.2)]' : 'border-white/10 hover:border-white/20 shadow-lg'
                       }`}
                     >
                       <div className="flex gap-6">
@@ -475,7 +417,7 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
                             </p>
                             {hasNewBlessing && (
                               <motion.span
-                                animate={{ opacity: [0.4, 1, 0.4] }}
+                                animate={{ opacity: [0.6, 1, 0.6] }}
                                 transition={{ duration: 2, repeat: Infinity }}
                                 className="text-[10px] text-water font-bold uppercase tracking-tighter"
                               >
@@ -567,7 +509,7 @@ export const Ocean: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNav
                 setShowAmbientPrompt(false);
                 localStorage.setItem('oceanAmbientPromptSeen', 'true');
               }}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              className="p-2 hover:bg-white/5 rounded-full transition-colors"
             >
               <X size={14} className="text-white/40" />
             </button>

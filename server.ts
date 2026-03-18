@@ -385,39 +385,40 @@ async function startServer() {
         }
       }')
       ON CONFLICT (key) DO NOTHING;
-
-      -- Seed default Blessing Tags
-      const tagCount = await pool.query("SELECT COUNT(*) FROM bottle_tags");
-      if (parseInt(tagCount.rows[0].count) === 0) {
-        console.log("Seeding default blessing tags...");
-        const defaultTags = [
-          { name_zh: '溫暖共鳴', name_ja: '温かい共鳴', color: '#F27D26' },
-          { name_zh: '療癒之光', name_ja: '癒やしの光', color: '#8BA889' },
-          { name_zh: '勇氣泉源', name_ja: '勇気の源', color: '#D98B73' },
-          { name_zh: '平靜之海', name_ja: '平穏の海', color: '#6B7B8C' },
-          { name_zh: '智慧流動', name_ja: '知恵の流動', color: '#A88B89' }
-        ];
-        for (const tag of defaultTags) {
-          await pool.query(
-            "INSERT INTO bottle_tags (name_zh, name_ja, color) VALUES ($1, $2, $3)",
-            [tag.name_zh, tag.name_ja, tag.color]
-          );
-        }
-      }
-
-      -- Seed default Sensitive Words
-      const wordCount = await pool.query("SELECT COUNT(*) FROM sensitive_words");
-      if (parseInt(wordCount.rows[0].count) === 0) {
-        console.log("Seeding default sensitive words...");
-        const defaultWords = ['暴力', '色情', '賭博', '毒品', '詐騙', '自殺', '殺人'];
-        for (const word of defaultWords) {
-          await pool.query(
-            "INSERT INTO sensitive_words (word, category) VALUES ($1, $2) ON CONFLICT (word) DO NOTHING",
-            [word, 'general']
-          );
-        }
-      }
     `);
+
+    // Seed default Blessing Tags
+    const tagCount = await pool.query("SELECT COUNT(*) FROM bottle_tags");
+    if (parseInt(tagCount.rows[0].count) === 0) {
+      console.log("Seeding default blessing tags...");
+      const defaultTags = [
+        { name_zh: '溫暖共鳴', name_ja: '温かい共鳴', color: '#F27D26' },
+        { name_zh: '療癒之光', name_ja: '癒やしの光', color: '#8BA889' },
+        { name_zh: '勇氣泉源', name_ja: '勇気の源', color: '#D98B73' },
+        { name_zh: '平靜之海', name_ja: '平穏の海', color: '#6B7B8C' },
+        { name_zh: '智慧流動', name_ja: '知恵の流動', color: '#A88B89' }
+      ];
+      for (const tag of defaultTags) {
+        await pool.query(
+          "INSERT INTO bottle_tags (name_zh, name_ja, color) VALUES ($1, $2, $3)",
+          [tag.name_zh, tag.name_ja, tag.color]
+        );
+      }
+    }
+
+    // Seed default Sensitive Words
+    const wordCount = await pool.query("SELECT COUNT(*) FROM sensitive_words");
+    if (parseInt(wordCount.rows[0].count) === 0) {
+      console.log("Seeding default sensitive words...");
+      const defaultWords = ['暴力', '色情', '賭博', '毒品', '詐騙', '自殺', '殺人'];
+      for (const word of defaultWords) {
+        await pool.query(
+          "INSERT INTO sensitive_words (word, category) VALUES ($1, $2) ON CONFLICT (word) DO NOTHING",
+          [word, 'general']
+        );
+      }
+    }
+
     client.release();
     console.log("Database tables initialized");
 
@@ -487,37 +488,6 @@ async function startServer() {
         );
       }
       console.log("Default music tracks seeded");
-    }
-
-    // Auto-seed blessing tags if empty
-    const tagCount = await pool.query("SELECT COUNT(*) FROM bottle_tags");
-    if (parseInt(tagCount.rows[0].count) === 0) {
-      console.log("Seeding default blessing tags...");
-      const defaultTags = [
-        { zh: '願你平安', ja: 'あなたの平安を願っています' },
-        { zh: '能量共鳴', ja: 'エネルギーが共鳴しています' },
-        { zh: '溫暖相隨', ja: '温もりが共にありますように' },
-        { zh: '光芒守護', ja: '光があなたを守りますように' }
-      ];
-      for (const t of defaultTags) {
-        await pool.query(
-          "INSERT INTO bottle_tags (text_zh, text_ja) VALUES ($1, $2)",
-          [t.zh, t.ja]
-        );
-      }
-    }
-
-    // Auto-seed sensitive words if empty (basic list)
-    const wordCount = await pool.query("SELECT COUNT(*) FROM sensitive_words");
-    if (parseInt(wordCount.rows[0].count) === 0) {
-      console.log("Seeding initial sensitive words...");
-      const initialWords = ['幹', '死', '殺', '笨', '蠢', '垃圾', '廢物', '死ね', '殺す', 'バカ', 'アホ', 'クズ'];
-      for (const w of initialWords) {
-        await pool.query(
-          "INSERT INTO sensitive_words (word) VALUES ($1) ON CONFLICT (word) DO NOTHING",
-          [w]
-        );
-      }
     }
   } catch (err) {
     console.error("Database initialization error:", err);

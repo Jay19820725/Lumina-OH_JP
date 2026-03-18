@@ -15,24 +15,44 @@ const firebaseConfig = {
 };
 
 // Debug check for missing configuration
-if (import.meta.env.PROD && !firebaseConfig.authDomain) {
+if (import.meta.env.PROD && !firebaseConfig.apiKey) {
   console.error(
-    "Firebase Configuration Error: VITE_FIREBASE_AUTH_DOMAIN is missing. " +
+    "Firebase Configuration Error: apiKey is missing. " +
     "Ensure environment variables are set BEFORE building the application."
   );
 }
 
 // Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+let app;
+let auth: any;
+let storage: any;
 
-const auth = getAuth(app);
-const storage = getStorage(app);
+try {
+  const isConfigValid = 
+    firebaseConfig.apiKey && 
+    firebaseConfig.apiKey !== "undefined" && 
+    firebaseConfig.appId && 
+    firebaseConfig.appId !== "undefined";
+
+  if (isConfigValid) {
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    storage = getStorage(app);
+  } else {
+    console.warn("Firebase: Missing configuration (apiKey or appId). Authentication features will be disabled.");
+    // Mock objects to prevent crashes
+    auth = { onAuthStateChanged: (cb: any) => { cb(null); return () => {}; } };
+  }
+} catch (error) {
+  console.error("Firebase initialization failed:", error);
+  auth = { onAuthStateChanged: (cb: any) => { cb(null); return () => {}; } };
+}
 
 // Initialize Analytics
 let analytics: any = null;
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && app) {
   isSupported().then((supported) => {
-    if (supported) {
+    if (supported && app) {
       analytics = getAnalytics(app);
     }
   });
